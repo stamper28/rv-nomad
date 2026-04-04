@@ -8,12 +8,15 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
+import { getSiteImageUrl } from "@/lib/site-images";
 import { Store } from "@/lib/store";
 
 export default function SiteDetailScreen() {
@@ -87,7 +90,15 @@ export default function SiteDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Hero */}
+        {/* Hero Image */}
+        <Image
+          source={{ uri: getSiteImageUrl(site.id, site.category, site.state) }}
+          style={styles.heroImage}
+          contentFit="cover"
+          transition={300}
+        />
+
+        {/* Hero Info */}
         <View style={[styles.hero, { backgroundColor: catColor + "15" }]}>
           <View style={[styles.catBadge, { backgroundColor: catColor + "25" }]}>
             <Text style={[styles.catBadgeText, { color: catColor }]}>
@@ -98,6 +109,15 @@ export default function SiteDetailScreen() {
           <Text style={[styles.siteLocation, { color: colors.muted }]}>
             {site.city}, {site.state}
           </Text>
+          {/* Military ID Notice */}
+          {site.category === "military" && (
+            <View style={[styles.militaryBanner, { backgroundColor: colors.warning + "15", borderColor: colors.warning + "40" }]}>
+              <MaterialIcons name="verified-user" size={16} color={colors.warning} />
+              <Text style={[styles.militaryBannerText, { color: colors.warning }]}>
+                Military ID required to access base and campground
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.content}>
@@ -366,4 +386,7 @@ const styles = StyleSheet.create({
   rigTags: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   rigTag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   rigTagText: { fontSize: 13, fontWeight: "600" },
+  heroImage: { width: "100%" as any, height: 220 },
+  militaryBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, marginTop: 10, width: "100%" as any },
+  militaryBannerText: { fontSize: 13, fontWeight: "600", flex: 1 },
 });

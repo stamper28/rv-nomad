@@ -165,3 +165,5 @@
 - [x] Ensure booking flow works from site detail screen (Book Now button navigates to booking with $2/night fee)
 - [x] Fix: selecting a state shows no results (fixed: data uses state abbreviations, removed getStateAbbr conversion, added all new category filters)
 - [x] Add RV length and trailer limits to campgrounds, RV parks, state parks, national parks, and boondocking sites (540 sites updated with maxRVLength, maxTrailerLength, maxRVHeight, pullThrough, bigRigFriendly)
+- [x] Add images to campsite cards and detail screens (Unsplash photos matched by category + region)
+- [x] Add military ID requirement notice to all military campground sites (shown on card + detail screen)

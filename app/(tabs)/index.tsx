@@ -12,6 +12,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -24,6 +25,7 @@ import {
   type SiteCategory,
   type StateLaws,
 } from "@/lib/types";
+import { getSiteImageUrl } from "@/lib/site-images";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -267,6 +269,7 @@ export default function HomeScreen() {
   const renderSiteCard = useCallback(
     (site: CampSite) => {
       const catColor = CATEGORY_COLORS[site.category] || "#666";
+      const imageUrl = getSiteImageUrl(site.id, site.category, site.state);
       return (
         <Pressable
           onPress={() => handleOpenSite(site)}
@@ -276,62 +279,77 @@ export default function HomeScreen() {
             pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
           ]}
         >
-          <View style={styles.cardHeader}>
-            <View style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}>
-              <Text style={[styles.categoryBadgeText, { color: catColor }]}>
-                {CATEGORY_LABELS[site.category] || site.category}
+          {/* Site Image */}
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.cardImage}
+            contentFit="cover"
+            transition={200}
+          />
+
+          <View style={styles.cardBody}>
+            <View style={styles.cardHeader}>
+              <View style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}>
+                <Text style={[styles.categoryBadgeText, { color: catColor }]}>
+                  {CATEGORY_LABELS[site.category] || site.category}
+                </Text>
+              </View>
+              <View style={styles.directionsButton}>
+                <MaterialIcons name="chevron-right" size={20} color={colors.muted} />
+              </View>
+            </View>
+
+            <Text style={[styles.cardName, { color: colors.foreground }]} numberOfLines={1}>
+              {site.name}
+            </Text>
+
+            <Text style={[styles.cardLocation, { color: colors.muted }]}>
+              {site.city}, {STATE_NAMES[site.state] || site.state}
+            </Text>
+
+            <View style={styles.ratingRow}>
+              <View style={styles.starsRow}>{renderStars(site.rating)}</View>
+              <Text style={[styles.ratingText, { color: colors.muted }]}>
+                {site.rating.toFixed(1)} ({site.reviewCount})
               </Text>
             </View>
-            <View style={styles.directionsButton}>
-              <MaterialIcons name="directions" size={20} color={colors.primary} />
-            </View>
-          </View>
 
-          <Text style={[styles.cardName, { color: colors.foreground }]} numberOfLines={1}>
-            {site.name}
-          </Text>
-
-          <Text style={[styles.cardLocation, { color: colors.muted }]}>
-            {site.city}, {STATE_NAMES[site.state] || site.state}
-          </Text>
-
-          <View style={styles.ratingRow}>
-            <View style={styles.starsRow}>{renderStars(site.rating)}</View>
-            <Text style={[styles.ratingText, { color: colors.muted }]}>
-              {site.rating.toFixed(1)} ({site.reviewCount})
-            </Text>
-          </View>
-
-          <Text style={[styles.cardDescription, { color: colors.muted }]} numberOfLines={2}>
-            {site.description}
-          </Text>
-
-          <View style={styles.cardFooter}>
-            <Text
-              style={[
-                styles.priceText,
-                { color: site.pricePerNight === null ? colors.success : colors.primary },
-              ]}
-            >
-              {site.pricePerNight ? `$${site.pricePerNight}/night` : "Free"}
-            </Text>
-            <View style={styles.amenitiesRow}>
-              {site.amenities.slice(0, 3).map((a, i) => (
-                <View key={i} style={[styles.amenityChip, { backgroundColor: colors.background }]}>
-                  <Text style={[styles.amenityText, { color: colors.muted }]}>{a}</Text>
-                </View>
-              ))}
-              {site.amenities.length > 3 && (
-                <Text style={[styles.moreText, { color: colors.muted }]}>
-                  +{site.amenities.length - 3}
+            {/* Military ID Notice */}
+            {site.category === "military" && (
+              <View style={[styles.militaryNotice, { backgroundColor: colors.warning + "15", borderColor: colors.warning + "40" }]}>
+                <MaterialIcons name="verified-user" size={14} color={colors.warning} />
+                <Text style={[styles.militaryNoticeText, { color: colors.warning }]}>
+                  Military ID required to access base
                 </Text>
-              )}
-            </View>
-          </View>
+              </View>
+            )}
 
-          <View style={styles.tapHint}>
-            <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
-            <Text style={[styles.tapHintText, { color: colors.muted }]}>Tap to open in Maps</Text>
+            <Text style={[styles.cardDescription, { color: colors.muted }]} numberOfLines={2}>
+              {site.description}
+            </Text>
+
+            <View style={styles.cardFooter}>
+              <Text
+                style={[
+                  styles.priceText,
+                  { color: site.pricePerNight === null ? colors.success : colors.primary },
+                ]}
+              >
+                {site.pricePerNight ? `$${site.pricePerNight}/night` : "Free"}
+              </Text>
+              <View style={styles.amenitiesRow}>
+                {site.amenities.slice(0, 3).map((a, i) => (
+                  <View key={i} style={[styles.amenityChip, { backgroundColor: colors.background }]}>
+                    <Text style={[styles.amenityText, { color: colors.muted }]}>{a}</Text>
+                  </View>
+                ))}
+                {site.amenities.length > 3 && (
+                  <Text style={[styles.moreText, { color: colors.muted }]}>
+                    +{site.amenities.length - 3}
+                  </Text>
+                )}
+              </View>
+            </View>
           </View>
         </Pressable>
       );
@@ -783,7 +801,7 @@ const styles = StyleSheet.create({
   // List
   listContent: { paddingHorizontal: 16, gap: 12 },
   // Card
-  card: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  card: { borderRadius: 14, borderWidth: 1, overflow: "hidden" as any },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -874,4 +892,8 @@ const styles = StyleSheet.create({
   statePickerItemText: { fontSize: 16 },
   statePickerItemCount: { fontSize: 13 },
   filterGroupLabel: { fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 10, marginRight: 4 },
+  cardImage: { width: "100%" as any, height: 160 },
+  cardBody: { padding: 12, gap: 4 },
+  militaryNotice: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, marginTop: 4 },
+  militaryNoticeText: { fontSize: 12, fontWeight: "600" },
 });
