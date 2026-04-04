@@ -139,3 +139,4 @@
 - [x] App won't download and open due to a bug (fixed: lazy-loaded all large data imports to prevent Expo Go crash)
 - [x] Published APK crashes on launch on Android device (fixed: disabled newArch, added maps config plugin, error boundary, try-catch on map load)
 - [x] APK build fails: react-native-maps has no config plugin (fixed: replaced react-native-maps with expo-maps, removed broken plugin from app.config.ts)
+- [x] APK still crashes on launch after switching to expo-maps (fixed: removed ALL native map libraries, replaced home screen with list-based campground finder, tap opens in Google Maps/Apple Maps)

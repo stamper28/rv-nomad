@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,10 @@ import {
   Pressable,
   Platform,
   StyleSheet,
-  Dimensions,
   FlatList,
   Keyboard,
+  Linking,
+  Alert,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,83 +23,49 @@ import {
   type CampgroundCategory,
 } from "@/lib/campground-data";
 import { type WeightScale } from "@/lib/types";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import { useEffect } from "react";
 
 type FilterKey = CampgroundCategory | "all" | "weight_scale" | "dump_station";
 
-const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "rv_park", label: "RV Parks" },
-  { key: "national_park", label: "National Parks" },
-  { key: "state_park", label: "State Parks" },
-  { key: "free_camping", label: "Free Camping" },
-  { key: "dump_station", label: "Dump Stations" },
-  { key: "weight_scale", label: "Weight Scales" },
-  { key: "rest_area", label: "Rest Areas" },
+const FILTER_OPTIONS: { key: FilterKey; label: string; icon: string }[] = [
+  { key: "all", label: "All", icon: "explore" },
+  { key: "rv_park", label: "RV Parks", icon: "local-parking" },
+  { key: "national_park", label: "National Parks", icon: "park" },
+  { key: "state_park", label: "State Parks", icon: "nature" },
+  { key: "free_camping", label: "Free Camping", icon: "camping" },
+  { key: "dump_station", label: "Dump Stations", icon: "delete" },
+  { key: "weight_scale", label: "Weight Scales", icon: "scale" },
+  { key: "rest_area", label: "Rest Areas", icon: "local-hotel" },
 ];
 
-const US_CENTER = {
-  latitude: 39.8283,
-  longitude: -98.5795,
-  latitudeDelta: 40,
-  longitudeDelta: 40,
-};
+/** Open a location in the device's native maps app */
+function openInMaps(name: string, latitude: number, longitude: number) {
+  const encodedName = encodeURIComponent(name);
+  const url =
+    Platform.OS === "ios"
+      ? `maps:0,0?q=${encodedName}&ll=${latitude},${longitude}`
+      : `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedName})`;
 
-// Max markers to render at once to avoid native performance issues
-const MAX_MARKERS = 30;
+  Linking.canOpenURL(url).then((supported) => {
+    if (supported) {
+      Linking.openURL(url);
+    } else {
+      // Fallback to Google Maps web
+      Linking.openURL(
+        `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}&query_place_id=${encodedName}`
+      );
+    }
+  });
+}
 
-export default function MapScreen() {
+export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const mapRef = useRef<any>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>("all");
-  const [selectedCampground, setSelectedCampground] =
-    useState<Campground | null>(null);
-  const [selectedScale, setSelectedScale] = useState<WeightScale | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Campground[]>([]);
-  const [showSearch, setShowSearch] = useState(false);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [mapReady, setMapReady] = useState(false);
-  const [mapRegion, setMapRegion] = useState(US_CENTER);
   const [weightScales, setWeightScales] = useState<WeightScale[]>([]);
   const [loadingScales, setLoadingScales] = useState(false);
-
-  // Lazy load location - wrapped in try/catch to prevent crash
-  useEffect(() => {
-    if (Platform.OS === "web") return;
-    let cancelled = false;
-    const getLocation = async () => {
-      try {
-        const Location = await import("expo-location");
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === "granted" && !cancelled) {
-          try {
-            const loc = await Location.getCurrentPositionAsync({
-              accuracy: Location.Accuracy.Balanced,
-            });
-            if (!cancelled) {
-              setUserLocation({
-                latitude: loc.coords.latitude,
-                longitude: loc.coords.longitude,
-              });
-            }
-          } catch {
-            // Location unavailable
-          }
-        }
-      } catch {
-        // expo-location not available
-      }
-    };
-    getLocation();
-    return () => { cancelled = true; };
-  }, []);
 
   // Lazy load weight scales only when filter is selected
   useEffect(() => {
@@ -107,165 +74,81 @@ export default function MapScreen() {
       weightScales.length === 0
     ) {
       setLoadingScales(true);
-      import("@/lib/weight-scale-data").then((mod) => {
-        setWeightScales(mod.WEIGHT_SCALES);
-        setLoadingScales(false);
-      }).catch(() => setLoadingScales(false));
+      import("@/lib/weight-scale-data")
+        .then((mod) => {
+          setWeightScales(mod.WEIGHT_SCALES);
+          setLoadingScales(false);
+        })
+        .catch(() => setLoadingScales(false));
     }
   }, [selectedFilter, weightScales.length]);
 
-  // Filter campgrounds and limit markers for performance
+  // Filter campgrounds
   const filteredCampgrounds = useMemo(() => {
     let filtered: Campground[];
     if (selectedFilter === "all") {
       filtered = CAMPGROUNDS;
-    } else if (selectedFilter === "weight_scale" || selectedFilter === "dump_station") {
-      filtered = selectedFilter === "dump_station"
-        ? CAMPGROUNDS.filter((c) => c.category === "dump_station" as any)
-        : [];
+    } else if (
+      selectedFilter === "weight_scale" ||
+      selectedFilter === "dump_station"
+    ) {
+      filtered =
+        selectedFilter === "dump_station"
+          ? CAMPGROUNDS.filter((c) => c.category === ("dump_station" as any))
+          : [];
     } else {
       filtered = CAMPGROUNDS.filter((c) => c.category === selectedFilter);
     }
 
-    // If zoomed out (large delta), limit markers to prevent performance issues
-    if (mapRegion.latitudeDelta > 20) {
-      return filtered.slice(0, MAX_MARKERS);
-    }
-
-    // Filter to visible region with some padding
-    const padding = mapRegion.latitudeDelta * 0.2;
-    const minLat = mapRegion.latitude - mapRegion.latitudeDelta / 2 - padding;
-    const maxLat = mapRegion.latitude + mapRegion.latitudeDelta / 2 + padding;
-    const minLng = mapRegion.longitude - mapRegion.longitudeDelta / 2 - padding;
-    const maxLng = mapRegion.longitude + mapRegion.longitudeDelta / 2 + padding;
-
-    const visible = filtered.filter(
-      (c) =>
-        c.latitude >= minLat &&
-        c.latitude <= maxLat &&
-        c.longitude >= minLng &&
-        c.longitude <= maxLng
-    );
-
-    return visible.slice(0, MAX_MARKERS);
-  }, [selectedFilter, mapRegion]);
-
-  // Filter weight scales to visible region
-  const visibleScales = useMemo(() => {
-    if (selectedFilter !== "all" && selectedFilter !== "weight_scale") return [];
-    if (weightScales.length === 0) return [];
-
-    if (mapRegion.latitudeDelta > 20) {
-      return weightScales.slice(0, 15);
-    }
-
-    const padding = mapRegion.latitudeDelta * 0.2;
-    const minLat = mapRegion.latitude - mapRegion.latitudeDelta / 2 - padding;
-    const maxLat = mapRegion.latitude + mapRegion.latitudeDelta / 2 + padding;
-    const minLng = mapRegion.longitude - mapRegion.longitudeDelta / 2 - padding;
-    const maxLng = mapRegion.longitude + mapRegion.longitudeDelta / 2 + padding;
-
-    return weightScales
-      .filter(
-        (s) =>
-          s.latitude >= minLat &&
-          s.latitude <= maxLat &&
-          s.longitude >= minLng &&
-          s.longitude <= maxLng
-      )
-      .slice(0, 15);
-  }, [selectedFilter, weightScales, mapRegion]);
-
-  const handleSearch = useCallback((text: string) => {
-    setSearchQuery(text);
-    if (text.length > 1) {
-      const lower = text.toLowerCase();
-      const results = CAMPGROUNDS.filter(
+    if (searchQuery.length > 1) {
+      const lower = searchQuery.toLowerCase();
+      filtered = filtered.filter(
         (c) =>
           c.name.toLowerCase().includes(lower) ||
           c.description.toLowerCase().includes(lower)
-      ).slice(0, 5);
-      setSearchResults(results);
-      setShowSearch(true);
-    } else {
-      setSearchResults([]);
-      setShowSearch(false);
-    }
-  }, []);
-
-  const handleSelectSearchResult = useCallback((campground: Campground) => {
-    setSearchQuery("");
-    setSearchResults([]);
-    setShowSearch(false);
-    setSelectedCampground(campground);
-    Keyboard.dismiss();
-    if (Platform.OS !== "web" && mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: campground.latitude,
-          longitude: campground.longitude,
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.5,
-        },
-        800
       );
     }
-  }, []);
 
-  const handleMarkerPress = useCallback((campground: Campground) => {
+    return filtered;
+  }, [selectedFilter, searchQuery]);
+
+  // Filter weight scales
+  const filteredScales = useMemo(() => {
+    if (selectedFilter !== "all" && selectedFilter !== "weight_scale") return [];
+    if (weightScales.length === 0) return [];
+
+    if (searchQuery.length > 1) {
+      const lower = searchQuery.toLowerCase();
+      return weightScales.filter(
+        (s) =>
+          s.name.toLowerCase().includes(lower) ||
+          s.city.toLowerCase().includes(lower) ||
+          s.state.toLowerCase().includes(lower)
+      );
+    }
+
+    return weightScales;
+  }, [selectedFilter, weightScales, searchQuery]);
+
+  const handleFilterPress = useCallback((key: FilterKey) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    setSelectedCampground(campground);
-    setSelectedScale(null);
+    setSelectedFilter(key);
   }, []);
 
-  const handleLocateMe = useCallback(() => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-    if (userLocation && mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-          latitudeDelta: 2,
-          longitudeDelta: 2,
-        },
-        800
-      );
-    }
-  }, [userLocation]);
-
-  const handleFilterPress = useCallback(
-    (key: FilterKey) => {
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      setSelectedFilter(key);
-      setSelectedCampground(null);
-      setSelectedScale(null);
-    },
-    []
-  );
-
-  const handleScalePress = useCallback((scale: WeightScale) => {
+  const handleOpenCampground = useCallback((campground: Campground) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    setSelectedScale(scale);
-    setSelectedCampground(null);
+    openInMaps(campground.name, campground.latitude, campground.longitude);
   }, []);
 
-  const handleMapPress = useCallback(() => {
-    setSelectedCampground(null);
-    setSelectedScale(null);
-    setShowSearch(false);
-    Keyboard.dismiss();
-  }, []);
-
-  const handleRegionChangeComplete = useCallback((region: any) => {
-    setMapRegion(region);
+  const handleOpenScale = useCallback((scale: WeightScale) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    openInMaps(scale.name, scale.latitude, scale.longitude);
   }, []);
 
   const renderStars = (rating: number) => {
@@ -283,260 +166,291 @@ export default function MapScreen() {
     return stars;
   };
 
-  // Web fallback
-  if (Platform.OS === "web") {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.webFallback}>
-          <MaterialIcons name="map" size={64} color={colors.primary} />
-          <Text style={[styles.webTitle, { color: colors.foreground }]}>
-            Interactive Map
-          </Text>
-          <Text style={[styles.webSubtitle, { color: colors.muted }]}>
-            The interactive map with campground markers{"\n"}
-            is available on iOS and Android.{"\n\n"}
-            Scan the QR code with Expo Go to preview.
-          </Text>
-        </View>
+  // Combined list data
+  const listData = useMemo(() => {
+    const items: Array<{ type: "campground" | "scale"; data: any }> = [];
 
-        {/* Filter Chips on web */}
-        <View style={[styles.filterContainer, { top: insets.top + 60 }]}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={FILTER_OPTIONS}
-            keyExtractor={(item) => item.key}
-            contentContainerStyle={styles.filterList}
-            renderItem={({ item }) => {
-              const isActive = selectedFilter === item.key;
-              return (
-                <Pressable
-                  onPress={() => handleFilterPress(item.key)}
-                  style={({ pressed }) => [
-                    styles.filterChip,
-                    {
-                      backgroundColor: isActive ? colors.primary : colors.surface,
-                      borderColor: isActive ? colors.primary : colors.border,
-                    },
-                    pressed && { opacity: 0.8 },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      { color: isActive ? "#FFFFFF" : colors.foreground },
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            }}
-          />
-        </View>
-      </View>
-    );
-  }
-
-  // Build markers array for expo-maps (markers are data props, not children)
-  const allMarkers = useMemo(() => {
-    const markers: Array<{ id: string; coordinates: { latitude: number; longitude: number }; title?: string; snippet?: string }> = [];
-
-    // Add campground markers
-    filteredCampgrounds.forEach((campground) => {
-      markers.push({
-        id: campground.id,
-        coordinates: {
-          latitude: campground.latitude,
-          longitude: campground.longitude,
-        },
-        title: campground.name,
-        snippet: CATEGORY_LABELS[campground.category],
-      });
-    });
-
-    // Add weight scale markers
-    visibleScales.forEach((scale) => {
-      markers.push({
-        id: scale.id,
-        coordinates: {
-          latitude: scale.latitude,
-          longitude: scale.longitude,
-        },
-        title: scale.name,
-        snippet: `${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`,
-      });
-    });
-
-    return markers;
-  }, [filteredCampgrounds, visibleScales]);
-
-  // Handle marker click - find the campground or scale by id
-  const handleExpoMarkerClick = useCallback((marker: any) => {
-    const markerId = marker?.id;
-    if (!markerId) return;
-
-    // Check campgrounds first
-    const campground = filteredCampgrounds.find((c) => c.id === markerId);
-    if (campground) {
-      handleMarkerPress(campground);
-      return;
+    if (selectedFilter !== "weight_scale") {
+      filteredCampgrounds.forEach((c) =>
+        items.push({ type: "campground", data: c })
+      );
     }
 
-    // Check weight scales
-    const scale = visibleScales.find((s) => s.id === markerId);
-    if (scale) {
-      handleScalePress(scale);
+    if (
+      selectedFilter === "all" ||
+      selectedFilter === "weight_scale"
+    ) {
+      filteredScales.forEach((s) => items.push({ type: "scale", data: s }));
     }
-  }, [filteredCampgrounds, visibleScales, handleMarkerPress, handleScalePress]);
 
-  // Import map components - on native, Metro resolves .native.tsx automatically
-  let NativeMapView: any = null;
-  try {
-    const mapModule = require("@/components/map-view-wrapper");
-    NativeMapView = mapModule.MapViewWrapper;
-  } catch (e) {
-    // Map module failed to load
-  }
+    return items;
+  }, [filteredCampgrounds, filteredScales, selectedFilter]);
 
-  if (!NativeMapView) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.webFallback}>
-          <MaterialIcons name="map" size={64} color={colors.primary} />
-          <Text style={[styles.webTitle, { color: colors.foreground }]}>Map Loading...</Text>
-          <Text style={[styles.webSubtitle, { color: colors.muted }]}>The map component could not be loaded.{"\n"}Please restart the app.</Text>
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      {/* Map */}
-      <NativeMapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={US_CENTER}
-        showsUserLocation
-        onPress={handleMapPress}
-        onMapReady={() => setMapReady(true)}
-        onRegionChangeComplete={handleRegionChangeComplete}
-        markers={mapReady ? allMarkers : []}
-        onMarkerClick={handleExpoMarkerClick}
-      />
-
-      {/* Search Bar */}
-      <View
-        style={[
-          styles.searchContainer,
-          { top: insets.top + 8, backgroundColor: colors.surface },
+  const renderCampgroundCard = useCallback(
+    (campground: Campground) => (
+      <Pressable
+        onPress={() => handleOpenCampground(campground)}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+          pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
         ]}
       >
-        <MaterialIcons
-          name="search"
-          size={22}
-          color={colors.muted}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={[styles.searchInput, { color: colors.foreground }]}
-          placeholder="Search campgrounds..."
-          placeholderTextColor={colors.muted}
-          value={searchQuery}
-          onChangeText={handleSearch}
-          returnKeyType="search"
-        />
-        {searchQuery.length > 0 && (
-          <Pressable
-            onPress={() => {
-              setSearchQuery("");
-              setSearchResults([]);
-              setShowSearch(false);
-            }}
-            style={({ pressed }) => [
-              styles.clearButton,
-              pressed && { opacity: 0.6 },
+        {/* Category badge */}
+        <View style={styles.cardHeader}>
+          <View
+            style={[
+              styles.categoryBadge,
+              {
+                backgroundColor:
+                  CATEGORY_COLORS[campground.category] + "20",
+              },
             ]}
           >
-            <MaterialIcons name="close" size={20} color={colors.muted} />
-          </Pressable>
-        )}
-      </View>
+            <Text
+              style={[
+                styles.categoryBadgeText,
+                { color: CATEGORY_COLORS[campground.category] },
+              ]}
+            >
+              {CATEGORY_LABELS[campground.category]}
+            </Text>
+          </View>
+          <View style={styles.directionsButton}>
+            <MaterialIcons name="directions" size={20} color={colors.primary} />
+          </View>
+        </View>
 
-      {/* Search Results Dropdown */}
-      {showSearch && searchResults.length > 0 && (
-        <View
-          style={[
-            styles.searchDropdown,
-            {
-              top: insets.top + 60,
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
+        {/* Name */}
+        <Text
+          style={[styles.cardName, { color: colors.foreground }]}
+          numberOfLines={1}
         >
-          <FlatList
-            data={searchResults.slice(0, 5)}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => handleSelectSearchResult(item)}
-                style={({ pressed }) => [
-                  styles.searchResultItem,
-                  { borderBottomColor: colors.border },
-                  pressed && { backgroundColor: colors.background },
+          {campground.name}
+        </Text>
+
+        {/* Rating */}
+        <View style={styles.ratingRow}>
+          <View style={styles.starsRow}>{renderStars(campground.rating)}</View>
+          <Text style={[styles.ratingText, { color: colors.muted }]}>
+            {campground.rating.toFixed(1)} ({campground.reviewCount})
+          </Text>
+        </View>
+
+        {/* Description */}
+        <Text
+          style={[styles.cardDescription, { color: colors.muted }]}
+          numberOfLines={2}
+        >
+          {campground.description}
+        </Text>
+
+        {/* Footer: Price + Amenities */}
+        <View style={styles.cardFooter}>
+          <Text style={[styles.priceText, { color: colors.primary }]}>
+            {campground.pricePerNight
+              ? `$${campground.pricePerNight}/night`
+              : "Free"}
+          </Text>
+          <View style={styles.amenitiesRow}>
+            {campground.amenities.slice(0, 3).map((a, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.amenityChip,
+                  { backgroundColor: colors.background },
                 ]}
               >
-                <View
-                  style={[
-                    styles.categoryDot,
-                    { backgroundColor: CATEGORY_COLORS[item.category] },
-                  ]}
-                />
-                <View style={styles.searchResultText}>
-                  <Text
-                    style={[
-                      styles.searchResultName,
-                      { color: colors.foreground },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {item.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.searchResultCategory,
-                      { color: colors.muted },
-                    ]}
-                  >
-                    {CATEGORY_LABELS[item.category]}
-                  </Text>
-                </View>
-              </Pressable>
+                <Text style={[styles.amenityText, { color: colors.muted }]}>
+                  {a}
+                </Text>
+              </View>
+            ))}
+            {campground.amenities.length > 3 && (
+              <Text style={[styles.moreText, { color: colors.muted }]}>
+                +{campground.amenities.length - 3}
+              </Text>
             )}
-          />
+          </View>
         </View>
-      )}
 
-      {/* Filter Chips */}
+        {/* Tap hint */}
+        <View style={styles.tapHint}>
+          <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
+          <Text style={[styles.tapHintText, { color: colors.muted }]}>
+            Tap to open in Maps
+          </Text>
+        </View>
+      </Pressable>
+    ),
+    [colors, handleOpenCampground]
+  );
+
+  const renderScaleCard = useCallback(
+    (scale: WeightScale) => (
+      <Pressable
+        onPress={() => handleOpenScale(scale)}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+          pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+        ]}
+      >
+        <View style={styles.cardHeader}>
+          <View
+            style={[styles.categoryBadge, { backgroundColor: "#FF6F0020" }]}
+          >
+            <MaterialIcons name="scale" size={12} color="#FF6F00" />
+            <Text
+              style={[
+                styles.categoryBadgeText,
+                { color: "#FF6F00", marginLeft: 4 },
+              ]}
+            >
+              {scale.type === "cat_scale"
+                ? "CAT Scale"
+                : scale.type === "public_weigh_station"
+                ? "Public Weigh Station"
+                : "Truck Stop Scale"}
+            </Text>
+          </View>
+          <View style={styles.directionsButton}>
+            <MaterialIcons name="directions" size={20} color={colors.primary} />
+          </View>
+        </View>
+
+        <Text
+          style={[styles.cardName, { color: colors.foreground }]}
+          numberOfLines={1}
+        >
+          {scale.name}
+        </Text>
+        <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
+          {scale.city}, {scale.state}
+        </Text>
+
+        <View style={styles.scaleDetails}>
+          <View style={styles.scaleDetailRow}>
+            <MaterialIcons
+              name="attach-money"
+              size={16}
+              color={colors.primary}
+            />
+            <Text
+              style={[
+                styles.scaleDetailText,
+                { color: colors.primary, fontWeight: "700" },
+              ]}
+            >
+              {scale.cost}
+            </Text>
+          </View>
+          <View style={styles.scaleDetailRow}>
+            <MaterialIcons
+              name="access-time"
+              size={16}
+              color={colors.muted}
+            />
+            <Text style={[styles.scaleDetailText, { color: colors.foreground }]}>
+              {scale.hours}
+            </Text>
+          </View>
+          {scale.hasCertified && (
+            <View style={styles.scaleDetailRow}>
+              <MaterialIcons
+                name="verified"
+                size={16}
+                color={colors.success}
+              />
+              <Text
+                style={[styles.scaleDetailText, { color: colors.success }]}
+              >
+                Certified Scale
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.tapHint}>
+          <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
+          <Text style={[styles.tapHintText, { color: colors.muted }]}>
+            Tap to open in Maps
+          </Text>
+        </View>
+      </Pressable>
+    ),
+    [colors, handleOpenScale]
+  );
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
       <View
         style={[
-          styles.filterContainer,
+          styles.header,
           {
-            top:
-              insets.top +
-              60 +
-              (showSearch && searchResults.length > 0 ? 200 : 0),
+            paddingTop: insets.top + 8,
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
           },
         ]}
       >
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>
+          RV Nomad
+        </Text>
+        <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
+          Find campgrounds, RV parks & more
+        </Text>
+
+        {/* Search Bar */}
+        <View
+          style={[
+            styles.searchContainer,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <MaterialIcons
+            name="search"
+            size={22}
+            color={colors.muted}
+            style={styles.searchIcon}
+          />
+          <TextInput
+            style={[styles.searchInput, { color: colors.foreground }]}
+            placeholder="Search campgrounds, parks, scales..."
+            placeholderTextColor={colors.muted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            returnKeyType="search"
+            onSubmitEditing={() => Keyboard.dismiss()}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable
+              onPress={() => setSearchQuery("")}
+              style={({ pressed }) => [
+                styles.clearButton,
+                pressed && { opacity: 0.6 },
+              ]}
+            >
+              <MaterialIcons name="close" size={20} color={colors.muted} />
+            </Pressable>
+          )}
+        </View>
+
+        {/* Filter Chips */}
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={FILTER_OPTIONS}
           keyExtractor={(item) => item.key}
           contentContainerStyle={styles.filterList}
+          style={styles.filterScroll}
           renderItem={({ item }) => {
             const isActive = selectedFilter === item.key;
             return (
@@ -569,193 +483,43 @@ export default function MapScreen() {
         />
       </View>
 
-      {/* Locate Me Button */}
-      <Pressable
-        onPress={handleLocateMe}
-        style={({ pressed }) => [
-          styles.locateButton,
-          {
-            bottom: selectedCampground || selectedScale ? 230 : 24,
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
-          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+      {/* Results count */}
+      <View style={[styles.resultsBar, { backgroundColor: colors.background }]}>
+        <Text style={[styles.resultsText, { color: colors.muted }]}>
+          {listData.length} {listData.length === 1 ? "result" : "results"}
+          {searchQuery ? ` for "${searchQuery}"` : ""}
+        </Text>
+      </View>
+
+      {/* Campground List */}
+      <FlatList
+        data={listData}
+        keyExtractor={(item) =>
+          item.type === "campground" ? item.data.id : `scale-${item.data.id}`
+        }
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: insets.bottom + 80 },
         ]}
-      >
-        <MaterialIcons
-          name="my-location"
-          size={24}
-          color={colors.primary}
-        />
-      </Pressable>
-
-      {/* Weight Scale Preview Card */}
-      {selectedScale && !selectedCampground && (
-        <View
-          style={[
-            styles.previewCard,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <View style={styles.previewHeader}>
-            <View style={styles.previewTitleRow}>
-              <View
-                style={[
-                  styles.previewCategoryBadge,
-                  { backgroundColor: "#FF6F0020" },
-                ]}
-              >
-                <MaterialIcons name="scale" size={12} color="#FF6F00" />
-                <Text style={[styles.previewCategoryText, { color: "#FF6F00", marginLeft: 4 }]}>
-                  {selectedScale.type === "cat_scale" ? "CAT Scale" : selectedScale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => setSelectedScale(null)}
-                style={({ pressed }) => [pressed && { opacity: 0.6 }]}
-              >
-                <MaterialIcons name="close" size={22} color={colors.muted} />
-              </Pressable>
-            </View>
-            <Text style={[styles.previewName, { color: colors.foreground }]} numberOfLines={1}>
-              {selectedScale.name}
+        showsVerticalScrollIndicator={false}
+        keyboardDismissMode="on-drag"
+        renderItem={({ item }) =>
+          item.type === "campground"
+            ? renderCampgroundCard(item.data)
+            : renderScaleCard(item.data)
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <MaterialIcons name="search-off" size={48} color={colors.muted} />
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+              No results found
             </Text>
-            <Text style={[{ fontSize: 13, color: colors.muted, marginTop: 2 }]}>
-              {selectedScale.city}, {selectedScale.state}
+            <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
+              Try a different search or filter
             </Text>
           </View>
-
-          <View style={styles.previewFooter}>
-            <View style={{ gap: 6 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <MaterialIcons name="attach-money" size={16} color={colors.primary} />
-                <Text style={[{ fontSize: 14, fontWeight: "700", color: colors.primary }]}>{selectedScale.cost}</Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <MaterialIcons name="access-time" size={16} color={colors.muted} />
-                <Text style={[{ fontSize: 13, color: colors.foreground }]}>{selectedScale.hours}</Text>
-              </View>
-              {selectedScale.hasCertified && (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <MaterialIcons name="verified" size={16} color={colors.success} />
-                  <Text style={[{ fontSize: 13, color: colors.success }]}>Certified Scale</Text>
-                </View>
-              )}
-            </View>
-            <View style={{ gap: 4 }}>
-              <Text style={[{ fontSize: 12, color: colors.muted }]} numberOfLines={2}>{selectedScale.address}</Text>
-              {selectedScale.notes && (
-                <Text style={[{ fontSize: 12, color: colors.warning, fontStyle: "italic" }]} numberOfLines={2}>{selectedScale.notes}</Text>
-              )}
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* Campground Preview Card */}
-      {selectedCampground && (
-        <View
-          style={[
-            styles.previewCard,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <View style={styles.previewHeader}>
-            <View style={styles.previewTitleRow}>
-              <View
-                style={[
-                  styles.previewCategoryBadge,
-                  {
-                    backgroundColor:
-                      CATEGORY_COLORS[selectedCampground.category] + "20",
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.previewCategoryText,
-                    {
-                      color: CATEGORY_COLORS[selectedCampground.category],
-                    },
-                  ]}
-                >
-                  {CATEGORY_LABELS[selectedCampground.category]}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => setSelectedCampground(null)}
-                style={({ pressed }) => [pressed && { opacity: 0.6 }]}
-              >
-                <MaterialIcons
-                  name="close"
-                  size={22}
-                  color={colors.muted}
-                />
-              </Pressable>
-            </View>
-            <Text
-              style={[styles.previewName, { color: colors.foreground }]}
-              numberOfLines={1}
-            >
-              {selectedCampground.name}
-            </Text>
-            <View style={styles.previewRatingRow}>
-              <View style={styles.starsRow}>
-                {renderStars(selectedCampground.rating)}
-              </View>
-              <Text style={[styles.previewRating, { color: colors.muted }]}>
-                {selectedCampground.rating.toFixed(1)} (
-                {selectedCampground.reviewCount})
-              </Text>
-            </View>
-          </View>
-
-          <Text
-            style={[styles.previewDescription, { color: colors.muted }]}
-            numberOfLines={2}
-          >
-            {selectedCampground.description}
-          </Text>
-
-          <View style={styles.previewFooter}>
-            <Text style={[styles.previewPrice, { color: colors.primary }]}>
-              {selectedCampground.pricePerNight
-                ? `$${selectedCampground.pricePerNight}/night`
-                : "Free"}
-            </Text>
-            <View style={styles.previewAmenities}>
-              {selectedCampground.amenities.slice(0, 3).map((a, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.amenityChip,
-                    { backgroundColor: colors.background },
-                  ]}
-                >
-                  <Text
-                    style={[styles.amenityText, { color: colors.muted }]}
-                  >
-                    {a}
-                  </Text>
-                </View>
-              ))}
-              {selectedCampground.amenities.length > 3 && (
-                <Text
-                  style={[styles.moreAmenities, { color: colors.muted }]}
-                >
-                  +{selectedCampground.amenities.length - 3}
-                </Text>
-              )}
-            </View>
-          </View>
-        </View>
-      )}
+        }
+      />
     </View>
   );
 }
@@ -764,42 +528,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
-    ...StyleSheet.absoluteFillObject,
+  // Header
+  header: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  // Web fallback
-  webFallback: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 32,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: -0.5,
   },
-  webTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  webSubtitle: {
-    fontSize: 15,
-    textAlign: "center",
-    lineHeight: 22,
+  headerSubtitle: {
+    fontSize: 14,
+    marginTop: 2,
+    marginBottom: 12,
   },
   // Search
   searchContainer: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    height: 48,
+    height: 44,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    borderWidth: 1,
+    marginBottom: 12,
   },
   searchIcon: {
     marginRight: 8,
@@ -807,63 +560,21 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    height: 48,
+    height: 44,
   },
   clearButton: {
     padding: 4,
   },
-  // Search Dropdown
-  searchDropdown: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    maxHeight: 200,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  searchResultItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  categoryDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 12,
-  },
-  searchResultText: {
-    flex: 1,
-  },
-  searchResultName: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  searchResultCategory: {
-    fontSize: 12,
-    marginTop: 2,
-  },
   // Filters
-  filterContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
+  filterScroll: {
+    flexGrow: 0,
   },
   filterList: {
-    paddingHorizontal: 16,
     gap: 8,
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -871,88 +582,86 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
   },
-  // Locate Me
-  locateButton: {
-    position: "absolute",
-    right: 16,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
+  // Results bar
+  resultsBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  // Preview Card
-  previewCard: {
-    position: "absolute",
-    bottom: 16,
-    left: 16,
-    right: 16,
+  resultsText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  // List
+  listContent: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  // Card
+  card: {
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 8,
   },
-  previewHeader: {
-    marginBottom: 8,
-  },
-  previewTitleRow: {
+  cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  previewCategoryBadge: {
+  categoryBadge: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  previewCategoryText: {
+  categoryBadgeText: {
     fontSize: 12,
     fontWeight: "700",
   },
-  previewName: {
+  directionsButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardName: {
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 4,
   },
-  previewRatingRow: {
+  cardSubtitle: {
+    fontSize: 13,
+    marginBottom: 8,
+  },
+  ratingRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    marginBottom: 6,
   },
   starsRow: {
     flexDirection: "row",
   },
-  previewRating: {
+  ratingText: {
     fontSize: 13,
   },
-  previewDescription: {
+  cardDescription: {
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 12,
   },
-  previewFooter: {
+  cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  previewPrice: {
+  priceText: {
     fontSize: 18,
     fontWeight: "700",
   },
-  previewAmenities: {
+  amenitiesRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
@@ -967,8 +676,48 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
   },
-  moreAmenities: {
+  moreText: {
     fontSize: 12,
     fontWeight: "600",
+  },
+  // Scale details
+  scaleDetails: {
+    gap: 6,
+    marginTop: 4,
+  },
+  scaleDetailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  scaleDetailText: {
+    fontSize: 14,
+  },
+  // Tap hint
+  tapHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(128,128,128,0.2)",
+  },
+  tapHintText: {
+    fontSize: 12,
+  },
+  // Empty state
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 60,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  emptySubtitle: {
+    fontSize: 14,
   },
 });
