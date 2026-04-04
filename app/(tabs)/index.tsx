@@ -26,15 +26,21 @@ import {
   type Campground,
   type CampgroundCategory,
 } from "@/lib/campground-data";
+import { WEIGHT_SCALES } from "@/lib/weight-scale-data";
+import { type WeightScale } from "@/lib/types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-const FILTER_OPTIONS: { key: CampgroundCategory | "all"; label: string }[] = [
+type FilterKey = CampgroundCategory | "all" | "weight_scale" | "dump_station";
+
+const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "rv_park", label: "RV Parks" },
   { key: "national_park", label: "National Parks" },
   { key: "state_park", label: "State Parks" },
   { key: "free_camping", label: "Free Camping" },
+  { key: "dump_station", label: "Dump Stations" },
+  { key: "weight_scale", label: "Weight Scales" },
   { key: "rest_area", label: "Rest Areas" },
 ];
 
@@ -50,11 +56,10 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<any>(null);
 
-  const [selectedFilter, setSelectedFilter] = useState<
-    CampgroundCategory | "all"
-  >("all");
+  const [selectedFilter, setSelectedFilter] = useState<FilterKey>("all");
   const [selectedCampground, setSelectedCampground] =
     useState<Campground | null>(null);
+  const [selectedScale, setSelectedScale] = useState<WeightScale | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Campground[]>([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -83,10 +88,13 @@ export default function MapScreen() {
     })();
   }, []);
 
+  const showWeightScales = selectedFilter === "all" || selectedFilter === "weight_scale";
   const filteredCampgrounds =
     selectedFilter === "all"
       ? CAMPGROUNDS
-      : CAMPGROUNDS.filter((c) => c.category === selectedFilter);
+      : selectedFilter === "weight_scale" || selectedFilter === "dump_station"
+        ? []
+        : CAMPGROUNDS.filter((c) => c.category === selectedFilter);
 
   const handleSearch = useCallback((text: string) => {
     setSearchQuery(text);
@@ -149,7 +157,7 @@ export default function MapScreen() {
   }, [userLocation]);
 
   const handleFilterPress = useCallback(
-    (key: CampgroundCategory | "all") => {
+    (key: FilterKey) => {
       if (Platform.OS !== "web") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
@@ -159,8 +167,17 @@ export default function MapScreen() {
     []
   );
 
+  const handleScalePress = useCallback((scale: WeightScale) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setSelectedScale(scale);
+    setSelectedCampground(null);
+  }, []);
+
   const handleMapPress = useCallback(() => {
     setSelectedCampground(null);
+    setSelectedScale(null);
     setShowSearch(false);
     Keyboard.dismiss();
   }, []);
@@ -203,6 +220,19 @@ export default function MapScreen() {
             description={CATEGORY_LABELS[campground.category]}
             pinColor={CATEGORY_COLORS[campground.category]}
             onPress={() => handleMarkerPress(campground)}
+          />
+        ))}
+        {showWeightScales && WEIGHT_SCALES.map((scale) => (
+          <MarkerWrapper
+            key={scale.id}
+            coordinate={{
+              latitude: scale.latitude,
+              longitude: scale.longitude,
+            }}
+            title={scale.name}
+            description={`${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`}
+            pinColor="#FF6F00"
+            onPress={() => handleScalePress(scale)}
           />
         ))}
       </MapViewWrapper>
@@ -370,6 +400,72 @@ export default function MapScreen() {
             color={colors.primary}
           />
         </Pressable>
+      )}
+
+      {/* Weight Scale Preview Card */}
+      {selectedScale && !selectedCampground && (
+        <View
+          style={[
+            styles.previewCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          <View style={styles.previewHeader}>
+            <View style={styles.previewTitleRow}>
+              <View
+                style={[
+                  styles.previewCategoryBadge,
+                  { backgroundColor: "#FF6F0020" },
+                ]}
+              >
+                <MaterialIcons name="scale" size={12} color="#FF6F00" />
+                <Text style={[styles.previewCategoryText, { color: "#FF6F00" }]}>
+                  {selectedScale.type === "cat_scale" ? "CAT Scale" : selectedScale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => setSelectedScale(null)}
+                style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+              >
+                <MaterialIcons name="close" size={22} color={colors.muted} />
+              </Pressable>
+            </View>
+            <Text style={[styles.previewName, { color: colors.foreground }]} numberOfLines={1}>
+              {selectedScale.name}
+            </Text>
+            <Text style={[{ fontSize: 13, color: colors.muted, marginTop: 2 }]}>
+              {selectedScale.city}, {selectedScale.state}
+            </Text>
+          </View>
+
+          <View style={styles.previewFooter}>
+            <View style={{ gap: 6 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <MaterialIcons name="attach-money" size={16} color={colors.primary} />
+                <Text style={[{ fontSize: 14, fontWeight: "700", color: colors.primary }]}>{selectedScale.cost}</Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <MaterialIcons name="access-time" size={16} color={colors.muted} />
+                <Text style={[{ fontSize: 13, color: colors.foreground }]}>{selectedScale.hours}</Text>
+              </View>
+              {selectedScale.hasCertified && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <MaterialIcons name="verified" size={16} color={colors.success} />
+                  <Text style={[{ fontSize: 13, color: colors.success }]}>Certified Scale</Text>
+                </View>
+              )}
+            </View>
+            <View style={{ gap: 4 }}>
+              <Text style={[{ fontSize: 12, color: colors.muted }]} numberOfLines={2}>{selectedScale.address}</Text>
+              {selectedScale.notes && (
+                <Text style={[{ fontSize: 12, color: colors.warning, fontStyle: "italic" }]} numberOfLines={2}>{selectedScale.notes}</Text>
+              )}
+            </View>
+          </View>
+        </View>
       )}
 
       {/* Campground Preview Card */}

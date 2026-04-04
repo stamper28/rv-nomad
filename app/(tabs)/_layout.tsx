@@ -32,7 +32,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Map",
+          title: "Home",
           tabBarIcon: ({ color }) => <IconSymbol size={26} name="map.fill" color={color} />,
         }}
       />
@@ -40,7 +40,7 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: "Explore",
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="safari.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="book.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -51,17 +51,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="checklists"
+        name="saved"
         options={{
-          title: "Checklists",
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="checklist" color={color} />,
+          title: "Saved",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="profile"
         options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="gearshape.fill" color={color} />,
+          title: "Profile",
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.fill" color={color} />,
         }}
       />
     </Tabs>

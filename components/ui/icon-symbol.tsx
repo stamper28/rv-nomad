@@ -12,33 +12,87 @@ type IconSymbolName = keyof typeof MAPPING;
  * SF Symbols to Material Icons mappings for tab bar and app icons.
  */
 const MAPPING = {
-  // Tab icons
+  // Tab icons - Home(Map), Explore, Trips, Saved, Profile
   "map.fill": "map",
-  "safari.fill": "explore",
+  "book.fill": "menu-book",
   "point.topleft.down.to.point.bottomright.curvepath.fill": "route",
-  "checklist": "checklist",
-  "gearshape.fill": "settings",
-  // General icons
+  "heart.fill": "favorite",
+  "person.fill": "person",
+  // General navigation
   "house.fill": "home",
-  "paperplane.fill": "send",
-  "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
-  "magnifyingglass": "search",
-  "location.fill": "my-location",
-  "line.3.horizontal.decrease.circle": "filter-list",
-  "plus": "add",
+  "chevron.left": "chevron-left",
   "xmark": "close",
+  "plus": "add",
+  "minus": "remove",
+  // Search & filter
+  "magnifyingglass": "search",
+  "line.3.horizontal.decrease.circle": "filter-list",
+  "slider.horizontal.3": "tune",
+  // Location & map
+  "location.fill": "my-location",
+  "mappin": "place",
+  "mappin.and.ellipse": "pin-drop",
+  // Campsite categories
+  "tent.fill": "holiday-village",
+  "tree.fill": "park",
+  "leaf.fill": "eco",
+  "mountain.2.fill": "terrain",
+  "building.2.fill": "apartment",
+  "cart.fill": "shopping-cart",
+  "shield.fill": "shield",
+  "wineglass.fill": "wine-bar",
+  // Actions
   "star.fill": "star",
   "star": "star-border",
-  "heart.fill": "favorite",
   "heart": "favorite-border",
   "trash": "delete",
   "pencil": "edit",
   "arrow.clockwise": "refresh",
+  "square.and.arrow.up": "share",
+  "bookmark.fill": "bookmark",
+  "bookmark": "bookmark-border",
+  // Utility
+  "fuelpump.fill": "local-gas-station",
+  "wrench.fill": "build",
+  "checklist": "checklist",
+  "cube.box.fill": "inventory-2",
+  "list.bullet": "list",
+  "doc.text": "description",
+  // Info & settings
   "info.circle": "info",
-  "person.fill": "person",
+  "gearshape.fill": "settings",
+  "questionmark.circle": "help",
+  "envelope.fill": "email",
+  "phone.fill": "phone",
+  "globe": "language",
+  // Weather
+  "cloud.sun.fill": "wb-cloudy",
+  "thermometer.medium": "thermostat",
+  "wind": "air",
+  // Community
+  "bubble.left.fill": "chat",
+  "person.2.fill": "group",
+  "camera.fill": "photo-camera",
+  "photo.fill": "photo",
+  // Premium
+  "crown.fill": "workspace-premium",
+  "lock.fill": "lock",
+  "arrow.down.circle.fill": "download",
+  // Misc
   "moon.fill": "dark-mode",
   "sun.max.fill": "light-mode",
+  "bell.fill": "notifications",
+  "exclamationmark.triangle.fill": "warning",
+  "checkmark.circle.fill": "check-circle",
+  "dollarsign.circle.fill": "attach-money",
+  "creditcard.fill": "credit-card",
+  "speedometer": "speed",
+  "ruler.fill": "straighten",
+  "scalemass.fill": "monitor-weight",
+  "tag.fill": "local-offer",
+  "person.3.fill": "groups",
+  "bag.fill": "shopping-bag",
 } as IconMapping;
 
 /**

@@ -1,454 +1,354 @@
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
+  ScrollView,
   FlatList,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
   StyleSheet,
-  Platform,
 } from "react-native";
-import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import {
-  CAMPGROUNDS,
-  CATEGORY_COLORS,
-  CATEGORY_LABELS,
-  type Campground,
-  type CampgroundCategory,
-} from "@/lib/campground-data";
+import { ALL_SITES, STATE_LIST } from "@/lib/all-sites-data";
+import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
 
-const CATEGORIES: { key: CampgroundCategory | "all"; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "rv_park", label: "RV Parks" },
-  { key: "national_park", label: "National Parks" },
-  { key: "state_park", label: "State Parks" },
-  { key: "free_camping", label: "Free" },
-  { key: "rest_area", label: "Rest Areas" },
+type ViewMode = "categories" | "states";
+
+const EXPLORE_SECTIONS: { category: SiteCategory; title: string; subtitle: string; includeExtra?: SiteCategory[] }[] = [
+  { category: "state_park", title: "State Parks", subtitle: "Scenic camping in state-managed parks" },
+  { category: "national_park", title: "National Parks", subtitle: "America's crown jewels" },
+  { category: "rv_park", title: "RV Parks & Resorts", subtitle: "Full hookups and resort amenities" },
+  { category: "boondocking", title: "Free Camping", subtitle: "Boondocking, BLM, Walmart & more", includeExtra: ["blm", "national_forest", "walmart", "cracker_barrel", "rest_area"] },
+  { category: "military", title: "Military FamCamps", subtitle: "Base campgrounds for military families" },
+  { category: "harvest_host", title: "Harvest Hosts", subtitle: "Wineries, farms & unique stays" },
+  { category: "dump_station", title: "Dump Stations", subtitle: "Find dump stations near you" },
 ];
 
-function StarRating({ rating }: { rating: number }) {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    stars.push(
-      <MaterialIcons
-        key={i}
-        name={i <= Math.round(rating) ? "star" : "star-border"}
-        size={14}
-        color="#FB8C00"
-      />
-    );
-  }
-  return <View style={styles.starsRow}>{stars}</View>;
-}
+const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
+  rv_park: "house.fill",
+  national_park: "mountain.2.fill",
+  state_park: "tree.fill",
+  boondocking: "tent.fill",
+  blm: "leaf.fill",
+  national_forest: "tree.fill",
+  military: "shield.fill",
+  harvest_host: "wineglass.fill",
+  walmart: "cart.fill",
+  cracker_barrel: "building.2.fill",
+  dump_station: "arrow.clockwise",
+  rest_area: "mappin",
+  weight_scale: "scalemass.fill",
+};
 
 export default function ExploreScreen() {
   const colors = useColors();
+  const router = useRouter();
+  const [viewMode, setViewMode] = useState<ViewMode>("categories");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    CampgroundCategory | "all"
-  >("all");
 
-  const filteredCampgrounds = useMemo(() => {
-    let results = CAMPGROUNDS;
-    if (selectedCategory !== "all") {
-      results = results.filter((c) => c.category === selectedCategory);
+  const filteredStates = useMemo(() => {
+    if (!searchQuery) return STATE_LIST;
+    const q = searchQuery.toLowerCase();
+    return STATE_LIST.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  function getSitesForSection(section: typeof EXPLORE_SECTIONS[number]): CampSite[] {
+    if (section.includeExtra) {
+      const cats = [section.category, ...section.includeExtra];
+      return ALL_SITES.filter((s) => cats.includes(s.category)).slice(0, 20);
     }
-    if (searchQuery.length > 1) {
-      const lower = searchQuery.toLowerCase();
-      results = results.filter(
-        (c) =>
-          c.name.toLowerCase().includes(lower) ||
-          c.description.toLowerCase().includes(lower)
-      );
-    }
-    return results;
-  }, [selectedCategory, searchQuery]);
+    return ALL_SITES.filter((s) => s.category === section.category).slice(0, 20);
+  }
 
-  const handleCategoryPress = useCallback(
-    (key: CampgroundCategory | "all") => {
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      setSelectedCategory(key);
-    },
-    []
-  );
-
-  const renderAmenityIcons = (amenities: string[]) => {
-    const iconMap: Record<string, string> = {
-      "Full Hookups": "electrical-services",
-      WiFi: "wifi",
-      Pool: "pool",
-      Laundry: "local-laundry-service",
-      Showers: "shower",
-      Restrooms: "wc",
-      Water: "water-drop",
-      "Dump Station": "delete",
-      "Campfire Ring": "local-fire-department",
-      "Hiking Trails": "hiking",
-      "Beach Access": "beach-access",
-      Store: "store",
-      Restaurant: "restaurant",
-      Playground: "child-care",
-      Activities: "sports-tennis",
-      "Visitor Center": "info",
-      "Bear Lockers": "lock",
-      "Picnic Tables": "deck",
-      "Pet Area": "pets",
-      Vending: "local-drink",
-    };
-
-    return amenities.slice(0, 5).map((a, i) => {
-      const iconName = iconMap[a] || "check-circle";
-      return (
-        <MaterialIcons
-          key={i}
-          name={iconName as any}
-          size={16}
-          color={colors.muted}
-          style={styles.amenityIcon}
-        />
-      );
-    });
-  };
-
-  const renderCampground = useCallback(
-    ({ item }: { item: Campground }) => (
-      <Pressable
-        style={({ pressed }) => [
-          styles.card,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
-          pressed && { opacity: 0.7 },
-        ]}
+  function renderSiteCard(site: CampSite) {
+    const catColor = CATEGORY_COLORS[site.category];
+    return (
+      <TouchableOpacity
+        key={site.id}
+        style={[styles.siteCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        onPress={() =>
+          router.push({ pathname: "/site-detail", params: { siteId: site.id } })
+        }
+        activeOpacity={0.7}
       >
-        {/* Color strip */}
-        <View
-          style={[
-            styles.cardStrip,
-            { backgroundColor: CATEGORY_COLORS[item.category] },
-          ]}
-        />
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardTitleArea}>
-              <Text
-                style={[styles.cardName, { color: colors.foreground }]}
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
-              <View
-                style={[
-                  styles.categoryBadge,
-                  {
-                    backgroundColor:
-                      CATEGORY_COLORS[item.category] + "18",
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.categoryBadgeText,
-                    { color: CATEGORY_COLORS[item.category] },
-                  ]}
-                >
-                  {CATEGORY_LABELS[item.category]}
-                </Text>
-              </View>
-            </View>
-            <Text style={[styles.cardPrice, { color: colors.primary }]}>
-              {item.pricePerNight ? `$${item.pricePerNight}` : "Free"}
-              {item.pricePerNight ? (
-                <Text style={[styles.cardPriceUnit, { color: colors.muted }]}>
-                  /night
-                </Text>
-              ) : null}
+        <View style={[styles.siteCardTop, { backgroundColor: catColor + "15" }]}>
+          <IconSymbol
+            name={CATEGORY_ICON_MAP[site.category] as any}
+            size={36}
+            color={catColor}
+          />
+        </View>
+        <View style={styles.siteCardBody}>
+          <View style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}>
+            <Text style={[styles.categoryBadgeText, { color: catColor }]}>
+              {CATEGORY_LABELS[site.category].toUpperCase()}
             </Text>
           </View>
-
-          <View style={styles.ratingRow}>
-            <StarRating rating={item.rating} />
-            <Text style={[styles.ratingText, { color: colors.muted }]}>
-              {item.rating.toFixed(1)} ({item.reviewCount} reviews)
-            </Text>
-          </View>
-
-          <Text
-            style={[styles.cardDescription, { color: colors.muted }]}
-            numberOfLines={2}
-          >
-            {item.description}
+          <Text style={[styles.siteName, { color: colors.foreground }]} numberOfLines={1}>
+            {site.name}
           </Text>
-
-          <View style={styles.amenitiesRow}>
-            {renderAmenityIcons(item.amenities)}
-            {item.amenities.length > 5 && (
-              <Text style={[styles.moreText, { color: colors.muted }]}>
-                +{item.amenities.length - 5} more
-              </Text>
-            )}
+          <Text style={[styles.siteLocation, { color: colors.muted }]} numberOfLines={1}>
+            {site.city}, {site.state}
+          </Text>
+          <View style={styles.siteCardFooter}>
+            <View style={styles.ratingRow}>
+              <IconSymbol name="star.fill" size={12} color={colors.warning} />
+              <Text style={[styles.ratingText, { color: colors.foreground }]}>{site.rating}</Text>
+            </View>
+            <Text
+              style={[
+                styles.priceText,
+                { color: site.pricePerNight === null ? colors.success : colors.primary },
+              ]}
+            >
+              {site.pricePerNight === null ? "Free" : `$${site.pricePerNight}/night`}
+            </Text>
           </View>
         </View>
-      </Pressable>
-    ),
-    [colors]
-  );
+      </TouchableOpacity>
+    );
+  }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer className="pt-2">
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          Explore
-        </Text>
-        <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Discover campgrounds across the US
-        </Text>
+        <Text style={[styles.title, { color: colors.foreground }]}>Explore</Text>
       </View>
 
-      {/* Search */}
-      <View
-        style={[
-          styles.searchBar,
-          { backgroundColor: colors.background, borderColor: colors.border },
-        ]}
-      >
-        <MaterialIcons name="search" size={20} color={colors.muted} />
+      {/* Search Bar */}
+      <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <IconSymbol name="magnifyingglass" size={18} color={colors.muted} />
         <TextInput
           style={[styles.searchInput, { color: colors.foreground }]}
-          placeholder="Search by name or description..."
+          placeholder={viewMode === "states" ? "Search states..." : "Search campgrounds..."}
           placeholderTextColor={colors.muted}
           value={searchQuery}
           onChangeText={setSearchQuery}
           returnKeyType="search"
         />
-        {searchQuery.length > 0 && (
-          <Pressable
-            onPress={() => setSearchQuery("")}
-            style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+        {searchQuery ? (
+          <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <IconSymbol name="xmark" size={16} color={colors.muted} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
+      {/* View Mode Toggle */}
+      <View style={[styles.toggleRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <TouchableOpacity
+          style={[styles.toggleBtn, viewMode === "categories" && { backgroundColor: colors.primary }]}
+          onPress={() => { setViewMode("categories"); setSearchQuery(""); }}
+        >
+          <Text style={[styles.toggleText, { color: viewMode === "categories" ? "#fff" : colors.muted }]}>
+            Categories
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleBtn, viewMode === "states" && { backgroundColor: colors.primary }]}
+          onPress={() => { setViewMode("states"); setSearchQuery(""); }}
+        >
+          <Text style={[styles.toggleText, { color: viewMode === "states" ? "#fff" : colors.muted }]}>
+            By State
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {viewMode === "categories" ? (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+          {EXPLORE_SECTIONS.map((section) => {
+            const sites = getSitesForSection(section);
+            if (sites.length === 0) return null;
+            return (
+              <View key={section.category} style={styles.sectionContainer}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{section.title}</Text>
+                  <Text style={[styles.sectionSubtitle, { color: colors.muted }]}>{section.subtitle}</Text>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 16 }}
+                >
+                  {sites.map(renderSiteCard)}
+                </ScrollView>
+              </View>
+            );
+          })}
+
+          {/* RV Tools Card */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/tools")}
+            activeOpacity={0.7}
           >
-            <MaterialIcons name="close" size={18} color={colors.muted} />
-          </Pressable>
-        )}
-      </View>
+            <View style={[styles.promoIcon, { backgroundColor: colors.success + "20" }]}>
+              <IconSymbol name="wrench.fill" size={24} color={colors.success} />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Tools</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Fuel log, maintenance, packing & checklists</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
 
-      {/* Category Chips */}
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={CATEGORIES}
-        keyExtractor={(item) => item.key}
-        contentContainerStyle={styles.chipList}
-        style={styles.chipContainer}
-        renderItem={({ item }) => {
-          const isActive = selectedCategory === item.key;
-          return (
-            <Pressable
-              onPress={() => handleCategoryPress(item.key)}
-              style={({ pressed }) => [
-                styles.chip,
-                {
-                  backgroundColor: isActive ? colors.primary : colors.surface,
-                  borderColor: isActive ? colors.primary : colors.border,
-                },
-                pressed && { opacity: 0.8 },
-              ]}
+          {/* RV Buying Guide Promo */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/rv-guide")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: colors.primary + "20" }]}>
+              <IconSymbol name="crown.fill" size={24} color={colors.primary} />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Buying Guide</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Best & worst RVs to buy — expert ratings</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Weather */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/weather")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#1565C020" }]}>
+              <IconSymbol name="cloud.sun.fill" size={24} color="#1565C0" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Weather</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>7-day forecast & RV weather alerts</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Discount Programs */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/discounts")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#E6510020" }]}>
+              <IconSymbol name="tag.fill" size={24} color="#E65100" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Discount Programs</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Passport America, Good Sam, Harvest Hosts & more</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Community */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/community")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#6A1B9A20" }]}>
+              <IconSymbol name="person.3.fill" size={24} color="#6A1B9A" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Community</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Tips, questions, meetups & reviews from RVers</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* RV Gear Guide */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/rv-gear")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#00838F20" }]}>
+              <IconSymbol name="bag.fill" size={24} color="#00838F" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Gear Guide</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Curated gear picks with affiliate links</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={filteredStates}
+          keyExtractor={(item) => item.code}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.stateRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() =>
+                router.push({ pathname: "/state-detail", params: { stateCode: item.code, stateName: item.name } })
+              }
+              activeOpacity={0.7}
             >
-              <Text
-                style={[
-                  styles.chipText,
-                  { color: isActive ? "#FFFFFF" : colors.foreground },
-                ]}
-              >
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        }}
-      />
-
-      {/* Results Count */}
-      <View style={styles.resultsHeader}>
-        <Text style={[styles.resultsCount, { color: colors.muted }]}>
-          {filteredCampgrounds.length} campground
-          {filteredCampgrounds.length !== 1 ? "s" : ""} found
-        </Text>
-      </View>
-
-      {/* Campground List */}
-      <FlatList
-        data={filteredCampgrounds}
-        keyExtractor={(item) => item.id}
-        renderItem={renderCampground}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialIcons name="search-off" size={48} color={colors.muted} />
-            <Text style={[styles.emptyText, { color: colors.muted }]}>
-              No campgrounds found
-            </Text>
-          </View>
-        }
-      />
+              <View style={[styles.stateCodeBox, { backgroundColor: colors.primary + "15" }]}>
+                <Text style={[styles.stateCode, { color: colors.primary }]}>{item.code}</Text>
+              </View>
+              <View style={styles.stateInfo}>
+                <Text style={[styles.stateName, { color: colors.foreground }]}>{item.name}</Text>
+                <Text style={[styles.stateSiteCount, { color: colors.muted }]}>{item.siteCount} camping sites</Text>
+              </View>
+              <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-  },
-  subtitle: {
-    fontSize: 15,
-    marginTop: 2,
-  },
-  // Search
+  header: { paddingHorizontal: 16, paddingBottom: 8 },
+  title: { fontSize: 28, fontWeight: "800" },
   searchBar: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    gap: 8,
+    marginHorizontal: 16, marginBottom: 10, height: 44, borderRadius: 12,
+    borderWidth: 1, flexDirection: "row", alignItems: "center", paddingHorizontal: 12, gap: 8,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    height: 44,
+  searchInput: { flex: 1, fontSize: 15, height: 44 },
+  toggleRow: {
+    flexDirection: "row", marginHorizontal: 16, marginBottom: 12, borderRadius: 12,
+    borderWidth: 1, overflow: "hidden",
   },
-  // Chips
-  chipContainer: {
-    marginTop: 12,
-    maxHeight: 40,
+  toggleBtn: { flex: 1, paddingVertical: 10, alignItems: "center" },
+  toggleText: { fontSize: 14, fontWeight: "600" },
+  sectionContainer: { marginBottom: 20 },
+  sectionHeader: { paddingHorizontal: 16, marginBottom: 10 },
+  sectionTitle: { fontSize: 18, fontWeight: "700" },
+  sectionSubtitle: { fontSize: 13, marginTop: 2 },
+  siteCard: { width: 170, marginRight: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden" },
+  siteCardTop: { height: 90, alignItems: "center", justifyContent: "center" },
+  siteCardBody: { padding: 10 },
+  categoryBadge: { alignSelf: "flex-start", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginBottom: 4 },
+  categoryBadgeText: { fontSize: 9, fontWeight: "700" },
+  siteName: { fontSize: 13, fontWeight: "600", marginBottom: 2 },
+  siteLocation: { fontSize: 11, marginBottom: 6 },
+  siteCardFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  ratingRow: { flexDirection: "row", alignItems: "center", gap: 3 },
+  ratingText: { fontSize: 12, fontWeight: "600" },
+  priceText: { fontSize: 12, fontWeight: "700" },
+  promoCard: {
+    marginHorizontal: 16, marginBottom: 20, borderRadius: 16, borderWidth: 1,
+    padding: 16, flexDirection: "row", alignItems: "center",
   },
-  chipList: {
-    paddingHorizontal: 16,
-    gap: 8,
+  promoIcon: { width: 48, height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  promoText: { flex: 1 },
+  promoTitle: { fontSize: 16, fontWeight: "700" },
+  promoSubtitle: { fontSize: 13, marginTop: 2 },
+  stateRow: {
+    marginHorizontal: 16, marginBottom: 8, borderRadius: 12, borderWidth: 1,
+    padding: 14, flexDirection: "row", alignItems: "center",
   },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  // Results
-  resultsHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  resultsCount: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  // List
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-    gap: 12,
-  },
-  // Card
-  card: {
-    borderRadius: 14,
-    borderWidth: 1,
-    overflow: "hidden",
-    flexDirection: "row",
-  },
-  cardStrip: {
-    width: 5,
-  },
-  cardContent: {
-    flex: 1,
-    padding: 14,
-    gap: 6,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  cardTitleArea: {
-    flex: 1,
-    marginRight: 8,
-  },
-  cardName: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  categoryBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  categoryBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  cardPrice: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  cardPriceUnit: {
-    fontSize: 12,
-    fontWeight: "400",
-  },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  starsRow: {
-    flexDirection: "row",
-  },
-  ratingText: {
-    fontSize: 12,
-  },
-  cardDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  amenitiesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 4,
-  },
-  amenityIcon: {
-    marginRight: 2,
-  },
-  moreText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  // Empty
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
+  stateCodeBox: { width: 40, height: 40, borderRadius: 8, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  stateCode: { fontSize: 14, fontWeight: "700" },
+  stateInfo: { flex: 1 },
+  stateName: { fontSize: 16, fontWeight: "600" },
+  stateSiteCount: { fontSize: 13, marginTop: 2 },
 });
