@@ -87,6 +87,13 @@ export interface CampSite {
   overnightPolicy?: string;
   // Road condition specific
   roadGrade?: string;
+  // RV size limits
+  maxRVLength?: string;    // e.g. "45 ft", "No limit"
+  maxTrailerLength?: string; // e.g. "35 ft"
+  maxRVHeight?: string;    // e.g. "13 ft 6 in"
+  maxRVWidth?: string;     // e.g. "8 ft 6 in"
+  pullThrough?: boolean;   // has pull-through sites
+  bigRigFriendly?: boolean; // suitable for 40ft+ rigs
 }
 
 export interface StateLaws {

@@ -164,3 +164,4 @@
 - [x] Show all amenities clearly on site detail screen (already has amenities grid with checkmark icons)
 - [x] Ensure booking flow works from site detail screen (Book Now button navigates to booking with $2/night fee)
 - [x] Fix: selecting a state shows no results (fixed: data uses state abbreviations, removed getStateAbbr conversion, added all new category filters)
+- [x] Add RV length and trailer limits to campgrounds, RV parks, state parks, national parks, and boondocking sites (540 sites updated with maxRVLength, maxTrailerLength, maxRVHeight, pullThrough, bigRigFriendly)

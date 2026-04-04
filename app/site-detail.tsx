@@ -152,6 +152,60 @@ export default function SiteDetailScreen() {
             </View>
           )}
 
+          {/* RV Size Limits */}
+          {(site.maxRVLength || site.maxTrailerLength || site.maxRVHeight) && (
+            <View style={[styles.section, { borderColor: colors.border }]}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>RV Size Limits</Text>
+              <View style={styles.limitsGrid}>
+                {site.maxRVLength && (
+                  <View style={[styles.limitCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.limitIcon]}>📏</Text>
+                    <Text style={[styles.limitLabel, { color: colors.muted }]}>Max RV Length</Text>
+                    <Text style={[styles.limitValue, { color: colors.foreground }]}>{site.maxRVLength}</Text>
+                  </View>
+                )}
+                {site.maxTrailerLength && (
+                  <View style={[styles.limitCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.limitIcon]}>🚛</Text>
+                    <Text style={[styles.limitLabel, { color: colors.muted }]}>Max Trailer</Text>
+                    <Text style={[styles.limitValue, { color: colors.foreground }]}>{site.maxTrailerLength}</Text>
+                  </View>
+                )}
+                {site.maxRVHeight && (
+                  <View style={[styles.limitCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.limitIcon]}>📐</Text>
+                    <Text style={[styles.limitLabel, { color: colors.muted }]}>Max Height</Text>
+                    <Text style={[styles.limitValue, { color: colors.foreground }]}>{site.maxRVHeight}</Text>
+                  </View>
+                )}
+                {site.maxRVWidth && (
+                  <View style={[styles.limitCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.limitIcon]}>↔️</Text>
+                    <Text style={[styles.limitLabel, { color: colors.muted }]}>Max Width</Text>
+                    <Text style={[styles.limitValue, { color: colors.foreground }]}>{site.maxRVWidth}</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.rigTags}>
+                {site.pullThrough && (
+                  <View style={[styles.rigTag, { backgroundColor: colors.success + "15" }]}>
+                    <Text style={[styles.rigTagText, { color: colors.success }]}>Pull-Through Sites</Text>
+                  </View>
+                )}
+                {site.bigRigFriendly && (
+                  <View style={[styles.rigTag, { backgroundColor: colors.primary + "15" }]}>
+                    <Text style={[styles.rigTagText, { color: colors.primary }]}>Big Rig Friendly</Text>
+                  </View>
+                )}
+                {site.bigRigFriendly === false && (
+                  <View style={[styles.rigTag, { backgroundColor: colors.warning + "15" }]}>
+                    <Text style={[styles.rigTagText, { color: colors.warning }]}>Not Big Rig Friendly</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
           {/* Discounts */}
           {site.discounts && site.discounts.length > 0 && (
             <View style={[styles.section, { borderColor: colors.border }]}>
@@ -301,4 +355,15 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 8, paddingVertical: 16, borderRadius: 12,
   },
+  limitsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  limitCard: {
+    width: "47%" as any, alignItems: "center", paddingVertical: 12,
+    borderRadius: 10, borderWidth: 1, gap: 4,
+  },
+  limitIcon: { fontSize: 20 },
+  limitLabel: { fontSize: 11, fontWeight: "600" },
+  limitValue: { fontSize: 16, fontWeight: "800" },
+  rigTags: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  rigTag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  rigTagText: { fontSize: 13, fontWeight: "600" },
 });
