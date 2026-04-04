@@ -27,6 +27,20 @@ const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
   { key: "harvest_host", label: "Harvest Host" },
   { key: "walmart", label: "Walmart" },
   { key: "dump_station", label: "Dump Stations" },
+  { key: "fuel_station", label: "Fuel" },
+  { key: "propane", label: "Propane" },
+  { key: "rv_repair", label: "RV Repair" },
+  { key: "water_fill", label: "Water" },
+  { key: "laundromat", label: "Laundry" },
+  { key: "rv_wash", label: "RV Wash" },
+  { key: "rv_tires", label: "Tires" },
+  { key: "casino_parking", label: "Casino" },
+  { key: "cabelas_bass_pro", label: "Cabela's" },
+  { key: "truck_stop", label: "Truck Stop" },
+  { key: "attraction", label: "Attractions" },
+  { key: "scenic_view", label: "Scenic" },
+  { key: "restaurant", label: "Restaurants" },
+  { key: "historic_site", label: "Historic" },
 ];
 
 export default function StateDetailScreen() {
@@ -47,10 +61,7 @@ export default function StateDetailScreen() {
 
   const stateSites = useMemo(() => {
     const code = params.stateCode || "";
-    return allSites.filter((s) => {
-      const stateAbbr = getStateAbbr(s.state);
-      return stateAbbr === code;
-    });
+    return allSites.filter((s) => s.state === code);
   }, [params.stateCode, allSites]);
 
   const filteredSites = useMemo(() => {
