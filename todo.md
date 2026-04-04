@@ -160,3 +160,6 @@
 - [x] Match AllStays-level category coverage
 - [x] Add Roadtrippers-style categories (attractions, scenic routes, restaurants, roadside oddities, points of interest)
 - [x] Fix: tapping a campsite card should navigate to detail/booking screen, not just open in maps
+- [x] Add Map button on site detail screen to open directions (already exists as 'Get Directions' button)
+- [x] Show all amenities clearly on site detail screen (already has amenities grid with checkmark icons)
+- [x] Ensure booking flow works from site detail screen (Book Now button navigates to booking with $2/night fee)
