@@ -29,6 +29,7 @@ const EXPLORE_SECTIONS: { category: SiteCategory; title: string; subtitle: strin
 ];
 
 const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
+  // Camping & Overnight
   rv_park: "house.fill",
   national_park: "mountain.2.fill",
   state_park: "tree.fill",
@@ -39,9 +40,40 @@ const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
   harvest_host: "wineglass.fill",
   walmart: "cart.fill",
   cracker_barrel: "building.2.fill",
-  dump_station: "arrow.clockwise",
   rest_area: "mappin",
+  casino_parking: "building.2.fill",
+  cabelas_bass_pro: "leaf.fill",
+  truck_stop: "fuelpump.fill",
+  elks_moose: "building.2.fill",
+  // RV Services
+  dump_station: "arrow.clockwise",
   weight_scale: "scalemass.fill",
+  fuel_station: "fuelpump.fill",
+  propane: "flame.fill",
+  rv_repair: "wrench.fill",
+  water_fill: "drop.fill",
+  laundromat: "washer.fill",
+  rv_wash: "drop.fill",
+  rv_tires: "circle.circle.fill",
+  rv_dealer: "building.2.fill",
+  // Road Safety
+  low_clearance: "exclamationmark.triangle.fill",
+  weigh_station: "scalemass.fill",
+  road_condition: "exclamationmark.triangle.fill",
+  // Supplies
+  rv_grocery: "cart.fill",
+  rv_supply_store: "wrench.fill",
+  outdoor_store: "leaf.fill",
+  // Connectivity
+  cell_coverage: "antenna.radiowaves.left.and.right",
+  free_wifi: "antenna.radiowaves.left.and.right",
+  // Roadtrippers POI
+  attraction: "star.fill",
+  scenic_view: "mountain.2.fill",
+  restaurant: "fork.knife",
+  roadside_oddity: "star.fill",
+  historic_site: "building.columns.fill",
+  visitor_center: "building.2.fill",
 };
 
 export default function ExploreScreen() {

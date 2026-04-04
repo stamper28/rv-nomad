@@ -142,3 +142,20 @@
 - [x] APK still crashes on launch after switching to expo-maps (fixed: removed ALL native map libraries, replaced home screen with list-based campground finder, tap opens in Google Maps/Apple Maps)
 - [x] Add comprehensive real campsite data covering all US states (fixed: switched home screen from 20-sample campground-data to all-sites-data with 607 sites across all 50 states)
 - [x] Show state RV laws and boondocking rules under each state in the app (added state selector + laws panel on home screen)
+- [x] Verify and improve RV weight limits and size restrictions data for all 50 states
+- [x] Add RV-friendly fuel stations (truck stops, diesel stations with RV lanes)
+- [x] Add RV fuel stations (truck stops, diesel with RV lanes)
+- [x] Add propane refill locations
+- [x] Add RV repair shops / mobile mechanics
+- [x] Add potable water fill stations
+- [x] Add laundromats near RV parks
+- [x] Add RV-friendly grocery stores (big parking lots)
+- [x] Add low clearance warnings (bridges, tunnels)
+- [x] Add RV wash stations
+- [x] Add RV tire shops
+- [x] Add cell signal coverage info
+- [x] Include detailed amenities for each RV service location
+- [x] Expand Harvest Host locations across all states
+- [x] Add RV overnight parking (casinos, Cabela's, Bass Pro, truck stops, Elks Lodge, Moose Lodge)
+- [x] Match AllStays-level category coverage
+- [x] Add Roadtrippers-style categories (attractions, scenic routes, restaurants, roadside oddities, points of interest)

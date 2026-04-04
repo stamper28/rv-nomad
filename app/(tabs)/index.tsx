@@ -26,20 +26,53 @@ import {
 
 type FilterKey = "all" | SiteCategory;
 
-const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "rv_park", label: "RV Parks" },
-  { key: "national_park", label: "Nat'l Parks" },
-  { key: "state_park", label: "State Parks" },
-  { key: "boondocking", label: "Boondocking" },
-  { key: "blm", label: "BLM" },
-  { key: "national_forest", label: "Nat'l Forest" },
-  { key: "military", label: "Military" },
-  { key: "harvest_host", label: "Harvest Host" },
-  { key: "walmart", label: "Walmart" },
-  { key: "dump_station", label: "Dump Stations" },
-  { key: "rest_area", label: "Rest Areas" },
-  { key: "weight_scale", label: "Scales" },
+const FILTER_OPTIONS: { key: FilterKey; label: string; group: string }[] = [
+  { key: "all", label: "All", group: "" },
+  // Camping & Overnight
+  { key: "rv_park", label: "RV Parks", group: "Camping" },
+  { key: "national_park", label: "Nat'l Parks", group: "Camping" },
+  { key: "state_park", label: "State Parks", group: "Camping" },
+  { key: "boondocking", label: "Boondocking", group: "Camping" },
+  { key: "blm", label: "BLM", group: "Camping" },
+  { key: "national_forest", label: "Nat'l Forest", group: "Camping" },
+  { key: "military", label: "Military", group: "Camping" },
+  { key: "harvest_host", label: "Harvest Host", group: "Camping" },
+  // Overnight Parking
+  { key: "walmart", label: "Walmart", group: "Overnight" },
+  { key: "cracker_barrel", label: "Cracker Barrel", group: "Overnight" },
+  { key: "casino_parking", label: "Casino", group: "Overnight" },
+  { key: "cabelas_bass_pro", label: "Cabela's", group: "Overnight" },
+  { key: "truck_stop", label: "Truck Stop", group: "Overnight" },
+  { key: "elks_moose", label: "Elks/Moose", group: "Overnight" },
+  { key: "rest_area", label: "Rest Areas", group: "Overnight" },
+  // RV Services
+  { key: "dump_station", label: "Dump Station", group: "Services" },
+  { key: "weight_scale", label: "Scales", group: "Services" },
+  { key: "fuel_station", label: "RV Fuel", group: "Services" },
+  { key: "propane", label: "Propane", group: "Services" },
+  { key: "rv_repair", label: "RV Repair", group: "Services" },
+  { key: "water_fill", label: "Water Fill", group: "Services" },
+  { key: "laundromat", label: "Laundry", group: "Services" },
+  { key: "rv_wash", label: "RV Wash", group: "Services" },
+  { key: "rv_tires", label: "RV Tires", group: "Services" },
+  { key: "rv_dealer", label: "RV Dealer", group: "Services" },
+  // Supplies
+  { key: "rv_grocery", label: "Grocery", group: "Supplies" },
+  { key: "rv_supply_store", label: "RV Supply", group: "Supplies" },
+  { key: "outdoor_store", label: "Outdoor", group: "Supplies" },
+  // Road Safety
+  { key: "low_clearance", label: "Low Clearance", group: "Road" },
+  { key: "weigh_station", label: "Weigh Station", group: "Road" },
+  // Connectivity
+  { key: "cell_coverage", label: "Cell Signal", group: "Connect" },
+  { key: "free_wifi", label: "Free WiFi", group: "Connect" },
+  // Roadtrippers POI
+  { key: "attraction", label: "Attractions", group: "Explore" },
+  { key: "scenic_view", label: "Scenic Views", group: "Explore" },
+  { key: "restaurant", label: "Restaurants", group: "Explore" },
+  { key: "roadside_oddity", label: "Oddities", group: "Explore" },
+  { key: "historic_site", label: "Historic", group: "Explore" },
+  { key: "visitor_center", label: "Visitor Ctr", group: "Explore" },
 ];
 
 const STATE_NAMES: Record<string, string> = {
@@ -515,24 +548,33 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.key}
           contentContainerStyle={styles.filterList}
           style={styles.filterScroll}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             const isActive = selectedFilter === item.key;
+            const prevGroup = index > 0 ? FILTER_OPTIONS[index - 1].group : "";
+            const showGroupLabel = item.group !== "" && item.group !== prevGroup;
             return (
-              <Pressable
-                onPress={() => handleFilterPress(item.key)}
-                style={({ pressed }) => [
-                  styles.filterChip,
-                  {
-                    backgroundColor: isActive ? colors.primary : colors.surface,
-                    borderColor: isActive ? colors.primary : colors.border,
-                  },
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <Text style={[styles.filterChipText, { color: isActive ? "#FFFFFF" : colors.foreground }]}>
-                  {item.label}
-                </Text>
-              </Pressable>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {showGroupLabel && (
+                  <Text style={[styles.filterGroupLabel, { color: colors.muted }]}>
+                    {item.group}
+                  </Text>
+                )}
+                <Pressable
+                  onPress={() => handleFilterPress(item.key)}
+                  style={({ pressed }) => [
+                    styles.filterChip,
+                    {
+                      backgroundColor: isActive ? colors.primary : colors.surface,
+                      borderColor: isActive ? colors.primary : colors.border,
+                    },
+                    pressed && { opacity: 0.8 },
+                  ]}
+                >
+                  <Text style={[styles.filterChipText, { color: isActive ? "#FFFFFF" : colors.foreground }]}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              </View>
             );
           }}
         />
@@ -828,4 +870,5 @@ const styles = StyleSheet.create({
   },
   statePickerItemText: { fontSize: 16 },
   statePickerItemCount: { fontSize: 13 },
+  filterGroupLabel: { fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 10, marginRight: 4 },
 });
