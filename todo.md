@@ -159,3 +159,4 @@
 - [x] Add RV overnight parking (casinos, Cabela's, Bass Pro, truck stops, Elks Lodge, Moose Lodge)
 - [x] Match AllStays-level category coverage
 - [x] Add Roadtrippers-style categories (attractions, scenic routes, restaurants, roadside oddities, points of interest)
+- [x] Fix: tapping a campsite card should navigate to detail/booking screen, not just open in maps

@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
@@ -232,12 +233,14 @@ export default function HomeScreen() {
     setShowLaws(false);
   }, []);
 
+  const router = useRouter();
+
   const handleOpenSite = useCallback((site: CampSite) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    openInMaps(site.name, site.latitude, site.longitude);
-  }, []);
+    router.push({ pathname: "/site-detail", params: { siteId: site.id } });
+  }, [router]);
 
   const handleOpenScale = useCallback((scale: any) => {
     if (Platform.OS !== "web") {
