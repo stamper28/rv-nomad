@@ -140,3 +140,5 @@
 - [x] Published APK crashes on launch on Android device (fixed: disabled newArch, added maps config plugin, error boundary, try-catch on map load)
 - [x] APK build fails: react-native-maps has no config plugin (fixed: replaced react-native-maps with expo-maps, removed broken plugin from app.config.ts)
 - [x] APK still crashes on launch after switching to expo-maps (fixed: removed ALL native map libraries, replaced home screen with list-based campground finder, tap opens in Google Maps/Apple Maps)
+- [x] Add comprehensive real campsite data covering all US states (fixed: switched home screen from 20-sample campground-data to all-sites-data with 607 sites across all 50 states)
+- [x] Show state RV laws and boondocking rules under each state in the app (added state selector + laws panel on home screen)

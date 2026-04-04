@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,34 +9,51 @@ import {
   FlatList,
   Keyboard,
   Linking,
-  Alert,
+  ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
-  CAMPGROUNDS,
-  CATEGORY_COLORS,
   CATEGORY_LABELS,
-  type Campground,
-  type CampgroundCategory,
-} from "@/lib/campground-data";
-import { type WeightScale } from "@/lib/types";
-import { useEffect } from "react";
+  CATEGORY_COLORS,
+  type CampSite,
+  type SiteCategory,
+  type StateLaws,
+} from "@/lib/types";
 
-type FilterKey = CampgroundCategory | "all" | "weight_scale" | "dump_station";
+type FilterKey = "all" | SiteCategory;
 
-const FILTER_OPTIONS: { key: FilterKey; label: string; icon: string }[] = [
-  { key: "all", label: "All", icon: "explore" },
-  { key: "rv_park", label: "RV Parks", icon: "local-parking" },
-  { key: "national_park", label: "National Parks", icon: "park" },
-  { key: "state_park", label: "State Parks", icon: "nature" },
-  { key: "free_camping", label: "Free Camping", icon: "camping" },
-  { key: "dump_station", label: "Dump Stations", icon: "delete" },
-  { key: "weight_scale", label: "Weight Scales", icon: "scale" },
-  { key: "rest_area", label: "Rest Areas", icon: "local-hotel" },
+const FILTER_OPTIONS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "rv_park", label: "RV Parks" },
+  { key: "national_park", label: "Nat'l Parks" },
+  { key: "state_park", label: "State Parks" },
+  { key: "boondocking", label: "Boondocking" },
+  { key: "blm", label: "BLM" },
+  { key: "national_forest", label: "Nat'l Forest" },
+  { key: "military", label: "Military" },
+  { key: "harvest_host", label: "Harvest Host" },
+  { key: "walmart", label: "Walmart" },
+  { key: "dump_station", label: "Dump Stations" },
+  { key: "rest_area", label: "Rest Areas" },
+  { key: "weight_scale", label: "Scales" },
 ];
+
+const STATE_NAMES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
+  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
+  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
+  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
+  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
+  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont",
+  VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming",
+};
 
 /** Open a location in the device's native maps app */
 function openInMaps(name: string, latitude: number, longitude: number) {
@@ -50,9 +67,8 @@ function openInMaps(name: string, latitude: number, longitude: number) {
     if (supported) {
       Linking.openURL(url);
     } else {
-      // Fallback to Google Maps web
       Linking.openURL(
-        `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}&query_place_id=${encodedName}`
+        `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
       );
     }
   });
@@ -64,71 +80,108 @@ export default function HomeScreen() {
 
   const [selectedFilter, setSelectedFilter] = useState<FilterKey>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [weightScales, setWeightScales] = useState<WeightScale[]>([]);
-  const [loadingScales, setLoadingScales] = useState(false);
+  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [showStatePicker, setShowStatePicker] = useState(false);
+  const [showLaws, setShowLaws] = useState(false);
 
-  // Lazy load weight scales only when filter is selected
+  // Lazy-loaded data
+  const [allSites, setAllSites] = useState<CampSite[]>([]);
+  const [stateLaws, setStateLaws] = useState<Record<string, StateLaws>>({});
+  const [weightScales, setWeightScales] = useState<any[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  useEffect(() => {
+    import("@/lib/all-sites-data").then((mod) => {
+      setAllSites(mod.ALL_SITES);
+      setStateLaws(mod.STATE_LAWS);
+      setDataLoaded(true);
+    });
+  }, []);
+
+  // Lazy load weight scales when needed
   useEffect(() => {
     if (
       (selectedFilter === "all" || selectedFilter === "weight_scale") &&
       weightScales.length === 0
     ) {
-      setLoadingScales(true);
-      import("@/lib/weight-scale-data")
-        .then((mod) => {
-          setWeightScales(mod.WEIGHT_SCALES);
-          setLoadingScales(false);
-        })
-        .catch(() => setLoadingScales(false));
+      import("@/lib/weight-scale-data").then((mod) => {
+        setWeightScales(mod.WEIGHT_SCALES);
+      }).catch(() => {});
     }
   }, [selectedFilter, weightScales.length]);
 
-  // Filter campgrounds
-  const filteredCampgrounds = useMemo(() => {
-    let filtered: Campground[];
-    if (selectedFilter === "all") {
-      filtered = CAMPGROUNDS;
-    } else if (
-      selectedFilter === "weight_scale" ||
-      selectedFilter === "dump_station"
-    ) {
-      filtered =
-        selectedFilter === "dump_station"
-          ? CAMPGROUNDS.filter((c) => c.category === ("dump_station" as any))
-          : [];
-    } else {
-      filtered = CAMPGROUNDS.filter((c) => c.category === selectedFilter);
+  // Get unique states with counts
+  const stateOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allSites.forEach((s) => {
+      counts[s.state] = (counts[s.state] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([code, count]) => ({ code, name: STATE_NAMES[code] || code, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [allSites]);
+
+  // Filter sites
+  const filteredSites = useMemo(() => {
+    let filtered = allSites;
+
+    // State filter
+    if (selectedState) {
+      filtered = filtered.filter((s) => s.state === selectedState);
     }
 
+    // Category filter
+    if (selectedFilter !== "all" && selectedFilter !== "weight_scale") {
+      filtered = filtered.filter((s) => s.category === selectedFilter);
+    }
+
+    // Search
     if (searchQuery.length > 1) {
       const lower = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (c) =>
-          c.name.toLowerCase().includes(lower) ||
-          c.description.toLowerCase().includes(lower)
+        (s) =>
+          s.name.toLowerCase().includes(lower) ||
+          s.description.toLowerCase().includes(lower) ||
+          s.city.toLowerCase().includes(lower) ||
+          (STATE_NAMES[s.state] || "").toLowerCase().includes(lower)
       );
     }
 
     return filtered;
-  }, [selectedFilter, searchQuery]);
+  }, [allSites, selectedState, selectedFilter, searchQuery]);
 
   // Filter weight scales
   const filteredScales = useMemo(() => {
     if (selectedFilter !== "all" && selectedFilter !== "weight_scale") return [];
-    if (weightScales.length === 0) return [];
-
+    let scales = weightScales;
+    if (selectedState) {
+      scales = scales.filter((s: any) => s.state === selectedState);
+    }
     if (searchQuery.length > 1) {
       const lower = searchQuery.toLowerCase();
-      return weightScales.filter(
-        (s) =>
+      scales = scales.filter(
+        (s: any) =>
           s.name.toLowerCase().includes(lower) ||
-          s.city.toLowerCase().includes(lower) ||
-          s.state.toLowerCase().includes(lower)
+          s.city.toLowerCase().includes(lower)
       );
     }
+    return scales;
+  }, [weightScales, selectedState, selectedFilter, searchQuery]);
 
-    return weightScales;
-  }, [selectedFilter, weightScales, searchQuery]);
+  // Combined list
+  const listData = useMemo(() => {
+    const items: Array<{ type: "site" | "scale"; data: any }> = [];
+    if (selectedFilter !== "weight_scale") {
+      filteredSites.forEach((s) => items.push({ type: "site", data: s }));
+    }
+    if (selectedFilter === "all" || selectedFilter === "weight_scale") {
+      filteredScales.forEach((s) => items.push({ type: "scale", data: s }));
+    }
+    return items;
+  }, [filteredSites, filteredScales, selectedFilter]);
+
+  // Current state laws
+  const currentLaws = selectedState ? stateLaws[selectedState] : null;
 
   const handleFilterPress = useCallback((key: FilterKey) => {
     if (Platform.OS !== "web") {
@@ -137,14 +190,23 @@ export default function HomeScreen() {
     setSelectedFilter(key);
   }, []);
 
-  const handleOpenCampground = useCallback((campground: Campground) => {
+  const handleStateSelect = useCallback((code: string | null) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    openInMaps(campground.name, campground.latitude, campground.longitude);
+    setSelectedState(code);
+    setShowStatePicker(false);
+    setShowLaws(false);
   }, []);
 
-  const handleOpenScale = useCallback((scale: WeightScale) => {
+  const handleOpenSite = useCallback((site: CampSite) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    openInMaps(site.name, site.latitude, site.longitude);
+  }, []);
+
+  const handleOpenScale = useCallback((scale: any) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
@@ -166,153 +228,95 @@ export default function HomeScreen() {
     return stars;
   };
 
-  // Combined list data
-  const listData = useMemo(() => {
-    const items: Array<{ type: "campground" | "scale"; data: any }> = [];
+  const renderSiteCard = useCallback(
+    (site: CampSite) => {
+      const catColor = CATEGORY_COLORS[site.category] || "#666";
+      return (
+        <Pressable
+          onPress={() => handleOpenSite(site)}
+          style={({ pressed }) => [
+            styles.card,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+          ]}
+        >
+          <View style={styles.cardHeader}>
+            <View style={[styles.categoryBadge, { backgroundColor: catColor + "20" }]}>
+              <Text style={[styles.categoryBadgeText, { color: catColor }]}>
+                {CATEGORY_LABELS[site.category] || site.category}
+              </Text>
+            </View>
+            <View style={styles.directionsButton}>
+              <MaterialIcons name="directions" size={20} color={colors.primary} />
+            </View>
+          </View>
 
-    if (selectedFilter !== "weight_scale") {
-      filteredCampgrounds.forEach((c) =>
-        items.push({ type: "campground", data: c })
-      );
-    }
+          <Text style={[styles.cardName, { color: colors.foreground }]} numberOfLines={1}>
+            {site.name}
+          </Text>
 
-    if (
-      selectedFilter === "all" ||
-      selectedFilter === "weight_scale"
-    ) {
-      filteredScales.forEach((s) => items.push({ type: "scale", data: s }));
-    }
+          <Text style={[styles.cardLocation, { color: colors.muted }]}>
+            {site.city}, {STATE_NAMES[site.state] || site.state}
+          </Text>
 
-    return items;
-  }, [filteredCampgrounds, filteredScales, selectedFilter]);
-
-  const renderCampgroundCard = useCallback(
-    (campground: Campground) => (
-      <Pressable
-        onPress={() => handleOpenCampground(campground)}
-        style={({ pressed }) => [
-          styles.card,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
-          pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
-        ]}
-      >
-        {/* Category badge */}
-        <View style={styles.cardHeader}>
-          <View
-            style={[
-              styles.categoryBadge,
-              {
-                backgroundColor:
-                  CATEGORY_COLORS[campground.category] + "20",
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.categoryBadgeText,
-                { color: CATEGORY_COLORS[campground.category] },
-              ]}
-            >
-              {CATEGORY_LABELS[campground.category]}
+          <View style={styles.ratingRow}>
+            <View style={styles.starsRow}>{renderStars(site.rating)}</View>
+            <Text style={[styles.ratingText, { color: colors.muted }]}>
+              {site.rating.toFixed(1)} ({site.reviewCount})
             </Text>
           </View>
-          <View style={styles.directionsButton}>
-            <MaterialIcons name="directions" size={20} color={colors.primary} />
-          </View>
-        </View>
 
-        {/* Name */}
-        <Text
-          style={[styles.cardName, { color: colors.foreground }]}
-          numberOfLines={1}
-        >
-          {campground.name}
-        </Text>
-
-        {/* Rating */}
-        <View style={styles.ratingRow}>
-          <View style={styles.starsRow}>{renderStars(campground.rating)}</View>
-          <Text style={[styles.ratingText, { color: colors.muted }]}>
-            {campground.rating.toFixed(1)} ({campground.reviewCount})
+          <Text style={[styles.cardDescription, { color: colors.muted }]} numberOfLines={2}>
+            {site.description}
           </Text>
-        </View>
 
-        {/* Description */}
-        <Text
-          style={[styles.cardDescription, { color: colors.muted }]}
-          numberOfLines={2}
-        >
-          {campground.description}
-        </Text>
-
-        {/* Footer: Price + Amenities */}
-        <View style={styles.cardFooter}>
-          <Text style={[styles.priceText, { color: colors.primary }]}>
-            {campground.pricePerNight
-              ? `$${campground.pricePerNight}/night`
-              : "Free"}
-          </Text>
-          <View style={styles.amenitiesRow}>
-            {campground.amenities.slice(0, 3).map((a, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.amenityChip,
-                  { backgroundColor: colors.background },
-                ]}
-              >
-                <Text style={[styles.amenityText, { color: colors.muted }]}>
-                  {a}
+          <View style={styles.cardFooter}>
+            <Text
+              style={[
+                styles.priceText,
+                { color: site.pricePerNight === null ? colors.success : colors.primary },
+              ]}
+            >
+              {site.pricePerNight ? `$${site.pricePerNight}/night` : "Free"}
+            </Text>
+            <View style={styles.amenitiesRow}>
+              {site.amenities.slice(0, 3).map((a, i) => (
+                <View key={i} style={[styles.amenityChip, { backgroundColor: colors.background }]}>
+                  <Text style={[styles.amenityText, { color: colors.muted }]}>{a}</Text>
+                </View>
+              ))}
+              {site.amenities.length > 3 && (
+                <Text style={[styles.moreText, { color: colors.muted }]}>
+                  +{site.amenities.length - 3}
                 </Text>
-              </View>
-            ))}
-            {campground.amenities.length > 3 && (
-              <Text style={[styles.moreText, { color: colors.muted }]}>
-                +{campground.amenities.length - 3}
-              </Text>
-            )}
+              )}
+            </View>
           </View>
-        </View>
 
-        {/* Tap hint */}
-        <View style={styles.tapHint}>
-          <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
-          <Text style={[styles.tapHintText, { color: colors.muted }]}>
-            Tap to open in Maps
-          </Text>
-        </View>
-      </Pressable>
-    ),
-    [colors, handleOpenCampground]
+          <View style={styles.tapHint}>
+            <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
+            <Text style={[styles.tapHintText, { color: colors.muted }]}>Tap to open in Maps</Text>
+          </View>
+        </Pressable>
+      );
+    },
+    [colors, handleOpenSite]
   );
 
   const renderScaleCard = useCallback(
-    (scale: WeightScale) => (
+    (scale: any) => (
       <Pressable
         onPress={() => handleOpenScale(scale)}
         style={({ pressed }) => [
           styles.card,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
+          { backgroundColor: colors.surface, borderColor: colors.border },
           pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
         ]}
       >
         <View style={styles.cardHeader}>
-          <View
-            style={[styles.categoryBadge, { backgroundColor: "#FF6F0020" }]}
-          >
+          <View style={[styles.categoryBadge, { backgroundColor: "#FF6F0020" }]}>
             <MaterialIcons name="scale" size={12} color="#FF6F00" />
-            <Text
-              style={[
-                styles.categoryBadgeText,
-                { color: "#FF6F00", marginLeft: 4 },
-              ]}
-            >
+            <Text style={[styles.categoryBadgeText, { color: "#FF6F00", marginLeft: 4 }]}>
               {scale.type === "cat_scale"
                 ? "CAT Scale"
                 : scale.type === "public_weigh_station"
@@ -325,68 +329,115 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <Text
-          style={[styles.cardName, { color: colors.foreground }]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.cardName, { color: colors.foreground }]} numberOfLines={1}>
           {scale.name}
         </Text>
-        <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
-          {scale.city}, {scale.state}
+        <Text style={[styles.cardLocation, { color: colors.muted }]}>
+          {scale.city}, {STATE_NAMES[scale.state] || scale.state}
         </Text>
 
         <View style={styles.scaleDetails}>
           <View style={styles.scaleDetailRow}>
-            <MaterialIcons
-              name="attach-money"
-              size={16}
-              color={colors.primary}
-            />
-            <Text
-              style={[
-                styles.scaleDetailText,
-                { color: colors.primary, fontWeight: "700" },
-              ]}
-            >
+            <MaterialIcons name="attach-money" size={16} color={colors.primary} />
+            <Text style={[styles.scaleDetailText, { color: colors.primary, fontWeight: "700" }]}>
               {scale.cost}
             </Text>
           </View>
           <View style={styles.scaleDetailRow}>
-            <MaterialIcons
-              name="access-time"
-              size={16}
-              color={colors.muted}
-            />
-            <Text style={[styles.scaleDetailText, { color: colors.foreground }]}>
-              {scale.hours}
-            </Text>
+            <MaterialIcons name="access-time" size={16} color={colors.muted} />
+            <Text style={[styles.scaleDetailText, { color: colors.foreground }]}>{scale.hours}</Text>
           </View>
           {scale.hasCertified && (
             <View style={styles.scaleDetailRow}>
-              <MaterialIcons
-                name="verified"
-                size={16}
-                color={colors.success}
-              />
-              <Text
-                style={[styles.scaleDetailText, { color: colors.success }]}
-              >
-                Certified Scale
-              </Text>
+              <MaterialIcons name="verified" size={16} color={colors.success} />
+              <Text style={[styles.scaleDetailText, { color: colors.success }]}>Certified Scale</Text>
             </View>
           )}
         </View>
 
         <View style={styles.tapHint}>
           <MaterialIcons name="open-in-new" size={12} color={colors.muted} />
-          <Text style={[styles.tapHintText, { color: colors.muted }]}>
-            Tap to open in Maps
-          </Text>
+          <Text style={[styles.tapHintText, { color: colors.muted }]}>Tap to open in Maps</Text>
         </View>
       </Pressable>
     ),
     [colors, handleOpenScale]
   );
+
+  // State picker modal overlay
+  const renderStatePicker = () => {
+    if (!showStatePicker) return null;
+    return (
+      <View style={[styles.statePickerOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
+        <View style={[styles.statePickerContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.statePickerHeader}>
+            <Text style={[styles.statePickerTitle, { color: colors.foreground }]}>Select State</Text>
+            <Pressable
+              onPress={() => setShowStatePicker(false)}
+              style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+            >
+              <MaterialIcons name="close" size={24} color={colors.muted} />
+            </Pressable>
+          </View>
+
+          {/* All States option */}
+          <Pressable
+            onPress={() => handleStateSelect(null)}
+            style={({ pressed }) => [
+              styles.statePickerItem,
+              { borderBottomColor: colors.border },
+              !selectedState && { backgroundColor: colors.primary + "15" },
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <Text
+              style={[
+                styles.statePickerItemText,
+                { color: !selectedState ? colors.primary : colors.foreground, fontWeight: !selectedState ? "700" : "500" },
+              ]}
+            >
+              All States
+            </Text>
+            <Text style={[styles.statePickerItemCount, { color: colors.muted }]}>
+              {allSites.length} sites
+            </Text>
+          </Pressable>
+
+          <FlatList
+            data={stateOptions}
+            keyExtractor={(item) => item.code}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => {
+              const isSelected = selectedState === item.code;
+              return (
+                <Pressable
+                  onPress={() => handleStateSelect(item.code)}
+                  style={({ pressed }) => [
+                    styles.statePickerItem,
+                    { borderBottomColor: colors.border },
+                    isSelected && { backgroundColor: colors.primary + "15" },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statePickerItemText,
+                      { color: isSelected ? colors.primary : colors.foreground, fontWeight: isSelected ? "700" : "500" },
+                    ]}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text style={[styles.statePickerItemCount, { color: colors.muted }]}>
+                    {item.count} sites
+                  </Text>
+                </Pressable>
+              );
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -394,33 +445,17 @@ export default function HomeScreen() {
       <View
         style={[
           styles.header,
-          {
-            paddingTop: insets.top + 8,
-            backgroundColor: colors.background,
-            borderBottomColor: colors.border,
-          },
+          { paddingTop: insets.top + 8, backgroundColor: colors.background, borderBottomColor: colors.border },
         ]}
       >
-        <Text style={[styles.headerTitle, { color: colors.foreground }]}>
-          RV Nomad
-        </Text>
+        <Text style={[styles.headerTitle, { color: colors.foreground }]}>RV Nomad</Text>
         <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
           Find campgrounds, RV parks & more
         </Text>
 
         {/* Search Bar */}
-        <View
-          style={[
-            styles.searchContainer,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <MaterialIcons
-            name="search"
-            size={22}
-            color={colors.muted}
-            style={styles.searchIcon}
-          />
+        <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <MaterialIcons name="search" size={22} color={colors.muted} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
             placeholder="Search campgrounds, parks, scales..."
@@ -433,15 +468,44 @@ export default function HomeScreen() {
           {searchQuery.length > 0 && (
             <Pressable
               onPress={() => setSearchQuery("")}
-              style={({ pressed }) => [
-                styles.clearButton,
-                pressed && { opacity: 0.6 },
-              ]}
+              style={({ pressed }) => [styles.clearButton, pressed && { opacity: 0.6 }]}
             >
               <MaterialIcons name="close" size={20} color={colors.muted} />
             </Pressable>
           )}
         </View>
+
+        {/* State Selector */}
+        <Pressable
+          onPress={() => setShowStatePicker(true)}
+          style={({ pressed }) => [
+            styles.stateSelector,
+            { backgroundColor: selectedState ? colors.primary + "15" : colors.surface, borderColor: selectedState ? colors.primary : colors.border },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <MaterialIcons name="location-on" size={18} color={selectedState ? colors.primary : colors.muted} />
+          <Text
+            style={[
+              styles.stateSelectorText,
+              { color: selectedState ? colors.primary : colors.muted, fontWeight: selectedState ? "700" : "500" },
+            ]}
+          >
+            {selectedState ? STATE_NAMES[selectedState] : "All States"}
+          </Text>
+          <MaterialIcons name="arrow-drop-down" size={20} color={selectedState ? colors.primary : colors.muted} />
+          {selectedState && (
+            <Pressable
+              onPress={(e) => {
+                e.stopPropagation?.();
+                handleStateSelect(null);
+              }}
+              style={({ pressed }) => [styles.stateClearBtn, pressed && { opacity: 0.6 }]}
+            >
+              <MaterialIcons name="close" size={16} color={colors.muted} />
+            </Pressable>
+          )}
+        </Pressable>
 
         {/* Filter Chips */}
         <FlatList
@@ -459,22 +523,13 @@ export default function HomeScreen() {
                 style={({ pressed }) => [
                   styles.filterChip,
                   {
-                    backgroundColor: isActive
-                      ? colors.primary
-                      : colors.surface,
+                    backgroundColor: isActive ? colors.primary : colors.surface,
                     borderColor: isActive ? colors.primary : colors.border,
                   },
                   pressed && { opacity: 0.8 },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    {
-                      color: isActive ? "#FFFFFF" : colors.foreground,
-                    },
-                  ]}
-                >
+                <Text style={[styles.filterChipText, { color: isActive ? "#FFFFFF" : colors.foreground }]}>
                   {item.label}
                 </Text>
               </Pressable>
@@ -483,67 +538,125 @@ export default function HomeScreen() {
         />
       </View>
 
+      {/* State Laws Banner */}
+      {currentLaws && (
+        <Pressable
+          onPress={() => setShowLaws(!showLaws)}
+          style={({ pressed }) => [
+            styles.lawsBanner,
+            { backgroundColor: colors.warning + "12", borderColor: colors.warning + "40" },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <MaterialIcons name="gavel" size={18} color={colors.warning} />
+          <Text style={[styles.lawsBannerText, { color: colors.warning }]}>
+            {showLaws ? "Hide" : "View"} {STATE_NAMES[selectedState!]} RV Laws & Boondocking Rules
+          </Text>
+          <MaterialIcons name={showLaws ? "expand-less" : "expand-more"} size={20} color={colors.warning} />
+        </Pressable>
+      )}
+
+      {/* State Laws Panel */}
+      {showLaws && currentLaws && (
+        <ScrollView
+          style={[styles.lawsPanel, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          nestedScrollEnabled
+        >
+          <View style={styles.lawsContent}>
+            <LawRow icon="local-parking" label="Overnight Parking" value={currentLaws.overnightParking} colors={colors} />
+            <LawRow icon="terrain" label="Boondocking" value={currentLaws.boondockingLegality} colors={colors} />
+            <LawRow icon="store" label="Walmart Parking" value={currentLaws.walmartParking} colors={colors} />
+            <LawRow icon="straighten" label="Max RV Length" value={currentLaws.maxRVLength} colors={colors} />
+            <LawRow icon="height" label="Max RV Height" value={currentLaws.maxRVHeight} colors={colors} />
+            <LawRow icon="fitness-center" label="Max RV Weight" value={currentLaws.maxRVWeight} colors={colors} />
+            <LawRow icon="local-gas-station" label="Propane/Tunnels" value={currentLaws.propaneTunnels} colors={colors} />
+            <LawRow icon="speed" label="Speed Limits" value={currentLaws.speedLimits} colors={colors} />
+            {currentLaws.specialNotes ? (
+              <View style={[styles.lawNotes, { borderTopColor: colors.border }]}>
+                <MaterialIcons name="info-outline" size={14} color={colors.muted} />
+                <Text style={[styles.lawNotesText, { color: colors.muted }]}>{currentLaws.specialNotes}</Text>
+              </View>
+            ) : null}
+          </View>
+        </ScrollView>
+      )}
+
       {/* Results count */}
       <View style={[styles.resultsBar, { backgroundColor: colors.background }]}>
         <Text style={[styles.resultsText, { color: colors.muted }]}>
           {listData.length} {listData.length === 1 ? "result" : "results"}
+          {selectedState ? ` in ${STATE_NAMES[selectedState]}` : ""}
           {searchQuery ? ` for "${searchQuery}"` : ""}
         </Text>
       </View>
 
-      {/* Campground List */}
-      <FlatList
-        data={listData}
-        keyExtractor={(item) =>
-          item.type === "campground" ? item.data.id : `scale-${item.data.id}`
-        }
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingBottom: insets.bottom + 80 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="on-drag"
-        renderItem={({ item }) =>
-          item.type === "campground"
-            ? renderCampgroundCard(item.data)
-            : renderScaleCard(item.data)
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialIcons name="search-off" size={48} color={colors.muted} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-              No results found
-            </Text>
-            <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
-              Try a different search or filter
-            </Text>
-          </View>
-        }
-      />
+      {/* Site List */}
+      {!dataLoaded ? (
+        <View style={styles.loadingState}>
+          <Text style={[styles.loadingText, { color: colors.muted }]}>Loading campgrounds...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={listData}
+          keyExtractor={(item) =>
+            item.type === "site" ? `site-${item.data.id}` : `scale-${item.data.id}`
+          }
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode="on-drag"
+          renderItem={({ item }) =>
+            item.type === "site" ? renderSiteCard(item.data) : renderScaleCard(item.data)
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <MaterialIcons name="search-off" size={48} color={colors.muted} />
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No results found</Text>
+              <Text style={[styles.emptySubtitle, { color: colors.muted }]}>
+                Try a different search, filter, or state
+              </Text>
+            </View>
+          }
+        />
+      )}
+
+      {/* State Picker Overlay */}
+      {renderStatePicker()}
+    </View>
+  );
+}
+
+function LawRow({
+  icon,
+  label,
+  value,
+  colors,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  colors: any;
+}) {
+  return (
+    <View style={styles.lawRow}>
+      <View style={styles.lawLabelRow}>
+        <MaterialIcons name={icon as any} size={16} color={colors.primary} />
+        <Text style={[styles.lawLabel, { color: colors.foreground }]}>{label}</Text>
+      </View>
+      <Text style={[styles.lawValue, { color: colors.muted }]}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   // Header
   header: {
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    marginTop: 2,
-    marginBottom: 12,
-  },
+  headerTitle: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
+  headerSubtitle: { fontSize: 14, marginTop: 2, marginBottom: 12 },
   // Search
   searchContainer: {
     height: 44,
@@ -552,56 +665,80 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: 10,
   },
-  searchIcon: {
-    marginRight: 8,
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 16, height: 44 },
+  clearButton: { padding: 4 },
+  // State selector
+  stateSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 10,
+    gap: 6,
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    height: 44,
-  },
-  clearButton: {
-    padding: 4,
-  },
+  stateSelectorText: { flex: 1, fontSize: 14 },
+  stateClearBtn: { padding: 2 },
   // Filters
-  filterScroll: {
-    flexGrow: 0,
-  },
-  filterList: {
-    gap: 8,
-  },
+  filterScroll: { flexGrow: 0 },
+  filterList: { gap: 8 },
   filterChip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
   },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: "600",
+  filterChipText: { fontSize: 12, fontWeight: "600" },
+  // Laws banner
+  lawsBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
   },
-  // Results bar
-  resultsBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  resultsText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  // List
-  listContent: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  // Card
-  card: {
-    borderRadius: 16,
-    padding: 16,
+  lawsBannerText: { flex: 1, fontSize: 14, fontWeight: "600" },
+  // Laws panel
+  lawsPanel: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    maxHeight: 300,
+    borderRadius: 12,
     borderWidth: 1,
   },
+  lawsContent: { padding: 14 },
+  lawRow: {
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(128,128,128,0.15)",
+  },
+  lawLabelRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
+  lawLabel: { fontSize: 14, fontWeight: "600" },
+  lawValue: { fontSize: 13, lineHeight: 19, paddingLeft: 24 },
+  lawNotes: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 6,
+    alignItems: "flex-start",
+  },
+  lawNotesText: { fontSize: 12, fontStyle: "italic", lineHeight: 18, flex: 1 },
+  // Results bar
+  resultsBar: { paddingHorizontal: 16, paddingVertical: 8 },
+  resultsText: { fontSize: 13, fontWeight: "500" },
+  // List
+  listContent: { paddingHorizontal: 16, gap: 12 },
+  // Card
+  card: { borderRadius: 16, padding: 16, borderWidth: 1 },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -615,10 +752,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  categoryBadgeText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
+  categoryBadgeText: { fontSize: 12, fontWeight: "700" },
   directionsButton: {
     width: 36,
     height: 36,
@@ -626,73 +760,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  cardName: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 6,
-  },
-  starsRow: {
-    flexDirection: "row",
-  },
-  ratingText: {
-    fontSize: 13,
-  },
-  cardDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
+  cardName: { fontSize: 18, fontWeight: "700", marginBottom: 2 },
+  cardLocation: { fontSize: 13, marginBottom: 4 },
+  ratingRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  starsRow: { flexDirection: "row" },
+  ratingText: { fontSize: 13 },
+  cardDescription: { fontSize: 14, lineHeight: 20, marginBottom: 12 },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  priceText: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  amenitiesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    flexShrink: 1,
-  },
-  amenityChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  amenityText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  moreText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
+  priceText: { fontSize: 18, fontWeight: "700" },
+  amenitiesRow: { flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 1 },
+  amenityChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  amenityText: { fontSize: 11, fontWeight: "500" },
+  moreText: { fontSize: 12, fontWeight: "600" },
   // Scale details
-  scaleDetails: {
-    gap: 6,
-    marginTop: 4,
-  },
-  scaleDetailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  scaleDetailText: {
-    fontSize: 14,
-  },
+  scaleDetails: { gap: 6, marginTop: 4 },
+  scaleDetailRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  scaleDetailText: { fontSize: 14 },
   // Tap hint
   tapHint: {
     flexDirection: "row",
@@ -703,21 +790,42 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(128,128,128,0.2)",
   },
-  tapHintText: {
-    fontSize: 12,
-  },
-  // Empty state
-  emptyState: {
-    alignItems: "center",
+  tapHintText: { fontSize: 12 },
+  // Empty/Loading
+  loadingState: { flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 60 },
+  loadingText: { fontSize: 16 },
+  emptyState: { alignItems: "center", justifyContent: "center", paddingTop: 60, gap: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: "700" },
+  emptySubtitle: { fontSize: 14 },
+  // State picker overlay
+  statePickerOverlay: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
-    paddingTop: 60,
-    gap: 8,
+    alignItems: "center",
+    zIndex: 100,
   },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+  statePickerContainer: {
+    width: "85%",
+    maxHeight: "70%",
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  emptySubtitle: {
-    fontSize: 14,
+  statePickerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
+  statePickerTitle: { fontSize: 20, fontWeight: "700" },
+  statePickerItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  statePickerItemText: { fontSize: 16 },
+  statePickerItemCount: { fontSize: 13 },
 });
