@@ -171,3 +171,7 @@
 - [x] Add $49.99/year subscription to use the app (updated premium screen to $49.99/yr, kept $2.00/night booking fee)
 - [x] Fix: dump stations not all listed (added 214 new dump stations: Flying J, Love's, TA/Petro, KOA, municipal — now 264 total)
 - [x] Add shower info and pricing to all truck stop entries (402 entries with shower details — free with fuel, $12-15 otherwise)
+- [x] Add Canada: campgrounds, RV parks, national/provincial parks for all 13 provinces/territories (90 new sites)
+- [x] Add Canada: dump stations, truck stops, and RV services for all provinces
+- [x] Add Canada: provincial RV laws and boondocking rules (Crown Land camping, winter tire rules, ferry info)
+- [x] Update state/province selector UI to include Canadian provinces (63 total: 50 US + 13 Canada)
