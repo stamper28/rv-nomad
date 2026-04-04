@@ -169,3 +169,5 @@
 - [x] Add military ID requirement notice to all military campground sites (shown on card + detail screen)
 - [x] Add readable reviews section to site detail screen (907 sites with 2-5 reviews each, showing author, date, rating, rig type, review text, and helpful count)
 - [x] Add $49.99/year subscription to use the app (updated premium screen to $49.99/yr, kept $2.00/night booking fee)
+- [x] Fix: dump stations not all listed (added 214 new dump stations: Flying J, Love's, TA/Petro, KOA, municipal — now 264 total)
+- [x] Add shower info and pricing to all truck stop entries (402 entries with shower details — free with fuel, $12-15 otherwise)
