@@ -15,7 +15,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
+import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteReview } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
 import { Store } from "@/lib/store";
 
@@ -271,6 +271,53 @@ export default function SiteDetailScreen() {
             )}
           </View>
 
+          {/* Reviews */}
+          {site.reviews && site.reviews.length > 0 && (
+            <View style={[styles.section, { borderColor: colors.border }]}>
+              <View style={styles.reviewsHeader}>
+                <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Reviews</Text>
+                <Text style={[styles.reviewCount, { color: colors.muted }]}>
+                  {site.reviews.length} review{site.reviews.length !== 1 ? "s" : ""}
+                </Text>
+              </View>
+              {site.reviews.map((review: SiteReview) => (
+                <View key={review.id} style={[styles.reviewCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                  <View style={styles.reviewTop}>
+                    <View style={styles.reviewStars}>
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <MaterialIcons
+                          key={i}
+                          name={i < review.rating ? "star" : "star-border"}
+                          size={14}
+                          color={i < review.rating ? "#F59E0B" : colors.border}
+                        />
+                      ))}
+                    </View>
+                    <Text style={[styles.reviewDate, { color: colors.muted }]}>
+                      {new Date(review.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.reviewTitle, { color: colors.foreground }]}>{review.title}</Text>
+                  <Text style={[styles.reviewBody, { color: colors.muted }]}>{review.body}</Text>
+                  <View style={styles.reviewFooter}>
+                    <Text style={[styles.reviewAuthor, { color: colors.foreground }]}>{review.author}</Text>
+                    {review.rigType && (
+                      <View style={[styles.rigBadge, { backgroundColor: colors.primary + "10" }]}>
+                        <MaterialIcons name="directions-car" size={12} color={colors.primary} />
+                        <Text style={[styles.rigBadgeText, { color: colors.primary }]}>{review.rigType}</Text>
+                      </View>
+                    )}
+                  </View>
+                  {review.helpful != null && review.helpful > 0 && (
+                    <Text style={[styles.helpfulText, { color: colors.muted }]}>
+                      {review.helpful} {review.helpful === 1 ? "person" : "people"} found this helpful
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+
           {/* Book Now Button */}
           {site.pricePerNight !== null && site.pricePerNight > 0 && (
             <TouchableOpacity
@@ -389,4 +436,17 @@ const styles = StyleSheet.create({
   heroImage: { width: "100%" as any, height: 220 },
   militaryBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, marginTop: 10, width: "100%" as any },
   militaryBannerText: { fontSize: 13, fontWeight: "600", flex: 1 },
+  reviewsHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+  reviewCount: { fontSize: 13 },
+  reviewCard: { borderRadius: 12, borderWidth: 1, padding: 14, marginTop: 10, gap: 6 },
+  reviewTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  reviewStars: { flexDirection: "row", gap: 2 },
+  reviewDate: { fontSize: 12 },
+  reviewTitle: { fontSize: 15, fontWeight: "700" },
+  reviewBody: { fontSize: 14, lineHeight: 20 },
+  reviewFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 },
+  reviewAuthor: { fontSize: 13, fontWeight: "600" },
+  rigBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  rigBadgeText: { fontSize: 11, fontWeight: "600" },
+  helpfulText: { fontSize: 12, marginTop: 2 },
 });

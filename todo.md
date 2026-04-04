@@ -167,3 +167,4 @@
 - [x] Add RV length and trailer limits to campgrounds, RV parks, state parks, national parks, and boondocking sites (540 sites updated with maxRVLength, maxTrailerLength, maxRVHeight, pullThrough, bigRigFriendly)
 - [x] Add images to campsite cards and detail screens (Unsplash photos matched by category + region)
 - [x] Add military ID requirement notice to all military campground sites (shown on card + detail screen)
+- [x] Add readable reviews section to site detail screen (907 sites with 2-5 reviews each, showing author, date, rating, rig type, review text, and helpful count)

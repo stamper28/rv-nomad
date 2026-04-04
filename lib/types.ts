@@ -61,6 +61,17 @@ export interface WeightScale {
   notes?: string;
 }
 
+export interface SiteReview {
+  id: string;
+  author: string;
+  date: string; // e.g. "2025-09-15"
+  rating: number; // 1-5
+  title: string;
+  body: string;
+  rigType?: string; // e.g. "Class A 38ft", "Travel Trailer 28ft"
+  helpful?: number;
+}
+
 export interface CampSite {
   id: string;
   name: string;
@@ -78,6 +89,7 @@ export interface CampSite {
   website?: string;
   discounts?: string[];
   isPremium?: boolean;
+  reviews?: SiteReview[];
   // Low clearance specific
   clearanceHeight?: string;
   // Cell coverage specific
