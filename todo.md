@@ -137,3 +137,4 @@
 
 ## Bugs
 - [x] App won't download and open due to a bug (fixed: lazy-loaded all large data imports to prevent Expo Go crash)
+- [x] Published APK crashes on launch on Android device (fixed: disabled newArch, added maps config plugin, error boundary, try-catch on map load)

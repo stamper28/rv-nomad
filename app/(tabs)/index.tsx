@@ -339,8 +339,27 @@ export default function MapScreen() {
   }
 
   // Import map components - on native, Metro resolves .native.tsx automatically
-  const { MapViewWrapper: NativeMapView, MarkerWrapper: NativeMarker } =
-    require("@/components/map-view-wrapper");
+  let NativeMapView: any = null;
+  let NativeMarker: any = null;
+  try {
+    const mapModule = require("@/components/map-view-wrapper");
+    NativeMapView = mapModule.MapViewWrapper;
+    NativeMarker = mapModule.MarkerWrapper;
+  } catch (e) {
+    // Map module failed to load
+  }
+
+  if (!NativeMapView) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.webFallback}>
+          <MaterialIcons name="map" size={64} color={colors.primary} />
+          <Text style={[styles.webTitle, { color: colors.foreground }]}>Map Loading...</Text>
+          <Text style={[styles.webSubtitle, { color: colors.muted }]}>The map component could not be loaded.{"\n"}Please restart the app.</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
