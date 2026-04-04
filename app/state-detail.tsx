@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ScrollView,
   FlatList,
@@ -11,8 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { ALL_SITES, STATE_LAWS } from "@/lib/all-sites-data";
-import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
+import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory, type StateLaws } from "@/lib/types";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -36,21 +35,30 @@ export default function StateDetailScreen() {
   const params = useLocalSearchParams<{ stateCode: string; stateName: string }>();
   const [filter, setFilter] = useState<FilterKey>("all");
   const [showLaws, setShowLaws] = useState(false);
+  const [allSites, setAllSites] = useState<CampSite[]>([]);
+  const [stateLawsMap, setStateLawsMap] = useState<Record<string, StateLaws>>({});
+
+  useEffect(() => {
+    import("@/lib/all-sites-data").then((mod) => {
+      setAllSites(mod.ALL_SITES);
+      setStateLawsMap(mod.STATE_LAWS);
+    });
+  }, []);
 
   const stateSites = useMemo(() => {
     const code = params.stateCode || "";
-    return ALL_SITES.filter((s) => {
+    return allSites.filter((s) => {
       const stateAbbr = getStateAbbr(s.state);
       return stateAbbr === code;
     });
-  }, [params.stateCode]);
+  }, [params.stateCode, allSites]);
 
   const filteredSites = useMemo(() => {
     if (filter === "all") return stateSites;
     return stateSites.filter((s) => s.category === filter);
   }, [stateSites, filter]);
 
-  const laws = STATE_LAWS[params.stateCode || ""] || null;
+  const laws = stateLawsMap[params.stateCode || ""] || null;
 
   return (
     <ScreenContainer edges={["top", "left", "right"]}>

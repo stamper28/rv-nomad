@@ -1,21 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { STATE_LIST } from "@/lib/all-sites-data";
-
 interface DownloadState {
   stateCode: string;
   status: "none" | "downloading" | "downloaded";
   sizeMB: number;
 }
 
+type SimpleState = { code: string; name: string; siteCount: number };
+
 export default function OfflineScreen() {
   const colors = useColors();
   const router = useRouter();
   const [downloads, setDownloads] = useState<Record<string, DownloadState>>({});
+  const [stateList, setStateList] = useState<SimpleState[]>([]);
+
+  useEffect(() => {
+    import("@/lib/all-sites-data").then((mod) => setStateList(mod.STATE_LIST));
+  }, []);
 
   const totalDownloaded = Object.values(downloads).filter((d) => d.status === "downloaded").length;
   const totalSizeMB = Object.values(downloads).filter((d) => d.status === "downloaded").reduce((sum, d) => sum + d.sizeMB, 0);
@@ -45,7 +50,7 @@ export default function OfflineScreen() {
     Alert.alert("Download All States", "This will download campsite data for all 50 states (~250 MB). Continue?", [
       { text: "Cancel", style: "cancel" },
       { text: "Download All", onPress: () => {
-        STATE_LIST.forEach((state, i) => {
+        stateList.forEach((state: SimpleState, i: number) => {
           const sizeMB = Math.floor(Math.random() * 8) + 3;
           setTimeout(() => {
             setDownloads((prev) => ({ ...prev, [state.code]: { stateCode: state.code, status: "downloading", sizeMB } }));
@@ -108,7 +113,7 @@ export default function OfflineScreen() {
         </View>
 
         {/* State List */}
-        {STATE_LIST.map((state) => {
+        {stateList.map((state: SimpleState) => {
           const dl = downloads[state.code];
           const isDownloaded = dl?.status === "downloaded";
           const isDownloading = dl?.status === "downloading";

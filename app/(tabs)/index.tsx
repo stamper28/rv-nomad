@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,10 @@ import {
   FlatList,
   Keyboard,
 } from "react-native";
-import * as Location from "expo-location";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import {
-  MapViewWrapper,
-  MarkerWrapper,
-} from "@/components/map-view-wrapper";
 import {
   CAMPGROUNDS,
   CATEGORY_COLORS,
@@ -26,7 +21,6 @@ import {
   type Campground,
   type CampgroundCategory,
 } from "@/lib/campground-data";
-import { WEIGHT_SCALES } from "@/lib/weight-scale-data";
 import { type WeightScale } from "@/lib/types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -51,6 +45,9 @@ const US_CENTER = {
   longitudeDelta: 40,
 };
 
+// Max markers to render at once to avoid native performance issues
+const MAX_MARKERS = 30;
+
 export default function MapScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -67,34 +64,117 @@ export default function MapScreen() {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapRegion, setMapRegion] = useState(US_CENTER);
+  const [weightScales, setWeightScales] = useState<WeightScale[]>([]);
+  const [loadingScales, setLoadingScales] = useState(false);
 
+  // Lazy load location - wrapped in try/catch to prevent crash
   useEffect(() => {
-    (async () => {
-      if (Platform.OS === "web") return;
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
-        try {
-          const loc = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
-          setUserLocation({
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-          });
-        } catch {
-          // Location unavailable
+    if (Platform.OS === "web") return;
+    let cancelled = false;
+    const getLocation = async () => {
+      try {
+        const Location = await import("expo-location");
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted" && !cancelled) {
+          try {
+            const loc = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+            });
+            if (!cancelled) {
+              setUserLocation({
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude,
+              });
+            }
+          } catch {
+            // Location unavailable
+          }
         }
+      } catch {
+        // expo-location not available
       }
-    })();
+    };
+    getLocation();
+    return () => { cancelled = true; };
   }, []);
 
-  const showWeightScales = selectedFilter === "all" || selectedFilter === "weight_scale";
-  const filteredCampgrounds =
-    selectedFilter === "all"
-      ? CAMPGROUNDS
-      : selectedFilter === "weight_scale" || selectedFilter === "dump_station"
-        ? []
-        : CAMPGROUNDS.filter((c) => c.category === selectedFilter);
+  // Lazy load weight scales only when filter is selected
+  useEffect(() => {
+    if (
+      (selectedFilter === "all" || selectedFilter === "weight_scale") &&
+      weightScales.length === 0
+    ) {
+      setLoadingScales(true);
+      import("@/lib/weight-scale-data").then((mod) => {
+        setWeightScales(mod.WEIGHT_SCALES);
+        setLoadingScales(false);
+      }).catch(() => setLoadingScales(false));
+    }
+  }, [selectedFilter, weightScales.length]);
+
+  // Filter campgrounds and limit markers for performance
+  const filteredCampgrounds = useMemo(() => {
+    let filtered: Campground[];
+    if (selectedFilter === "all") {
+      filtered = CAMPGROUNDS;
+    } else if (selectedFilter === "weight_scale" || selectedFilter === "dump_station") {
+      filtered = selectedFilter === "dump_station"
+        ? CAMPGROUNDS.filter((c) => c.category === "dump_station" as any)
+        : [];
+    } else {
+      filtered = CAMPGROUNDS.filter((c) => c.category === selectedFilter);
+    }
+
+    // If zoomed out (large delta), limit markers to prevent performance issues
+    if (mapRegion.latitudeDelta > 20) {
+      return filtered.slice(0, MAX_MARKERS);
+    }
+
+    // Filter to visible region with some padding
+    const padding = mapRegion.latitudeDelta * 0.2;
+    const minLat = mapRegion.latitude - mapRegion.latitudeDelta / 2 - padding;
+    const maxLat = mapRegion.latitude + mapRegion.latitudeDelta / 2 + padding;
+    const minLng = mapRegion.longitude - mapRegion.longitudeDelta / 2 - padding;
+    const maxLng = mapRegion.longitude + mapRegion.longitudeDelta / 2 + padding;
+
+    const visible = filtered.filter(
+      (c) =>
+        c.latitude >= minLat &&
+        c.latitude <= maxLat &&
+        c.longitude >= minLng &&
+        c.longitude <= maxLng
+    );
+
+    return visible.slice(0, MAX_MARKERS);
+  }, [selectedFilter, mapRegion]);
+
+  // Filter weight scales to visible region
+  const visibleScales = useMemo(() => {
+    if (selectedFilter !== "all" && selectedFilter !== "weight_scale") return [];
+    if (weightScales.length === 0) return [];
+
+    if (mapRegion.latitudeDelta > 20) {
+      return weightScales.slice(0, 15);
+    }
+
+    const padding = mapRegion.latitudeDelta * 0.2;
+    const minLat = mapRegion.latitude - mapRegion.latitudeDelta / 2 - padding;
+    const maxLat = mapRegion.latitude + mapRegion.latitudeDelta / 2 + padding;
+    const minLng = mapRegion.longitude - mapRegion.longitudeDelta / 2 - padding;
+    const maxLng = mapRegion.longitude + mapRegion.longitudeDelta / 2 + padding;
+
+    return weightScales
+      .filter(
+        (s) =>
+          s.latitude >= minLat &&
+          s.latitude <= maxLat &&
+          s.longitude >= minLng &&
+          s.longitude <= maxLng
+      )
+      .slice(0, 15);
+  }, [selectedFilter, weightScales, mapRegion]);
 
   const handleSearch = useCallback((text: string) => {
     setSearchQuery(text);
@@ -104,7 +184,7 @@ export default function MapScreen() {
         (c) =>
           c.name.toLowerCase().includes(lower) ||
           c.description.toLowerCase().includes(lower)
-      );
+      ).slice(0, 5);
       setSearchResults(results);
       setShowSearch(true);
     } else {
@@ -137,6 +217,7 @@ export default function MapScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setSelectedCampground(campground);
+    setSelectedScale(null);
   }, []);
 
   const handleLocateMe = useCallback(() => {
@@ -163,6 +244,7 @@ export default function MapScreen() {
       }
       setSelectedFilter(key);
       setSelectedCampground(null);
+      setSelectedScale(null);
     },
     []
   );
@@ -182,6 +264,10 @@ export default function MapScreen() {
     Keyboard.dismiss();
   }, []);
 
+  const handleRegionChangeComplete = useCallback((region: any) => {
+    setMapRegion(region);
+  }, []);
+
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -197,10 +283,69 @@ export default function MapScreen() {
     return stars;
   };
 
+  // Web fallback
+  if (Platform.OS === "web") {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.webFallback}>
+          <MaterialIcons name="map" size={64} color={colors.primary} />
+          <Text style={[styles.webTitle, { color: colors.foreground }]}>
+            Interactive Map
+          </Text>
+          <Text style={[styles.webSubtitle, { color: colors.muted }]}>
+            The interactive map with campground markers{"\n"}
+            is available on iOS and Android.{"\n\n"}
+            Scan the QR code with Expo Go to preview.
+          </Text>
+        </View>
+
+        {/* Filter Chips on web */}
+        <View style={[styles.filterContainer, { top: insets.top + 60 }]}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={FILTER_OPTIONS}
+            keyExtractor={(item) => item.key}
+            contentContainerStyle={styles.filterList}
+            renderItem={({ item }) => {
+              const isActive = selectedFilter === item.key;
+              return (
+                <Pressable
+                  onPress={() => handleFilterPress(item.key)}
+                  style={({ pressed }) => [
+                    styles.filterChip,
+                    {
+                      backgroundColor: isActive ? colors.primary : colors.surface,
+                      borderColor: isActive ? colors.primary : colors.border,
+                    },
+                    pressed && { opacity: 0.8 },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      { color: isActive ? "#FFFFFF" : colors.foreground },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // Import map components - on native, Metro resolves .native.tsx automatically
+  const { MapViewWrapper: NativeMapView, MarkerWrapper: NativeMarker } =
+    require("@/components/map-view-wrapper");
+
   return (
     <View style={styles.container}>
       {/* Map */}
-      <MapViewWrapper
+      <NativeMapView
         ref={mapRef}
         style={styles.map}
         initialRegion={US_CENTER}
@@ -208,34 +353,38 @@ export default function MapScreen() {
         showsMyLocationButton={false}
         showsCompass={false}
         onPress={handleMapPress}
+        onMapReady={() => setMapReady(true)}
+        onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {filteredCampgrounds.map((campground) => (
-          <MarkerWrapper
-            key={campground.id}
-            coordinate={{
-              latitude: campground.latitude,
-              longitude: campground.longitude,
-            }}
-            title={campground.name}
-            description={CATEGORY_LABELS[campground.category]}
-            pinColor={CATEGORY_COLORS[campground.category]}
-            onPress={() => handleMarkerPress(campground)}
-          />
-        ))}
-        {showWeightScales && WEIGHT_SCALES.map((scale) => (
-          <MarkerWrapper
-            key={scale.id}
-            coordinate={{
-              latitude: scale.latitude,
-              longitude: scale.longitude,
-            }}
-            title={scale.name}
-            description={`${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`}
-            pinColor="#FF6F00"
-            onPress={() => handleScalePress(scale)}
-          />
-        ))}
-      </MapViewWrapper>
+        {mapReady &&
+          filteredCampgrounds.map((campground) => (
+            <NativeMarker
+              key={campground.id}
+              coordinate={{
+                latitude: campground.latitude,
+                longitude: campground.longitude,
+              }}
+              title={campground.name}
+              description={CATEGORY_LABELS[campground.category]}
+              pinColor={CATEGORY_COLORS[campground.category]}
+              onPress={() => handleMarkerPress(campground)}
+            />
+          ))}
+        {mapReady &&
+          visibleScales.map((scale) => (
+            <NativeMarker
+              key={scale.id}
+              coordinate={{
+                latitude: scale.latitude,
+                longitude: scale.longitude,
+              }}
+              title={scale.name}
+              description={`${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`}
+              pinColor="#FF6F00"
+              onPress={() => handleScalePress(scale)}
+            />
+          ))}
+      </NativeMapView>
 
       {/* Search Bar */}
       <View
@@ -380,27 +529,25 @@ export default function MapScreen() {
         />
       </View>
 
-      {/* Locate Me Button — only on native */}
-      {Platform.OS !== "web" && (
-        <Pressable
-          onPress={handleLocateMe}
-          style={({ pressed }) => [
-            styles.locateButton,
-            {
-              bottom: selectedCampground ? 230 : 24,
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-            pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
-          ]}
-        >
-          <MaterialIcons
-            name="my-location"
-            size={24}
-            color={colors.primary}
-          />
-        </Pressable>
-      )}
+      {/* Locate Me Button */}
+      <Pressable
+        onPress={handleLocateMe}
+        style={({ pressed }) => [
+          styles.locateButton,
+          {
+            bottom: selectedCampground || selectedScale ? 230 : 24,
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+          pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+        ]}
+      >
+        <MaterialIcons
+          name="my-location"
+          size={24}
+          color={colors.primary}
+        />
+      </Pressable>
 
       {/* Weight Scale Preview Card */}
       {selectedScale && !selectedCampground && (
@@ -422,7 +569,7 @@ export default function MapScreen() {
                 ]}
               >
                 <MaterialIcons name="scale" size={12} color="#FF6F00" />
-                <Text style={[styles.previewCategoryText, { color: "#FF6F00" }]}>
+                <Text style={[styles.previewCategoryText, { color: "#FF6F00", marginLeft: 4 }]}>
                   {selectedScale.type === "cat_scale" ? "CAT Scale" : selectedScale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"}
                 </Text>
               </View>
@@ -580,6 +727,24 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  // Web fallback
+  webFallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+  },
+  webTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  webSubtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 22,
+  },
   // Search
   searchContainer: {
     position: "absolute",
@@ -707,6 +872,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   previewCategoryBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ScrollView,
   Text,
@@ -14,8 +14,7 @@ import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { ALL_SITES } from "@/lib/all-sites-data";
-import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/types";
+import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
 import { BookingStore } from "@/lib/booking-store";
 import { calculatePayment, PLATFORM_FEE_PER_NIGHT } from "@/lib/stripe";
 
@@ -25,7 +24,14 @@ export default function BookingScreen() {
   const colors = useColors();
   const router = useRouter();
   const params = useLocalSearchParams<{ siteId: string }>();
-  const site = ALL_SITES.find((s) => s.id === params.siteId);
+  const [site, setSite] = useState<CampSite | undefined>(undefined);
+
+  useEffect(() => {
+    import("@/lib/all-sites-data").then((mod) => {
+      const found = mod.ALL_SITES.find((s: CampSite) => s.id === params.siteId);
+      setSite(found);
+    });
+  }, [params.siteId]);
 
   const [step, setStep] = useState<Step>("details");
   // Details

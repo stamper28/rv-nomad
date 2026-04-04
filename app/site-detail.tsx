@@ -13,7 +13,6 @@ import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { ALL_SITES } from "@/lib/all-sites-data";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
 import { Store } from "@/lib/store";
 
@@ -22,8 +21,14 @@ export default function SiteDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ siteId: string }>();
   const [isSaved, setIsSaved] = useState(false);
+  const [site, setSite] = useState<CampSite | undefined>(undefined);
 
-  const site = ALL_SITES.find((s) => s.id === params.siteId);
+  useEffect(() => {
+    import("@/lib/all-sites-data").then((mod) => {
+      const found = mod.ALL_SITES.find((s: CampSite) => s.id === params.siteId);
+      setSite(found);
+    });
+  }, [params.siteId]);
 
   useEffect(() => {
     if (site) {

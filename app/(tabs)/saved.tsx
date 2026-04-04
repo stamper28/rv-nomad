@@ -1,11 +1,10 @@
-import { useCallback, useState } from "react";
+import { useState, useCallback } from "react";
 import { FlatList, Text, View, TouchableOpacity } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { Store } from "@/lib/store";
-import { ALL_SITES } from "@/lib/all-sites-data";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
 
 type FilterMode = "all" | "campgrounds" | "boondocking" | "free";
@@ -14,14 +13,16 @@ export default function SavedScreen() {
   const colors = useColors();
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<FilterMode>("all");
+  const [allSites, setAllSites] = useState<CampSite[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       Store.getSavedSites().then(setSavedIds);
+      import("@/lib/all-sites-data").then((mod) => setAllSites(mod.ALL_SITES));
     }, [])
   );
 
-  const savedSites = ALL_SITES.filter((s) => savedIds.includes(s.id));
+  const savedSites = allSites.filter((s) => savedIds.includes(s.id));
 
   const filteredSites = savedSites.filter((s) => {
     if (filter === "all") return true;

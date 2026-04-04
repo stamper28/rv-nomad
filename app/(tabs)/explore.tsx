@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   ScrollView,
   FlatList,
@@ -12,8 +12,9 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { ALL_SITES, STATE_LIST } from "@/lib/all-sites-data";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
+
+type SimpleStateInfo = { code: string; name: string; siteCount: number };
 
 type ViewMode = "categories" | "states";
 
@@ -48,21 +49,33 @@ export default function ExploreScreen() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>("categories");
   const [searchQuery, setSearchQuery] = useState("");
+  const [allSites, setAllSites] = useState<CampSite[]>([]);
+  const [stateList, setStateList] = useState<SimpleStateInfo[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  useEffect(() => {
+    // Lazy load the large data file
+    import("@/lib/all-sites-data").then((mod) => {
+      setAllSites(mod.ALL_SITES);
+      setStateList(mod.STATE_LIST);
+      setDataLoaded(true);
+    });
+  }, []);
 
   const filteredStates = useMemo(() => {
-    if (!searchQuery) return STATE_LIST;
+    if (!searchQuery) return stateList;
     const q = searchQuery.toLowerCase();
-    return STATE_LIST.filter(
+    return stateList.filter(
       (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, stateList]);
 
   function getSitesForSection(section: typeof EXPLORE_SECTIONS[number]): CampSite[] {
     if (section.includeExtra) {
       const cats = [section.category, ...section.includeExtra];
-      return ALL_SITES.filter((s) => cats.includes(s.category)).slice(0, 20);
+      return allSites.filter((s) => cats.includes(s.category)).slice(0, 20);
     }
-    return ALL_SITES.filter((s) => s.category === section.category).slice(0, 20);
+    return allSites.filter((s) => s.category === section.category).slice(0, 20);
   }
 
   function renderSiteCard(site: CampSite) {

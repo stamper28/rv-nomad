@@ -134,3 +134,6 @@
 - [x] Add CAT Scale and public weigh station data per state
 - [x] Weight scale map layer toggle on interactive map
 - [x] Weight scale detail cards (address, hours, cost, type)
+
+## Bugs
+- [x] App won't download and open due to a bug (fixed: lazy-loaded all large data imports to prevent Expo Go crash)
