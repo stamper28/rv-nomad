@@ -9,21 +9,40 @@ type IconMapping = Record<SymbolViewProps["name"], ComponentProps<typeof Materia
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * SF Symbols to Material Icons mappings for tab bar and app icons.
  */
 const MAPPING = {
+  // Tab icons
+  "map.fill": "map",
+  "safari.fill": "explore",
+  "point.topleft.down.to.point.bottomright.curvepath.fill": "route",
+  "checklist": "checklist",
+  "gearshape.fill": "settings",
+  // General icons
   "house.fill": "home",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
   "chevron.right": "chevron-right",
+  "magnifyingglass": "search",
+  "location.fill": "my-location",
+  "line.3.horizontal.decrease.circle": "filter-list",
+  "plus": "add",
+  "xmark": "close",
+  "star.fill": "star",
+  "star": "star-border",
+  "heart.fill": "favorite",
+  "heart": "favorite-border",
+  "trash": "delete",
+  "pencil": "edit",
+  "arrow.clockwise": "refresh",
+  "info.circle": "info",
+  "person.fill": "person",
+  "moon.fill": "dark-mode",
+  "sun.max.fill": "light-mode",
 } as IconMapping;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
 export function IconSymbol({
   name,
