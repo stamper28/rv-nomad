@@ -4,7 +4,7 @@ import { Platform, View, Text, StyleSheet } from "react-native";
 /**
  * Cross-platform MapView wrapper.
  * On web, renders a placeholder since react-native-maps doesn't support web.
- * On native, this file is replaced by map-view-wrapper.native.tsx
+ * On native, this file is replaced by map-view-wrapper.native.tsx (using expo-maps)
  */
 
 export const MapViewWrapper = forwardRef<any, any>(

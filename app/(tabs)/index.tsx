@@ -338,13 +338,63 @@ export default function MapScreen() {
     );
   }
 
+  // Build markers array for expo-maps (markers are data props, not children)
+  const allMarkers = useMemo(() => {
+    const markers: Array<{ id: string; coordinates: { latitude: number; longitude: number }; title?: string; snippet?: string }> = [];
+
+    // Add campground markers
+    filteredCampgrounds.forEach((campground) => {
+      markers.push({
+        id: campground.id,
+        coordinates: {
+          latitude: campground.latitude,
+          longitude: campground.longitude,
+        },
+        title: campground.name,
+        snippet: CATEGORY_LABELS[campground.category],
+      });
+    });
+
+    // Add weight scale markers
+    visibleScales.forEach((scale) => {
+      markers.push({
+        id: scale.id,
+        coordinates: {
+          latitude: scale.latitude,
+          longitude: scale.longitude,
+        },
+        title: scale.name,
+        snippet: `${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`,
+      });
+    });
+
+    return markers;
+  }, [filteredCampgrounds, visibleScales]);
+
+  // Handle marker click - find the campground or scale by id
+  const handleExpoMarkerClick = useCallback((marker: any) => {
+    const markerId = marker?.id;
+    if (!markerId) return;
+
+    // Check campgrounds first
+    const campground = filteredCampgrounds.find((c) => c.id === markerId);
+    if (campground) {
+      handleMarkerPress(campground);
+      return;
+    }
+
+    // Check weight scales
+    const scale = visibleScales.find((s) => s.id === markerId);
+    if (scale) {
+      handleScalePress(scale);
+    }
+  }, [filteredCampgrounds, visibleScales, handleMarkerPress, handleScalePress]);
+
   // Import map components - on native, Metro resolves .native.tsx automatically
   let NativeMapView: any = null;
-  let NativeMarker: any = null;
   try {
     const mapModule = require("@/components/map-view-wrapper");
     NativeMapView = mapModule.MapViewWrapper;
-    NativeMarker = mapModule.MarkerWrapper;
   } catch (e) {
     // Map module failed to load
   }
@@ -369,41 +419,12 @@ export default function MapScreen() {
         style={styles.map}
         initialRegion={US_CENTER}
         showsUserLocation
-        showsMyLocationButton={false}
-        showsCompass={false}
         onPress={handleMapPress}
         onMapReady={() => setMapReady(true)}
         onRegionChangeComplete={handleRegionChangeComplete}
-      >
-        {mapReady &&
-          filteredCampgrounds.map((campground) => (
-            <NativeMarker
-              key={campground.id}
-              coordinate={{
-                latitude: campground.latitude,
-                longitude: campground.longitude,
-              }}
-              title={campground.name}
-              description={CATEGORY_LABELS[campground.category]}
-              pinColor={CATEGORY_COLORS[campground.category]}
-              onPress={() => handleMarkerPress(campground)}
-            />
-          ))}
-        {mapReady &&
-          visibleScales.map((scale) => (
-            <NativeMarker
-              key={scale.id}
-              coordinate={{
-                latitude: scale.latitude,
-                longitude: scale.longitude,
-              }}
-              title={scale.name}
-              description={`${scale.type === "cat_scale" ? "CAT Scale" : scale.type === "public_weigh_station" ? "Public Weigh Station" : "Truck Stop Scale"} • ${scale.cost}`}
-              pinColor="#FF6F00"
-              onPress={() => handleScalePress(scale)}
-            />
-          ))}
-      </NativeMapView>
+        markers={mapReady ? allMarkers : []}
+        onMarkerClick={handleExpoMarkerClick}
+      />
 
       {/* Search Bar */}
       <View
