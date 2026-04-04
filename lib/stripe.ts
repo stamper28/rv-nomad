@@ -22,6 +22,27 @@
 // Platform booking fee per night (in dollars)
 export const PLATFORM_FEE_PER_NIGHT = 2.00;
 
+// Annual subscription price (in dollars)
+export const ANNUAL_SUBSCRIPTION_PRICE = 49.99;
+
+// Subscription plan details
+export const SUBSCRIPTION_PLAN = {
+  name: "RV Nomad Pro",
+  price: ANNUAL_SUBSCRIPTION_PRICE,
+  period: "year" as const,
+  features: [
+    "Access to 2,300+ campgrounds & RV parks",
+    "State-by-state RV laws & boondocking rules",
+    "RV size limits for every campsite",
+    "Reviews from fellow RVers",
+    "Save & organize favorite sites",
+    "RV fuel stations, propane, repair shops & more",
+    "Roadside attractions & scenic viewpoints",
+    "Trip planning tools",
+    "Discount program info (Good Sam, Passport America, Military)",
+  ],
+};
+
 // Tax rate applied to campsite charges (not to platform fee)
 export const TAX_RATE = 0.06;
 

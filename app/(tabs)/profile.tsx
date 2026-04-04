@@ -365,7 +365,7 @@ export default function ProfileScreen() {
           <View className="bg-surface rounded-2xl p-4 border border-border items-center gap-1">
             <Text className="text-lg font-bold text-foreground">RV Nomad</Text>
             <Text className="text-sm text-muted">
-              Version 1.0.0 — $39.99/yr or $5.99/mo
+              Version 1.0.0 — $49.99/yr or $5.99/mo
             </Text>
             <Text className="text-xs text-muted">Available on the App Store and Google Play</Text>
           </View>

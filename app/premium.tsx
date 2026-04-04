@@ -31,7 +31,7 @@ export default function PremiumScreen() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("yearly");
 
-  const yearlyPrice = 39.99;
+  const yearlyPrice = 49.99;
   const monthlyPrice = 5.99;
   const yearlySavings = Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100);
 
