@@ -181,3 +181,34 @@
 - [x] Fix Android APK build failure: minSdkVersion 22 but native libraries require SDK 24 (fixed: set compileSdkVersion 35, targetSdkVersion 35, removed armeabi-v7a arch restriction)
 - [x] Fix persistent minSdkVersion 22 error in EAS build (added custom withMinSdk config plugin to force gradle.properties android.minSdkVersion=24)
 - [x] Comprehensive pricing audit across all categories (Canadian + US) — fixed 620 pricing issues across 13 categories
+- [x] Add tappable weather widget on Home screen that detects user's GPS location
+- [x] Build weather detail screen showing current conditions, temperature, wind, humidity, and forecast
+- [x] Use free weather API (Open-Meteo) — no API key required
+- [x] Live weather screen with GPS location detection using Open-Meteo API (no key needed)
+- [x] Tappable "My Location" button on weather screen to auto-detect GPS and fetch real forecast
+- [x] Interactive ratings/reviews on site-detail page — users can submit star ratings and written reviews
+- [x] Interactive community chat screen — users can post messages, reply, and discuss campgrounds
+- [x] Camping gear shop screen with categorized products and Amazon purchase links
+- [x] Backend: Database schema for bookings (site_id, dates, guest info, payment status)
+- [x] Backend: Availability checking API (check if dates are available for a site)
+- [x] Backend: Booking creation API with date conflict prevention
+- [x] Backend: Stripe payment integration for real payment processing
+- [x] Backend: Reviews and ratings API (submit/fetch reviews per site)
+- [x] Backend: Community chat/posts API (create posts, reply, like)
+- [x] Frontend: Update booking screen to check real availability before payment
+- [x] Frontend: Show available/unavailable dates on booking calendar
+- [x] Add membership requirement notices on Harvest Hosts, Passport America, Good Sam, Boondockers Welcome listings (show cost + what's included)
+- [x] Add pet-friendly, noise level, cell signal strength, elevation, water quality fields to campsite data
+- [ ] Interactive map view with pins (tap pins to see campsite info) — deferred (requires native map library)
+- [x] GPS "Near Me" sorting — auto-detect location and show closest sites first
+- [x] Interactive reviews on site-detail — users can submit star ratings and written reviews via backend
+- [x] Interactive community chat with replies, likes, and backend integration
+- [x] Live GPS weather screen with Open-Meteo API (replace static data)
+- [x] Membership requirement notices with affiliate "Join" buttons (Harvest Hosts, Good Sam, Passport America, Boondockers Welcome)
+- [x] Cancellation alerts — "Notify me when a site opens at [campground]"
+- [x] Offline mode — cache campground data locally for no-service areas (real AsyncStorage caching)
+- [x] Gear shop with Amazon affiliate links and categorized products
+- [x] Crowd level / best time to visit indicators
+- [x] Water quality/potability info for boondocking sites
+- [x] Affiliate link infrastructure with configurable tags (Amazon, Harvest Hosts, Good Sam, etc.)
+- [x] RV insurance comparison section with affiliate links

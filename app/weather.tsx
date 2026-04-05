@@ -1,86 +1,231 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
+  ActivityIndicator,
+  Platform,
+  Alert,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Location from "expo-location";
+import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 // ── Types ──
-interface DayForecast {
-  day: string;
-  high: number;
-  low: number;
-  condition: "sunny" | "partly_cloudy" | "cloudy" | "rain" | "storm" | "snow" | "wind";
-  precipitation: number;
-  wind: number;
+interface CurrentWeather {
+  temperature: number;
+  apparentTemperature: number;
   humidity: number;
+  windSpeed: number;
+  windDirection: number;
+  weatherCode: number;
+  isDay: boolean;
 }
 
-interface WeatherAlert {
-  type: "warning" | "watch" | "advisory";
-  title: string;
-  description: string;
-  expires: string;
+interface DailyForecast {
+  date: string;
+  dayName: string;
+  tempMax: number;
+  tempMin: number;
+  weatherCode: number;
+  precipProbability: number;
+  windSpeedMax: number;
+  sunrise: string;
+  sunset: string;
+  uvIndexMax: number;
 }
 
-const CONDITION_CONFIG: Record<DayForecast["condition"], { icon: string; label: string; color: string }> = {
-  sunny: { icon: "wb-sunny", label: "Sunny", color: "#FB8C00" },
-  partly_cloudy: { icon: "cloud", label: "Partly Cloudy", color: "#78909C" },
-  cloudy: { icon: "cloud", label: "Cloudy", color: "#607D8B" },
-  rain: { icon: "water-drop", label: "Rain", color: "#1565C0" },
-  storm: { icon: "flash-on", label: "Thunderstorm", color: "#6A1B9A" },
-  snow: { icon: "ac-unit", label: "Snow", color: "#42A5F5" },
-  wind: { icon: "air", label: "Windy", color: "#26A69A" },
-};
+interface HourlyForecast {
+  time: string;
+  temperature: number;
+  weatherCode: number;
+  precipProbability: number;
+}
 
-// ── Sample Forecast Data ──
-const SAMPLE_FORECAST: DayForecast[] = [
-  { day: "Today", high: 78, low: 55, condition: "sunny", precipitation: 0, wind: 8, humidity: 35 },
-  { day: "Fri", high: 82, low: 58, condition: "sunny", precipitation: 5, wind: 10, humidity: 30 },
-  { day: "Sat", high: 75, low: 52, condition: "partly_cloudy", precipitation: 15, wind: 12, humidity: 45 },
-  { day: "Sun", high: 68, low: 48, condition: "rain", precipitation: 70, wind: 18, humidity: 75 },
-  { day: "Mon", high: 65, low: 45, condition: "storm", precipitation: 85, wind: 25, humidity: 80 },
-  { day: "Tue", high: 72, low: 50, condition: "partly_cloudy", precipitation: 20, wind: 15, humidity: 50 },
-  { day: "Wed", high: 76, low: 54, condition: "sunny", precipitation: 5, wind: 8, humidity: 38 },
-];
+// WMO Weather Codes → display config
+function getWeatherInfo(code: number, isDay = true): { icon: string; label: string; color: string } {
+  if (code === 0) return { icon: isDay ? "wb-sunny" : "dark-mode", label: "Clear Sky", color: "#FB8C00" };
+  if (code <= 3) return { icon: "cloud", label: code === 1 ? "Mainly Clear" : code === 2 ? "Partly Cloudy" : "Overcast", color: "#78909C" };
+  if (code <= 49) return { icon: "water-drop", label: "Fog", color: "#90A4AE" };
+  if (code <= 59) return { icon: "water-drop", label: "Drizzle", color: "#42A5F5" };
+  if (code <= 69) return { icon: "water-drop", label: "Rain", color: "#1565C0" };
+  if (code <= 79) return { icon: "ac-unit", label: "Snow", color: "#42A5F5" };
+  if (code <= 82) return { icon: "water-drop", label: "Rain Showers", color: "#1976D2" };
+  if (code <= 86) return { icon: "ac-unit", label: "Snow Showers", color: "#64B5F6" };
+  if (code <= 99) return { icon: "flash-on", label: "Thunderstorm", color: "#6A1B9A" };
+  return { icon: "cloud", label: "Unknown", color: "#607D8B" };
+}
 
-const SAMPLE_ALERTS: WeatherAlert[] = [
-  {
-    type: "warning",
-    title: "Severe Thunderstorm Warning",
-    description: "Severe thunderstorms expected Monday afternoon through evening. Damaging winds up to 60 mph, large hail, and heavy rain possible. Secure all outdoor items and awnings.",
-    expires: "Mon 10:00 PM",
-  },
-  {
-    type: "advisory",
-    title: "Wind Advisory",
-    description: "Sustained winds of 25-35 mph with gusts up to 50 mph expected Sunday through Monday. High-profile vehicles including RVs may be difficult to control on exposed roadways.",
-    expires: "Mon 6:00 AM",
-  },
-];
+function windDirectionLabel(deg: number): string {
+  const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  return dirs[Math.round(deg / 45) % 8];
+}
 
-const RV_WEATHER_TIPS = [
-  { condition: "wind", tip: "Winds above 40 mph: Do NOT drive your RV. Pull over and wait it out.", icon: "warning" },
-  { condition: "storm", tip: "Retract all awnings and slideouts before storms. Disconnect shore power if lightning is close.", icon: "flash-on" },
-  { condition: "rain", tip: "Check your roof seals before heavy rain. A small leak can cause thousands in damage.", icon: "water-drop" },
-  { condition: "snow", tip: "Keep your furnace running to prevent pipe freezing. Open cabinet doors under sinks.", icon: "ac-unit" },
-];
+function celsiusToFahrenheit(c: number): number {
+  return Math.round(c * 9 / 5 + 32);
+}
+
+function kmhToMph(kmh: number): number {
+  return Math.round(kmh * 0.621371);
+}
 
 export default function WeatherScreen() {
   const colors = useColors();
   const router = useRouter();
-  const params = useLocalSearchParams<{ location?: string }>();
-  const [location, setLocation] = useState(params.location || "Sedona, Arizona");
+  const params = useLocalSearchParams<{ lat?: string; lon?: string; name?: string }>();
 
-  const currentWeather = SAMPLE_FORECAST[0];
-  const currentCondition = CONDITION_CONFIG[currentWeather.condition];
+  const [loading, setLoading] = useState(true);
+  const [locationName, setLocationName] = useState(params.name || "My Location");
+  const [current, setCurrent] = useState<CurrentWeather | null>(null);
+  const [daily, setDaily] = useState<DailyForecast[]>([]);
+  const [hourly, setHourly] = useState<HourlyForecast[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [useFahrenheit, setUseFahrenheit] = useState(true);
+
+  const fetchWeather = useCallback(async (lat: number, lon: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset,uv_index_max&hourly=temperature_2m,weather_code,precipitation_probability&timezone=auto&forecast_days=7`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if (data.current) {
+        setCurrent({
+          temperature: data.current.temperature_2m,
+          apparentTemperature: data.current.apparent_temperature,
+          humidity: data.current.relative_humidity_2m,
+          windSpeed: data.current.wind_speed_10m,
+          windDirection: data.current.wind_direction_10m,
+          weatherCode: data.current.weather_code,
+          isDay: data.current.is_day === 1,
+        });
+      }
+
+      if (data.daily) {
+        const days: DailyForecast[] = data.daily.time.map((date: string, i: number) => {
+          const d = new Date(date + "T12:00:00");
+          const dayName = i === 0 ? "Today" : i === 1 ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short" });
+          return {
+            date,
+            dayName,
+            tempMax: data.daily.temperature_2m_max[i],
+            tempMin: data.daily.temperature_2m_min[i],
+            weatherCode: data.daily.weather_code[i],
+            precipProbability: data.daily.precipitation_probability_max[i],
+            windSpeedMax: data.daily.wind_speed_10m_max[i],
+            sunrise: data.daily.sunrise[i],
+            sunset: data.daily.sunset[i],
+            uvIndexMax: data.daily.uv_index_max[i],
+          };
+        });
+        setDaily(days);
+      }
+
+      if (data.hourly) {
+        const now = new Date();
+        const hours: HourlyForecast[] = data.hourly.time
+          .map((time: string, i: number) => ({
+            time,
+            temperature: data.hourly.temperature_2m[i],
+            weatherCode: data.hourly.weather_code[i],
+            precipProbability: data.hourly.precipitation_probability[i],
+          }))
+          .filter((h: HourlyForecast) => new Date(h.time) >= now)
+          .slice(0, 24);
+        setHourly(hours);
+      }
+    } catch (err) {
+      setError("Failed to fetch weather data. Check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getLocationAndFetch = useCallback(async () => {
+    // If coordinates were passed as params, use those
+    if (params.lat && params.lon) {
+      fetchWeather(parseFloat(params.lat), parseFloat(params.lon));
+      return;
+    }
+
+    // Otherwise get GPS location
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError("Location permission denied. Please enable location access in Settings.");
+        setLoading(false);
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      // Reverse geocode to get city name
+      try {
+        const [geo] = await Location.reverseGeocodeAsync({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+        if (geo) {
+          setLocationName(geo.city || geo.subregion || geo.region || "My Location");
+        }
+      } catch {
+        // Geocoding failed, use default name
+      }
+      fetchWeather(loc.coords.latitude, loc.coords.longitude);
+    } catch (err) {
+      setError("Could not determine your location.");
+      setLoading(false);
+    }
+  }, [params.lat, params.lon, fetchWeather]);
+
+  useEffect(() => {
+    getLocationAndFetch();
+  }, []);
+
+  const temp = (c: number) => useFahrenheit ? `${celsiusToFahrenheit(c)}°F` : `${Math.round(c)}°C`;
+  const wind = (kmh: number) => useFahrenheit ? `${kmhToMph(kmh)} mph` : `${Math.round(kmh)} km/h`;
+
+  if (loading) {
+    return (
+      <ScreenContainer edges={["top", "left", "right"]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.title, { color: colors.foreground }]}>Weather</Text>
+          <View style={{ width: 28 }} />
+        </View>
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.muted }]}>Getting your location...</Text>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScreenContainer edges={["top", "left", "right"]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.title, { color: colors.foreground }]}>Weather</Text>
+          <View style={{ width: 28 }} />
+        </View>
+        <View style={styles.loadingCenter}>
+          <MaterialIcons name="cloud-off" size={48} color={colors.muted} />
+          <Text style={[styles.errorText, { color: colors.muted }]}>{error}</Text>
+          <TouchableOpacity onPress={getLocationAndFetch} style={[styles.retryBtn, { backgroundColor: colors.primary }]}>
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  const weatherInfo = current ? getWeatherInfo(current.weatherCode, current.isDay) : null;
 
   return (
     <ScreenContainer edges={["top", "left", "right"]}>
@@ -89,153 +234,189 @@ export default function WeatherScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <MaterialIcons name="chevron-left" size={28} color={colors.primary} />
         </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Weather</Text>
-          <Text style={[styles.subtitle, { color: colors.muted }]}>7-day forecast for your campsite</Text>
-        </View>
+        <Text style={[styles.title, { color: colors.foreground }]}>Weather</Text>
+        <TouchableOpacity
+          onPress={() => {
+            if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setUseFahrenheit(!useFahrenheit);
+          }}
+          style={[styles.unitToggle, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <Text style={[styles.unitText, { color: colors.primary }]}>{useFahrenheit ? "°F" : "°C"}</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Location Search */}
-        <View style={[styles.locationBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <MaterialIcons name="place" size={20} color={colors.primary} />
-          <TextInput
-            style={[styles.locationInput, { color: colors.foreground }]}
-            value={location}
-            onChangeText={setLocation}
-            placeholder="Enter campground or city..."
-            placeholderTextColor={colors.muted}
-            returnKeyType="search"
-          />
-          <TouchableOpacity activeOpacity={0.7}>
-            <MaterialIcons name="my-location" size={20} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
+        {/* Current Conditions */}
+        {current && weatherInfo && (
+          <View style={[styles.currentCard, { backgroundColor: weatherInfo.color + "15" }]}>
+            <TouchableOpacity
+              onPress={() => {
+                if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                getLocationAndFetch();
+              }}
+              style={styles.locationRow}
+            >
+              <MaterialIcons name="my-location" size={16} color={colors.primary} />
+              <Text style={[styles.locationName, { color: colors.foreground }]}>{locationName}</Text>
+              <MaterialIcons name="refresh" size={16} color={colors.muted} />
+            </TouchableOpacity>
 
-        {/* Current Weather Card */}
-        <View style={[styles.currentCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.currentMain}>
-            <View>
-              <Text style={[styles.currentTemp, { color: colors.foreground }]}>{currentWeather.high}°F</Text>
-              <Text style={[styles.currentCondition, { color: currentCondition.color }]}>{currentCondition.label}</Text>
-              <Text style={[styles.currentHL, { color: colors.muted }]}>H: {currentWeather.high}° L: {currentWeather.low}°</Text>
+            <View style={styles.currentMain}>
+              <MaterialIcons name={weatherInfo.icon as any} size={64} color={weatherInfo.color} />
+              <Text style={[styles.currentTemp, { color: colors.foreground }]}>{temp(current.temperature)}</Text>
             </View>
-            <View style={[styles.currentIconBg, { backgroundColor: currentCondition.color + "15" }]}>
-              <MaterialIcons name={currentCondition.icon as any} size={56} color={currentCondition.color} />
-            </View>
-          </View>
-          <View style={[styles.currentStats, { borderTopColor: colors.border }]}>
-            <View style={styles.statItem}>
-              <MaterialIcons name="water-drop" size={18} color="#1565C0" />
-              <Text style={[styles.statValue, { color: colors.foreground }]}>{currentWeather.precipitation}%</Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>Rain</Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialIcons name="air" size={18} color="#26A69A" />
-              <Text style={[styles.statValue, { color: colors.foreground }]}>{currentWeather.wind} mph</Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>Wind</Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialIcons name="opacity" size={18} color="#7E57C2" />
-              <Text style={[styles.statValue, { color: colors.foreground }]}>{currentWeather.humidity}%</Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>Humidity</Text>
-            </View>
-          </View>
-        </View>
+            <Text style={[styles.currentLabel, { color: weatherInfo.color }]}>{weatherInfo.label}</Text>
+            <Text style={[styles.feelsLike, { color: colors.muted }]}>Feels like {temp(current.apparentTemperature)}</Text>
 
-        {/* Weather Alerts */}
-        {SAMPLE_ALERTS.length > 0 && (
-          <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Active Alerts</Text>
-            {SAMPLE_ALERTS.map((alert, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.alertCard,
-                  {
-                    backgroundColor: alert.type === "warning" ? colors.error + "10" : colors.warning + "10",
-                    borderColor: alert.type === "warning" ? colors.error + "40" : colors.warning + "40",
-                  },
-                ]}
-              >
-                <View style={styles.alertHeader}>
-                  <MaterialIcons
-                    name={alert.type === "warning" ? "warning" : "info"}
-                    size={18}
-                    color={alert.type === "warning" ? colors.error : colors.warning}
-                  />
-                  <Text style={[styles.alertTitle, { color: alert.type === "warning" ? colors.error : colors.warning }]}>
-                    {alert.title}
-                  </Text>
-                </View>
-                <Text style={[styles.alertDesc, { color: colors.foreground }]}>{alert.description}</Text>
-                <Text style={[styles.alertExpires, { color: colors.muted }]}>Expires: {alert.expires}</Text>
+            {/* Current Details */}
+            <View style={styles.detailsRow}>
+              <View style={styles.detailItem}>
+                <MaterialIcons name="water-drop" size={18} color="#1565C0" />
+                <Text style={[styles.detailValue, { color: colors.foreground }]}>{current.humidity}%</Text>
+                <Text style={[styles.detailLabel, { color: colors.muted }]}>Humidity</Text>
               </View>
-            ))}
+              <View style={styles.detailItem}>
+                <MaterialIcons name="air" size={18} color="#26A69A" />
+                <Text style={[styles.detailValue, { color: colors.foreground }]}>{wind(current.windSpeed)}</Text>
+                <Text style={[styles.detailLabel, { color: colors.muted }]}>{windDirectionLabel(current.windDirection)}</Text>
+              </View>
+              {daily[0] && (
+                <>
+                  <View style={styles.detailItem}>
+                    <MaterialIcons name="wb-sunny" size={18} color="#FB8C00" />
+                    <Text style={[styles.detailValue, { color: colors.foreground }]}>UV {daily[0].uvIndexMax}</Text>
+                    <Text style={[styles.detailLabel, { color: colors.muted }]}>
+                      {daily[0].uvIndexMax <= 2 ? "Low" : daily[0].uvIndexMax <= 5 ? "Moderate" : daily[0].uvIndexMax <= 7 ? "High" : "Very High"}
+                    </Text>
+                  </View>
+                  <View style={styles.detailItem}>
+                    <MaterialIcons name="umbrella" size={18} color="#1976D2" />
+                    <Text style={[styles.detailValue, { color: colors.foreground }]}>{daily[0].precipProbability}%</Text>
+                    <Text style={[styles.detailLabel, { color: colors.muted }]}>Rain</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Hourly Forecast */}
+        {hourly.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Next 24 Hours</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
+              {hourly.map((h, i) => {
+                const hInfo = getWeatherInfo(h.weatherCode);
+                const time = new Date(h.time);
+                const label = i === 0 ? "Now" : time.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+                return (
+                  <View key={i} style={[styles.hourCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.hourTime, { color: colors.muted }]}>{label}</Text>
+                    <MaterialIcons name={hInfo.icon as any} size={22} color={hInfo.color} />
+                    <Text style={[styles.hourTemp, { color: colors.foreground }]}>{temp(h.temperature)}</Text>
+                    {h.precipProbability > 0 && (
+                      <Text style={[styles.hourRain, { color: "#1565C0" }]}>{h.precipProbability}%</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
           </View>
         )}
 
         {/* 7-Day Forecast */}
-        <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>7-Day Forecast</Text>
-          <View style={[styles.forecastCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            {SAMPLE_FORECAST.map((day, i) => {
-              const cond = CONDITION_CONFIG[day.condition];
-              return (
-                <View
-                  key={i}
-                  style={[
-                    styles.forecastRow,
-                    i < SAMPLE_FORECAST.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border },
-                  ]}
-                >
-                  <Text style={[styles.forecastDay, { color: colors.foreground }]}>{day.day}</Text>
-                  <View style={styles.forecastCondition}>
-                    <MaterialIcons name={cond.icon as any} size={20} color={cond.color} />
-                    <Text style={[styles.forecastPrecip, { color: "#1565C0" }]}>
-                      {day.precipitation > 0 ? `${day.precipitation}%` : ""}
-                    </Text>
-                  </View>
-                  <View style={styles.forecastTemps}>
-                    <Text style={[styles.forecastHigh, { color: colors.foreground }]}>{day.high}°</Text>
-                    <View style={[styles.tempBar, { backgroundColor: colors.border }]}>
-                      <View
-                        style={[
-                          styles.tempBarFill,
-                          {
-                            backgroundColor: cond.color,
-                            width: `${((day.high - 40) / 60) * 100}%`,
-                          },
-                        ]}
-                      />
+        {daily.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>7-Day Forecast</Text>
+            <View style={[styles.forecastCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {daily.map((day, i) => {
+                const dInfo = getWeatherInfo(day.weatherCode);
+                return (
+                  <View key={i} style={[styles.dayRow, i < daily.length - 1 && { borderBottomWidth: 0.5, borderBottomColor: colors.border }]}>
+                    <Text style={[styles.dayName, { color: colors.foreground }]}>{day.dayName}</Text>
+                    <View style={styles.dayMiddle}>
+                      <MaterialIcons name={dInfo.icon as any} size={20} color={dInfo.color} />
+                      {day.precipProbability > 0 && (
+                        <Text style={[styles.dayRain, { color: "#1565C0" }]}>{day.precipProbability}%</Text>
+                      )}
                     </View>
-                    <Text style={[styles.forecastLow, { color: colors.muted }]}>{day.low}°</Text>
+                    <View style={styles.dayTemps}>
+                      <Text style={[styles.dayHigh, { color: colors.foreground }]}>{temp(day.tempMax)}</Text>
+                      <Text style={[styles.dayLow, { color: colors.muted }]}>{temp(day.tempMin)}</Text>
+                    </View>
                   </View>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* Sunrise / Sunset */}
+        {daily[0] && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Sun</Text>
+            <View style={styles.sunRow}>
+              <View style={[styles.sunCard, { backgroundColor: "#FFF3E0", borderColor: colors.border }]}>
+                <MaterialIcons name="wb-sunny" size={28} color="#FB8C00" />
+                <Text style={[styles.sunLabel, { color: colors.muted }]}>Sunrise</Text>
+                <Text style={[styles.sunTime, { color: colors.foreground }]}>
+                  {new Date(daily[0].sunrise).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                </Text>
+              </View>
+              <View style={[styles.sunCard, { backgroundColor: "#E8EAF6", borderColor: colors.border }]}>
+                <MaterialIcons name="dark-mode" size={28} color="#5C6BC0" />
+                <Text style={[styles.sunLabel, { color: colors.muted }]}>Sunset</Text>
+                <Text style={[styles.sunTime, { color: colors.foreground }]}>
+                  {new Date(daily[0].sunset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* RV Weather Tips */}
-        <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>RV Weather Tips</Text>
-          {RV_WEATHER_TIPS.map((tip, i) => (
-            <View key={i} style={[styles.tipCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <MaterialIcons name={tip.icon as any} size={22} color={colors.warning} />
-              <Text style={[styles.tipText, { color: colors.foreground }]}>{tip.tip}</Text>
+          <View style={[styles.tipsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            {current && current.windSpeed > 40 && (
+              <View style={styles.tipRow}>
+                <MaterialIcons name="warning" size={16} color={colors.warning} />
+                <Text style={[styles.tipText, { color: colors.foreground }]}>
+                  High winds detected. Secure awnings and avoid driving tall rigs on exposed roads.
+                </Text>
+              </View>
+            )}
+            {daily[0] && daily[0].precipProbability > 60 && (
+              <View style={styles.tipRow}>
+                <MaterialIcons name="water-drop" size={16} color="#1565C0" />
+                <Text style={[styles.tipText, { color: colors.foreground }]}>
+                  High chance of rain. Check campsite drainage and avoid low-lying boondocking spots.
+                </Text>
+              </View>
+            )}
+            {daily[0] && daily[0].uvIndexMax > 7 && (
+              <View style={styles.tipRow}>
+                <MaterialIcons name="wb-sunny" size={16} color="#FB8C00" />
+                <Text style={[styles.tipText, { color: colors.foreground }]}>
+                  Very high UV index. Use sunscreen, seek shade, and keep your RV AC running.
+                </Text>
+              </View>
+            )}
+            {current && current.temperature < 0 && (
+              <View style={styles.tipRow}>
+                <MaterialIcons name="ac-unit" size={16} color="#42A5F5" />
+                <Text style={[styles.tipText, { color: colors.foreground }]}>
+                  Freezing temperatures. Protect water lines, use heat tape, and keep tanks insulated.
+                </Text>
+              </View>
+            )}
+            <View style={styles.tipRow}>
+              <MaterialIcons name="info" size={16} color={colors.primary} />
+              <Text style={[styles.tipText, { color: colors.muted }]}>
+                Weather data from Open-Meteo. Tap the location icon to refresh with your current GPS position.
+              </Text>
             </View>
-          ))}
-        </View>
-
-        {/* API Integration Notice */}
-        <View style={[styles.apiNotice, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <MaterialIcons name="cloud" size={24} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.apiNoticeTitle, { color: colors.foreground }]}>Live Weather Data</Text>
-            <Text style={[styles.apiNoticeText, { color: colors.muted }]}>
-              Connect a weather API (OpenWeatherMap, Weather.gov) for real-time forecasts and alerts at your exact campsite location.
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -244,66 +425,52 @@ export default function WeatherScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 8, gap: 4,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, paddingBottom: 8 },
   backBtn: { padding: 4 },
   title: { fontSize: 20, fontWeight: "700" },
-  subtitle: { fontSize: 13 },
-  locationBar: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    marginHorizontal: 16, marginBottom: 12, paddingHorizontal: 12, paddingVertical: 10,
-    borderRadius: 12, borderWidth: 1,
-  },
-  locationInput: { flex: 1, fontSize: 15 },
-  currentCard: {
-    marginHorizontal: 16, marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden",
-  },
-  currentMain: {
-    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    padding: 20,
-  },
-  currentTemp: { fontSize: 52, fontWeight: "800", lineHeight: 56 },
-  currentCondition: { fontSize: 18, fontWeight: "600", marginTop: 4 },
-  currentHL: { fontSize: 14, marginTop: 4 },
-  currentIconBg: {
-    width: 90, height: 90, borderRadius: 45, justifyContent: "center", alignItems: "center",
-  },
-  currentStats: {
-    flexDirection: "row", justifyContent: "space-around", paddingVertical: 14, borderTopWidth: 0.5,
-  },
-  statItem: { alignItems: "center", gap: 4 },
-  statValue: { fontSize: 15, fontWeight: "700" },
-  statLabel: { fontSize: 11 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 8 },
-  alertCard: {
-    padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 8, gap: 6,
-  },
-  alertHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
-  alertTitle: { fontSize: 14, fontWeight: "700", flex: 1 },
-  alertDesc: { fontSize: 13, lineHeight: 19 },
-  alertExpires: { fontSize: 11, fontStyle: "italic" },
+  unitToggle: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
+  unitText: { fontSize: 14, fontWeight: "700" },
+  loadingCenter: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  loadingText: { fontSize: 14 },
+  errorText: { fontSize: 14, textAlign: "center", paddingHorizontal: 32 },
+  retryBtn: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 10, marginTop: 8 },
+  retryBtnText: { color: "#fff", fontWeight: "700" },
+  // Current
+  currentCard: { marginHorizontal: 16, borderRadius: 20, padding: 24, alignItems: "center", gap: 8 },
+  locationRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  locationName: { fontSize: 16, fontWeight: "600" },
+  currentMain: { flexDirection: "row", alignItems: "center", gap: 16, marginTop: 8 },
+  currentTemp: { fontSize: 56, fontWeight: "800" },
+  currentLabel: { fontSize: 18, fontWeight: "600" },
+  feelsLike: { fontSize: 14 },
+  detailsRow: { flexDirection: "row", justifyContent: "space-around", width: "100%" as any, marginTop: 16, paddingTop: 16, borderTopWidth: 0.5, borderTopColor: "rgba(0,0,0,0.1)" },
+  detailItem: { alignItems: "center", gap: 4 },
+  detailValue: { fontSize: 16, fontWeight: "700" },
+  detailLabel: { fontSize: 11 },
+  // Sections
+  section: { marginTop: 20, paddingHorizontal: 16 },
+  sectionTitle: { fontSize: 17, fontWeight: "700", marginBottom: 10 },
+  // Hourly
+  hourCard: { alignItems: "center", paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, gap: 6, minWidth: 64 },
+  hourTime: { fontSize: 12, fontWeight: "600" },
+  hourTemp: { fontSize: 14, fontWeight: "700" },
+  hourRain: { fontSize: 10, fontWeight: "600" },
+  // Daily
   forecastCard: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
-  forecastRow: {
-    flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 14,
-  },
-  forecastDay: { width: 50, fontSize: 14, fontWeight: "600" },
-  forecastCondition: { flexDirection: "row", alignItems: "center", width: 60, gap: 4 },
-  forecastPrecip: { fontSize: 12, fontWeight: "600" },
-  forecastTemps: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
-  forecastHigh: { fontSize: 14, fontWeight: "700", width: 32, textAlign: "right" },
-  forecastLow: { fontSize: 14, width: 32 },
-  tempBar: { flex: 1, height: 4, borderRadius: 2 },
-  tempBarFill: { height: 4, borderRadius: 2 },
-  tipCard: {
-    flexDirection: "row", alignItems: "flex-start", gap: 10,
-    padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 6,
-  },
-  tipText: { flex: 1, fontSize: 13, lineHeight: 19 },
-  apiNotice: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    marginHorizontal: 16, marginBottom: 20, padding: 14, borderRadius: 14, borderWidth: 1,
-  },
-  apiNoticeTitle: { fontSize: 14, fontWeight: "700" },
-  apiNoticeText: { fontSize: 12, lineHeight: 17, marginTop: 2 },
+  dayRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 12 },
+  dayName: { width: 80, fontSize: 14, fontWeight: "600" },
+  dayMiddle: { flex: 1, flexDirection: "row", alignItems: "center", gap: 6 },
+  dayRain: { fontSize: 12, fontWeight: "600" },
+  dayTemps: { flexDirection: "row", gap: 10 },
+  dayHigh: { fontSize: 15, fontWeight: "700", width: 44, textAlign: "right" },
+  dayLow: { fontSize: 15, width: 44, textAlign: "right" },
+  // Sun
+  sunRow: { flexDirection: "row", gap: 12 },
+  sunCard: { flex: 1, alignItems: "center", paddingVertical: 16, borderRadius: 14, borderWidth: 1, gap: 6 },
+  sunLabel: { fontSize: 12 },
+  sunTime: { fontSize: 16, fontWeight: "700" },
+  // Tips
+  tipsCard: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
+  tipRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  tipText: { flex: 1, fontSize: 13, lineHeight: 18 },
 });

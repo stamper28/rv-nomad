@@ -26,6 +26,7 @@ import {
   type StateLaws,
 } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
+import { useUserLocation, getDistanceMiles } from "@/hooks/use-location";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -127,6 +128,10 @@ export default function HomeScreen() {
   const [showStatePicker, setShowStatePicker] = useState(false);
   const [showLaws, setShowLaws] = useState(false);
 
+  // GPS Near Me
+  const { location: userLocation, loading: locationLoading, requestLocation } = useUserLocation();
+  const [sortByDistance, setSortByDistance] = useState(false);
+
   // Lazy-loaded data
   const [allSites, setAllSites] = useState<CampSite[]>([]);
   const [stateLaws, setStateLaws] = useState<Record<string, StateLaws>>({});
@@ -194,8 +199,17 @@ export default function HomeScreen() {
       );
     }
 
+    // Sort by distance if Near Me is active
+    if (sortByDistance && userLocation) {
+      filtered = [...filtered].sort((a, b) => {
+        const distA = getDistanceMiles(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude);
+        const distB = getDistanceMiles(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude);
+        return distA - distB;
+      });
+    }
+
     return filtered;
-  }, [allSites, selectedState, selectedFilter, searchQuery]);
+  }, [allSites, selectedState, selectedFilter, searchQuery, sortByDistance, userLocation]);
 
   // Filter weight scales
   const filteredScales = useMemo(() => {
@@ -316,6 +330,7 @@ export default function HomeScreen() {
 
             <Text style={[styles.cardLocation, { color: colors.muted }]}>
               {site.city}, {STATE_NAMES[site.state] || site.state}
+              {sortByDistance && userLocation ? ` • ${getDistanceMiles(userLocation.latitude, userLocation.longitude, site.latitude, site.longitude).toFixed(0)} mi` : ""}
             </Text>
 
             <View style={styles.ratingRow}>
@@ -576,37 +591,71 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* State Selector */}
-        <Pressable
-          onPress={() => setShowStatePicker(true)}
-          style={({ pressed }) => [
-            styles.stateSelector,
-            { backgroundColor: selectedState ? colors.primary + "15" : colors.surface, borderColor: selectedState ? colors.primary : colors.border },
-            pressed && { opacity: 0.8 },
-          ]}
-        >
-          <MaterialIcons name="location-on" size={18} color={selectedState ? colors.primary : colors.muted} />
-          <Text
-            style={[
-              styles.stateSelectorText,
-              { color: selectedState ? colors.primary : colors.muted, fontWeight: selectedState ? "700" : "500" },
+        {/* State Selector + Near Me */}
+        <View style={styles.locationRow}>
+          <Pressable
+            onPress={() => setShowStatePicker(true)}
+            style={({ pressed }) => [
+              styles.stateSelector,
+              { flex: 1, backgroundColor: selectedState ? colors.primary + "15" : colors.surface, borderColor: selectedState ? colors.primary : colors.border },
+              pressed && { opacity: 0.8 },
             ]}
           >
-            {selectedState ? STATE_NAMES[selectedState] : "All States"}
-          </Text>
-          <MaterialIcons name="arrow-drop-down" size={20} color={selectedState ? colors.primary : colors.muted} />
-          {selectedState && (
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation?.();
-                handleStateSelect(null);
-              }}
-              style={({ pressed }) => [styles.stateClearBtn, pressed && { opacity: 0.6 }]}
+            <MaterialIcons name="location-on" size={18} color={selectedState ? colors.primary : colors.muted} />
+            <Text
+              style={[
+                styles.stateSelectorText,
+                { color: selectedState ? colors.primary : colors.muted, fontWeight: selectedState ? "700" : "500" },
+              ]}
             >
-              <MaterialIcons name="close" size={16} color={colors.muted} />
-            </Pressable>
-          )}
-        </Pressable>
+              {selectedState ? STATE_NAMES[selectedState] : "All States"}
+            </Text>
+            <MaterialIcons name="arrow-drop-down" size={20} color={selectedState ? colors.primary : colors.muted} />
+            {selectedState && (
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  handleStateSelect(null);
+                }}
+                style={({ pressed }) => [styles.stateClearBtn, pressed && { opacity: 0.6 }]}
+              >
+                <MaterialIcons name="close" size={16} color={colors.muted} />
+              </Pressable>
+            )}
+          </Pressable>
+
+          {/* Near Me Button */}
+          <Pressable
+            onPress={async () => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              if (sortByDistance) {
+                setSortByDistance(false);
+              } else {
+                const loc = await requestLocation();
+                if (loc) setSortByDistance(true);
+              }
+            }}
+            style={({ pressed }) => [
+              styles.nearMeBtn,
+              {
+                backgroundColor: sortByDistance ? colors.primary : colors.surface,
+                borderColor: sortByDistance ? colors.primary : colors.border,
+              },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            {locationLoading ? (
+              <Text style={[styles.nearMeBtnText, { color: colors.muted }]}>...</Text>
+            ) : (
+              <>
+                <MaterialIcons name="my-location" size={18} color={sortByDistance ? "#FFF" : colors.primary} />
+                <Text style={[styles.nearMeBtnText, { color: sortByDistance ? "#FFF" : colors.primary }]}>
+                  Near Me
+                </Text>
+              </>
+            )}
+          </Pressable>
+        </View>
 
         {/* Filter Chips */}
         <FlatList
@@ -788,7 +837,6 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 10,
     gap: 6,
   },
   stateSelectorText: { flex: 1, fontSize: 14 },
@@ -953,4 +1001,25 @@ const styles = StyleSheet.create({
   cardBody: { padding: 12, gap: 4 },
   militaryNotice: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, marginTop: 4 },
   militaryNoticeText: { fontSize: 12, fontWeight: "600" },
+  // Near Me
+  locationRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  nearMeBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  nearMeBtnText: { fontSize: 13, fontWeight: "700" },
+  distanceBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  distanceText: { fontSize: 11, fontWeight: "600" },
 });

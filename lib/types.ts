@@ -106,6 +106,19 @@ export interface CampSite {
   maxRVWidth?: string;     // e.g. "8 ft 6 in"
   pullThrough?: boolean;   // has pull-through sites
   bigRigFriendly?: boolean; // suitable for 40ft+ rigs
+  // === New competitive fields ===
+  petFriendly?: boolean | "leash_only" | "off_leash_area"; // pet policy
+  noiseLevel?: "quiet" | "moderate" | "noisy"; // campground noise
+  cellSignal?: { att?: number; verizon?: number; tmobile?: number }; // 0-5 bars
+  elevation?: number; // feet above sea level
+  waterQuality?: "potable" | "non_potable" | "bring_own" | "unknown";
+  crowdLevel?: "low" | "moderate" | "high"; // typical crowd level
+  bestSeason?: string; // e.g. "May-October", "Year-round"
+  // === Membership & Affiliate ===
+  membershipRequired?: string; // e.g. "Harvest Hosts ($99/yr)", "Good Sam ($29/yr)"
+  affiliateUrl?: string; // affiliate link for membership signup
+  bookingUrl?: string; // direct booking URL (Recreation.gov, KOA, etc.)
+  bookingPlatform?: string; // e.g. "Recreation.gov", "KOA", "Hipcamp"
 }
 
 export interface StateLaws {
