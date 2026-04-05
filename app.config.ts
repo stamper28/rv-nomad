@@ -121,6 +121,7 @@ const config: ExpoConfig = {
         },
       },
     ],
+    "./plugins/with-min-sdk",
   ],
   experiments: {
     typedRoutes: true,
