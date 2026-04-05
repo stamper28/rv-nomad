@@ -178,3 +178,4 @@
 - [x] Add many more Canadian RV parks, campgrounds, dump stations, and truck stops for all provinces (expanded from 90 to 743 Canadian sites)
 - [x] Ensure Canadian provinces display properly in state/province selector alongside US states
 - [x] Separate US states and Canadian provinces in the state selector with section headers (🇺🇸 United States / 🇨🇦 Canada sections on Home + Explore tabs)
+- [x] Fix Android APK build failure: minSdkVersion 22 but native libraries require SDK 24 (fixed: set compileSdkVersion 35, targetSdkVersion 35, removed armeabi-v7a arch restriction)
