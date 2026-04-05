@@ -180,3 +180,4 @@
 - [x] Separate US states and Canadian provinces in the state selector with section headers (🇺🇸 United States / 🇨🇦 Canada sections on Home + Explore tabs)
 - [x] Fix Android APK build failure: minSdkVersion 22 but native libraries require SDK 24 (fixed: set compileSdkVersion 35, targetSdkVersion 35, removed armeabi-v7a arch restriction)
 - [x] Fix persistent minSdkVersion 22 error in EAS build (added custom withMinSdk config plugin to force gradle.properties android.minSdkVersion=24)
+- [x] Comprehensive pricing audit across all categories (Canadian + US) — fixed 620 pricing issues across 13 categories

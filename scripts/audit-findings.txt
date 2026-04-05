@@ -1,0 +1,55 @@
+PRICING AUDIT FINDINGS - 547 issues across US + Canada
+
+Categories that need fixing:
+
+1. TRUCK STOPS (US: 38 paid should be free, CA: 3 paid should be free)
+   - Truck stops are free to stop at. The $10-15 prices are shower prices, not overnight prices.
+   - FIX: Set pricePerNight to 0 for all truck stops. Shower prices belong in description/amenities only.
+
+2. LAUNDROMATS (US: 50 free should be paid, CA: 38 free should be paid)
+   - Laundromats charge per load, typically $3-8 per wash.
+   - FIX: Set pricePerNight to 5 (average per load) for all laundromats.
+
+3. PROPANE (US: 74 free should be paid, CA: 35 free should be paid)
+   - Propane refills cost money, typically $15-30 per fill.
+   - FIX: Set pricePerNight to 20 (average refill cost) for all propane stations.
+
+4. RV REPAIR (US: 78 free should be paid, CA: 33 free should be paid)
+   - RV repair shops charge for service, typically $75-150/hr.
+   - FIX: Set pricePerNight to 100 (average hourly rate) for all RV repair shops.
+
+5. RV TIRES (US: 50 free should be paid)
+   - Tire shops charge for service.
+   - FIX: Set pricePerNight to 200 (average per tire installed) for all tire shops.
+
+6. RV WASH (CA: 11 free/zero should be paid)
+   - RV washes charge $25-75.
+   - FIX: Set pricePerNight to appropriate values ($35-60) for Canadian RV washes showing as free/zero.
+
+7. RESTAURANTS (US: 56 paid should be free)
+   - Restaurants are free to visit (you pay for food). The pricePerNight field doesn't apply.
+   - FIX: Set pricePerNight to null for all restaurants.
+
+8. ROADSIDE ODDITIES (US: 53 paid should be free)
+   - Most roadside oddities are free to visit.
+   - FIX: Set pricePerNight to null for all roadside oddities.
+
+9. ELKS/MOOSE LODGES (US: 27 paid should be free)
+   - Overnight parking at lodges is free (membership required).
+   - FIX: Set pricePerNight to null for all elks/moose entries.
+
+10. NATIONAL PARKS US (1 free should be paid)
+    - One US national park has null price.
+    - FIX: Set to $20.
+
+11. HARVEST HOSTS CA (26 have $0 instead of null)
+    - Should be null (free with membership).
+    - FIX: Set pricePerNight to null.
+
+12. FUEL STATIONS CA (43 have $0 instead of null)
+    - Free to use, should be null not 0.
+    - FIX: Set pricePerNight to null.
+
+13. GROCERY CA (4 have $0 instead of null)
+    - Free to visit, should be null not 0.
+    - FIX: Set pricePerNight to null.
