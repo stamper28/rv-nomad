@@ -25,6 +25,7 @@ import { Store } from "@/lib/store";
 import { trpc } from "@/lib/trpc";
 import { getMembershipInfo } from "@/lib/affiliate";
 import { isoToDisplay } from "@/lib/date-utils";
+import { calculateDiscounts, type DiscountResult } from "@/lib/discount-stacker";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -291,6 +292,96 @@ export default function SiteDetailScreen() {
             <Text style={[styles.description, { color: colors.muted }]}>{site.description}</Text>
           </View>
 
+          {/* Hookup & Facility Details */}
+          {(site.hookupType || site.ampService || site.checkInTime || site.checkOutTime || site.adaAccessible != null || site.generatorHours || site.quietHours || site.seasonalDates) && (
+            <View style={[styles.section, { borderColor: colors.border }]}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Facility Details</Text>
+              <View style={styles.facilityGrid}>
+                {site.hookupType && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="power" size={16} color={colors.primary} />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>HOOKUPS</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>
+                        {site.hookupType === "full" ? "Full Hookup" : site.hookupType === "water_electric" ? "Water + Electric" : site.hookupType === "electric_only" ? "Electric Only" : site.hookupType === "dry" ? "Dry Camping" : "None"}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+                {site.ampService && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="bolt" size={16} color="#F59E0B" />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>AMP SERVICE</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>
+                        {site.ampService === "50_30" ? "50/30 AMP" : site.ampService === "30_20" ? "30/20 AMP" : `${site.ampService} AMP`}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+                {site.checkInTime && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="login" size={16} color={colors.success} />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>CHECK-IN</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.checkInTime}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.checkOutTime && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="logout" size={16} color={colors.error} />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>CHECK-OUT</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.checkOutTime}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.seasonalDates && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="date-range" size={16} color={colors.primary} />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>SEASON</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.seasonalDates}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.generatorHours && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="power-settings-new" size={16} color={colors.warning} />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>GENERATOR HOURS</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.generatorHours}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.quietHours && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="volume-off" size={16} color="#7C3AED" />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>QUIET HOURS</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.quietHours}</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+              {/* ADA Accessibility */}
+              {site.adaAccessible != null && (
+                <View style={[styles.adaBanner, { backgroundColor: site.adaAccessible ? colors.primary + "10" : colors.muted + "10", borderColor: site.adaAccessible ? colors.primary + "30" : colors.border }]}>
+                  <MaterialIcons name="accessible" size={18} color={site.adaAccessible ? colors.primary : colors.muted} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: site.adaAccessible ? colors.primary : colors.muted, fontSize: 13, fontWeight: "700" }}>
+                      {site.adaAccessible ? "ADA Accessible" : "Limited Accessibility"}
+                    </Text>
+                    {site.adaDetails && (
+                      <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{site.adaDetails}</Text>
+                    )}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Amenities */}
           {site.amenities.length > 0 && (
             <View style={[styles.section, { borderColor: colors.border }]}>
@@ -353,31 +444,72 @@ export default function SiteDetailScreen() {
             </View>
           )}
 
-          {/* Discounts */}
-          {site.discounts && site.discounts.length > 0 && (
-            <View style={[styles.section, { borderColor: colors.border }]}>
-              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Discounts Available</Text>
-              <View style={styles.discountRow}>
-                {site.discounts.map((d, i) => {
-                  const info = getMembershipInfo(d);
-                  return (
-                    <TouchableOpacity
-                      key={i}
-                      style={[styles.discountBadge, { backgroundColor: colors.primary + "15" }]}
-                      onPress={() => info?.url ? Linking.openURL(info.url) : null}
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons name="loyalty" size={14} color={colors.primary} />
-                      <Text style={[styles.discountText, { color: colors.primary }]}>
-                        {d === "passport_america" ? "Passport America" : d === "good_sam" ? "Good Sam" : d === "military" ? "Military" : d}
+          {/* Discount Stacker */}
+          {site.pricePerNight != null && site.pricePerNight > 0 && (() => {
+            const discountResult = calculateDiscounts(site.pricePerNight!, 3, site.category, site.name);
+            if (discountResult.discounts.length === 0) return null;
+            return (
+              <View style={[styles.section, { borderColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground, marginBottom: 0 }]}>Discount Stacker</Text>
+                  <View style={{ backgroundColor: colors.success + "15", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                    <Text style={{ color: colors.success, fontSize: 12, fontWeight: "700" }}>Save up to ${discountResult.totalSavings.toFixed(0)}/3 nights</Text>
+                  </View>
+                </View>
+
+                {/* Best combo highlight */}
+                {discountResult.bestCombo.length > 0 && (
+                  <View style={[styles.bestComboCard, { backgroundColor: colors.success + "08", borderColor: colors.success + "30" }]}>
+                    <MaterialIcons name="emoji-events" size={18} color={colors.success} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: colors.success, fontSize: 13, fontWeight: "700" }}>Best Savings</Text>
+                      <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>
+                        {discountResult.bestCombo.map(d => d.program).join(" + ")} = ${discountResult.bestPrice.toFixed(2)} for 3 nights
                       </Text>
-                      {info && <MaterialIcons name="open-in-new" size={10} color={colors.primary} />}
-                    </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* All applicable discounts */}
+                {discountResult.discounts.map((d, i) => {
+                  const typeColor = d.type === "membership" ? colors.primary : d.type === "military" ? "#059669" : d.type === "age" ? "#7C3AED" : d.type === "seasonal" ? "#EA580C" : colors.success;
+                  const typeLabel = d.type === "membership" ? "MEMBERSHIP" : d.type === "military" ? "MILITARY" : d.type === "age" ? "SENIOR" : d.type === "seasonal" ? "SEASONAL" : d.type === "length_of_stay" ? "STAY LENGTH" : "LOYALTY";
+                  return (
+                    <View key={i} style={[styles.discountStackCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                          <MaterialIcons name="loyalty" size={16} color={typeColor} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{d.program}</Text>
+                            <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{d.description}</Text>
+                          </View>
+                        </View>
+                        <View style={{ backgroundColor: typeColor + "15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: typeColor, fontSize: 10, fontWeight: "800" }}>{typeLabel}</Text>
+                        </View>
+                      </View>
+                      {d.requirements && (
+                        <Text style={{ color: colors.muted, fontSize: 11, marginTop: 6, fontStyle: "italic" }}>{d.requirements}</Text>
+                      )}
+                      {d.membershipCost != null && (
+                        <Text style={{ color: colors.muted, fontSize: 11, marginTop: 2 }}>Membership: ${d.membershipCost}/{d.membershipPeriod}</Text>
+                      )}
+                      {d.affiliateUrl && (
+                        <TouchableOpacity
+                          onPress={() => Linking.openURL(d.affiliateUrl!)}
+                          style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Join & Save</Text>
+                          <MaterialIcons name="open-in-new" size={10} color={colors.primary} />
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   );
                 })}
               </View>
-            </View>
-          )}
+            );
+          })()}
 
           {/* Contact */}
           <View style={[styles.section, { borderColor: colors.border }]}>
@@ -667,4 +799,11 @@ const styles = StyleSheet.create({
   helpfulBtn: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
   helpfulText: { fontSize: 12 },
   noReviews: { fontSize: 14, textAlign: "center", paddingVertical: 20 },
+  // Facility Details
+  facilityGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8 },
+  facilityItem: { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, width: "48%" as any },
+  adaBanner: { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, padding: 12, borderRadius: 10, borderWidth: 1, marginTop: 10 },
+  // Discount Stacker
+  bestComboCard: { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 10 },
+  discountStackCard: { padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 8 },
 });

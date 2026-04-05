@@ -313,6 +313,54 @@ export default function ExploreScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
+          {/* AI Trip Planner */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/ai-trip-planner")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#7C3AED20" }]}>
+              <IconSymbol name="speedometer" size={24} color="#7C3AED" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>AI Trip Planner</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>AI builds your perfect RV itinerary</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Trip Cost Calculator */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/trip-cost-calculator")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#2E7D3220" }]}>
+              <IconSymbol name="dollarsign.circle.fill" size={24} color="#2E7D32" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Trip Cost Calculator</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Estimate fuel, camping, food & total trip cost</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* RV Route Warnings */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/rv-route-warnings")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#E6510020" }]}>
+              <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#E65100" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Route Warnings</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Low bridges, tunnels, steep grades & restrictions</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
           {/* RV Gear Guide */}
           <TouchableOpacity
             style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}

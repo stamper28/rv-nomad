@@ -119,6 +119,27 @@ export interface CampSite {
   affiliateUrl?: string; // affiliate link for membership signup
   bookingUrl?: string; // direct booking URL (Recreation.gov, KOA, etc.)
   bookingPlatform?: string; // e.g. "Recreation.gov", "KOA", "Hipcamp"
+  // === Hookup & Facility Details ===
+  hookupType?: "full" | "water_electric" | "electric_only" | "dry" | "none"; // 50A/30A/20A
+  ampService?: "50" | "30" | "20" | "50_30" | "30_20"; // amp service available
+  sewerHookup?: boolean;
+  waterHookup?: boolean;
+  // === Contact & Booking ===
+  phoneNumber?: string; // tap to call
+  checkInTime?: string; // e.g. "2:00 PM"
+  checkOutTime?: string; // e.g. "11:00 AM"
+  // === Seasonal & Availability ===
+  seasonalDates?: string; // e.g. "May 1 - Oct 15", "Year-round"
+  isOpen?: boolean; // currently open?
+  reservationRequired?: boolean;
+  // === Accessibility ===
+  adaAccessible?: boolean; // ADA/wheelchair accessible sites
+  adaDetails?: string; // e.g. "2 ADA sites, paved paths, accessible restrooms"
+  // === Quiet Hours & Rules ===
+  generatorHours?: string; // e.g. "8 AM - 8 PM", "No generators"
+  quietHours?: string; // e.g. "10 PM - 7 AM"
+  // === Social & Check-in ===
+  checkedInUsers?: number; // current users checked in
 }
 
 export interface StateLaws {

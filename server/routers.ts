@@ -5,6 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { createPaymentIntent, getPaymentIntent, cancelPaymentIntent, createRefund } from "./stripe";
+import { invokeLLM } from "./_core/llm";
 
 export const appRouter = router({
   system: systemRouter,
@@ -318,6 +319,135 @@ export const appRouter = router({
       return db.getUserLikes(ctx.user.id);
     }),
   }),
-});
 
+  // ── AI Trip Planner ──
+  ai: router({
+    planTrip: publicProcedure
+      .input(
+        z.object({
+          startLocation: z.string(),
+          endLocation: z.string(),
+          duration: z.number().min(1).max(90),
+          rvType: z.string().optional(),
+          rvLength: z.string().optional(),
+          budget: z.string().optional(),
+          interests: z.array(z.string()).optional(),
+          travelers: z.number().optional(),
+          pets: z.boolean().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const prompt = `You are an expert RV trip planner. Plan a detailed RV road trip with the following details:
+
+- Start: ${input.startLocation}
+- End: ${input.endLocation}
+- Duration: ${input.duration} days
+${input.rvType ? `- RV Type: ${input.rvType}` : ""}
+${input.rvLength ? `- RV Length: ${input.rvLength}` : ""}
+${input.budget ? `- Budget: ${input.budget}` : ""}
+${input.interests?.length ? `- Interests: ${input.interests.join(", ")}` : ""}
+${input.travelers ? `- Travelers: ${input.travelers}` : ""}
+${input.pets ? "- Traveling with pets" : ""}
+
+Return a JSON object with this structure:
+{
+  "tripName": "string - catchy trip name",
+  "totalMiles": number,
+  "estimatedFuelCost": number,
+  "estimatedCampingCost": number,
+  "estimatedFoodCost": number,
+  "totalEstimatedCost": number,
+  "stops": [
+    {
+      "day": number,
+      "location": "City, State",
+      "campground": "Campground name",
+      "campgroundType": "rv_park|state_park|national_park|boondocking",
+      "pricePerNight": number,
+      "nights": number,
+      "drivingMiles": number,
+      "drivingTime": "string like 3h 45m",
+      "highlights": ["string - things to do/see"],
+      "notes": "string - tips for this stop",
+      "latitude": number,
+      "longitude": number
+    }
+  ],
+  "tips": ["string - general trip tips"],
+  "warnings": ["string - route warnings like low bridges, mountain passes, weather"]
+}`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are an expert RV trip planner with deep knowledge of campgrounds, RV parks, boondocking spots, and road conditions across the US and Canada. Always return valid JSON." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+
+        const content = response.choices[0].message.content;
+        try {
+          return JSON.parse(content as string);
+        } catch {
+          return { error: "Failed to parse trip plan", raw: content };
+        }
+      }),
+
+    // AI-powered personalized recommendations
+    recommend: publicProcedure
+      .input(
+        z.object({
+          rvType: z.string().optional(),
+          rvLength: z.string().optional(),
+          budget: z.string().optional(),
+          location: z.string(),
+          preferences: z.array(z.string()).optional(),
+          pastStays: z.array(z.string()).optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const prompt = `Based on the following RV traveler profile, recommend 5 campgrounds they would love:
+
+- Current location: ${input.location}
+${input.rvType ? `- RV Type: ${input.rvType}` : ""}
+${input.rvLength ? `- RV Length: ${input.rvLength}` : ""}
+${input.budget ? `- Budget: ${input.budget}` : ""}
+${input.preferences?.length ? `- Preferences: ${input.preferences.join(", ")}` : ""}
+${input.pastStays?.length ? `- Past stays they enjoyed: ${input.pastStays.join(", ")}` : ""}
+
+Return a JSON object:
+{
+  "recommendations": [
+    {
+      "name": "Campground name",
+      "location": "City, State",
+      "type": "rv_park|state_park|national_park|boondocking",
+      "pricePerNight": number,
+      "whyYoullLoveIt": "string - personalized reason",
+      "rating": number,
+      "bestSeason": "string",
+      "hookups": "full|water_electric|electric_only|dry",
+      "latitude": number,
+      "longitude": number
+    }
+  ]
+}`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are an expert RV campground recommender. Return valid JSON with personalized recommendations." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+
+        const content = response.choices[0].message.content;
+        try {
+          return JSON.parse(content as string);
+        } catch {
+          return { error: "Failed to parse recommendations", raw: content };
+        }
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;

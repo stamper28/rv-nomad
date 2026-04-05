@@ -213,3 +213,24 @@
 - [x] Affiliate link infrastructure with configurable tags (Amazon, Harvest Hosts, Good Sam, etc.)
 - [x] RV insurance comparison section with affiliate links
 - [x] Update ALL date inputs and displays across entire app to MM-DD-YYYY format with auto-formatting (trips, booking, tools, reviews, community, guide)
+- [x] Bug: Date formatting not working on Trips and Booking screens (resolved — was old APK, works after reinstall)
+
+## Premium Differentiating Features
+- [x] Add data fields: hookup type (30A/50A/none), phone number, check-in/out times, seasonal open/closed, ADA accessible, generator quiet hours (2,852 entries updated)
+- [x] AI Trip Planner — "Plan my trip" using server LLM, generates full itinerary with stops, costs, campground recommendations
+- [x] Discount Stacker — show ALL discounts user qualifies for at each campground (Good Sam, Passport America, military, AAA, AARP)
+- [ ] Price Comparison — show same campground price across booking platforms
+- [x] Trip Cost Calculator — total fuel + campground fees + food budget estimate for entire trip
+- [ ] Fuel Price Tracker — current diesel/gas prices along route
+- [x] RV-Safe Route Warnings — low bridge alerts, weight-restricted roads, propane tunnel bans
+- [x] Low clearance database with crowdsourced user reports
+- [ ] Cancellation Scanner with real Push Notifications
+- [ ] Share a Campsite — text/email/social sharing
+- [ ] Who's Here Check-in — see other RV Nomad users at same campground
+- [ ] RVer Meetup Coordination — see how many members at a campground this weekend
+- [ ] User Photo Uploads on reviews
+- [ ] Insider Boondocking Spots — user-submitted secret free camping spots (premium only)
+- [ ] Personalized Recommendations — AI-based "campgrounds you'd love" based on RV size, budget, past stays
+- [ ] Campground Comparison — side-by-side compare 2-3 campgrounds
+- [ ] Dark Mode Toggle in settings/profile
+- [ ] Search History / Recent Searches
