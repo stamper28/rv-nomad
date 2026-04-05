@@ -21,6 +21,7 @@ import { BookingStore } from "@/lib/booking-store";
 import { calculatePayment, PLATFORM_FEE_PER_NIGHT } from "@/lib/stripe";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
+import { formatDateInput, displayToISO, isoToDisplay } from "@/lib/date-utils";
 
 type Step = "details" | "payment" | "confirmation";
 
@@ -60,7 +61,7 @@ export default function BookingScreen() {
 
   // tRPC mutations
   const checkAvailability = trpc.bookings.checkAvailability.useQuery(
-    { siteId: params.siteId || "", checkIn, checkOut },
+    { siteId: params.siteId || "", checkIn: displayToISO(checkIn) || checkIn, checkOut: displayToISO(checkOut) || checkOut },
     { enabled: false }
   );
   const createBookingMutation = trpc.bookings.create.useMutation();
@@ -69,8 +70,10 @@ export default function BookingScreen() {
   const nights = useMemo(() => {
     if (!checkIn || !checkOut) return 0;
     try {
-      const s = new Date(checkIn);
-      const e = new Date(checkOut);
+      const isoIn = displayToISO(checkIn) || checkIn;
+      const isoOut = displayToISO(checkOut) || checkOut;
+      const s = new Date(isoIn);
+      const e = new Date(isoOut);
       const diff = e.getTime() - s.getTime();
       return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
     } catch {
@@ -175,8 +178,8 @@ export default function BookingScreen() {
           siteId: site!.id,
           siteName: site!.name,
           siteState: site!.state,
-          checkInDate: checkIn,
-          checkOutDate: checkOut,
+          checkInDate: displayToISO(checkIn) || checkIn,
+          checkOutDate: displayToISO(checkOut) || checkOut,
           nights,
           guests,
           sitePrice: subtotal.toFixed(2),
@@ -199,8 +202,8 @@ export default function BookingScreen() {
         siteCity: site!.city,
         siteState: site!.state,
         category: site!.category,
-        checkIn,
-        checkOut,
+        checkIn: displayToISO(checkIn) || checkIn,
+        checkOut: displayToISO(checkOut) || checkOut,
         guests,
         sites: siteCount,
         pricePerNight,
@@ -263,10 +266,12 @@ export default function BookingScreen() {
                 <Text style={[styles.inputLabel, { color: colors.muted }]}>Check-in</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-                  placeholder="YYYY-MM-DD"
+                  placeholder="MM-DD-YYYY"
                   placeholderTextColor={colors.muted}
                   value={checkIn}
-                  onChangeText={setCheckIn}
+                  onChangeText={(t) => setCheckIn(formatDateInput(t))}
+                  keyboardType="number-pad"
+                  maxLength={10}
                   returnKeyType="done"
                 />
               </View>
@@ -274,10 +279,12 @@ export default function BookingScreen() {
                 <Text style={[styles.inputLabel, { color: colors.muted }]}>Check-out</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.foreground }]}
-                  placeholder="YYYY-MM-DD"
+                  placeholder="MM-DD-YYYY"
                   placeholderTextColor={colors.muted}
                   value={checkOut}
-                  onChangeText={setCheckOut}
+                  onChangeText={(t) => setCheckOut(formatDateInput(t))}
+                  keyboardType="number-pad"
+                  maxLength={10}
                   returnKeyType="done"
                 />
               </View>

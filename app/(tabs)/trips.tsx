@@ -18,6 +18,7 @@ import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { BookingStore, type Booking, type BookingStatus } from "@/lib/booking-store";
+import { formatDateInput, isoToDisplay } from "@/lib/date-utils";
 
 // ── Trip Types ──
 interface TripStop {
@@ -218,7 +219,7 @@ export default function TripsScreen() {
           <View style={styles.cardInfo}>
             <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.name}</Text>
             <Text style={[styles.cardSub, { color: colors.muted }]}>
-              {item.startDate} — {item.endDate}
+              {isoToDisplay(item.startDate)} — {isoToDisplay(item.endDate)}
             </Text>
             <View style={styles.chipRow}>
               <View style={[styles.chip, { backgroundColor: colors.primary + "15" }]}>
@@ -327,11 +328,11 @@ export default function TripsScreen() {
           <View style={styles.bookingRow}>
             <View style={styles.bookingCol}>
               <Text style={[styles.bookingLabel, { color: colors.muted }]}>Check-in</Text>
-              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{item.checkIn}</Text>
+              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{isoToDisplay(item.checkIn)}</Text>
             </View>
             <View style={styles.bookingCol}>
               <Text style={[styles.bookingLabel, { color: colors.muted }]}>Check-out</Text>
-              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{item.checkOut}</Text>
+              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{isoToDisplay(item.checkOut)}</Text>
             </View>
             <View style={styles.bookingCol}>
               <Text style={[styles.bookingLabel, { color: colors.muted }]}>Nights</Text>
@@ -473,10 +474,12 @@ export default function TripsScreen() {
                 <Text style={[styles.inputLabel, { color: colors.foreground }]}>Start Date</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.border }]}
-                  placeholder="MM/DD/YYYY"
+                  placeholder="MM-DD-YYYY"
                   placeholderTextColor={colors.muted}
                   value={newTripStart}
-                  onChangeText={setNewTripStart}
+                  onChangeText={(t) => setNewTripStart(formatDateInput(t))}
+                  keyboardType="number-pad"
+                  maxLength={10}
                   returnKeyType="done"
                 />
               </View>
@@ -484,10 +487,12 @@ export default function TripsScreen() {
                 <Text style={[styles.inputLabel, { color: colors.foreground }]}>End Date</Text>
                 <TextInput
                   style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.border }]}
-                  placeholder="MM/DD/YYYY"
+                  placeholder="MM-DD-YYYY"
                   placeholderTextColor={colors.muted}
                   value={newTripEnd}
-                  onChangeText={setNewTripEnd}
+                  onChangeText={(t) => setNewTripEnd(formatDateInput(t))}
+                  keyboardType="number-pad"
+                  maxLength={10}
                   returnKeyType="done"
                 />
               </View>
@@ -584,7 +589,9 @@ export default function TripsScreen() {
                     <TextInput
                       style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.border }]}
                       value={editingTrip.startDate}
-                      onChangeText={(t) => setEditingTrip({ ...editingTrip, startDate: t })}
+                      onChangeText={(t) => setEditingTrip({ ...editingTrip, startDate: formatDateInput(t) })}
+                      keyboardType="number-pad"
+                      maxLength={10}
                       returnKeyType="done"
                     />
                   </View>
@@ -593,7 +600,9 @@ export default function TripsScreen() {
                     <TextInput
                       style={[styles.input, { backgroundColor: colors.background, color: colors.foreground, borderColor: colors.border }]}
                       value={editingTrip.endDate}
-                      onChangeText={(t) => setEditingTrip({ ...editingTrip, endDate: t })}
+                      onChangeText={(t) => setEditingTrip({ ...editingTrip, endDate: formatDateInput(t) })}
+                      keyboardType="number-pad"
+                      maxLength={10}
                       returnKeyType="done"
                     />
                   </View>

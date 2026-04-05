@@ -9,8 +9,8 @@ export interface Booking {
   siteCity: string;
   siteState: string;
   category: string;
-  checkIn: string;   // YYYY-MM-DD
-  checkOut: string;   // YYYY-MM-DD
+  checkIn: string;   // MM-DD-YYYY
+  checkOut: string;   // MM-DD-YYYY
   nights: number;
   guests: number;
   sites: number;      // number of RV sites booked

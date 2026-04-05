@@ -49,7 +49,7 @@ export default function RVGuideScreen() {
 
   const category = guideData.categories.find((c) => c.key === selectedClass)!;
   const models = showBest ? category.best : category.worst;
-  const lastUpdated = new Date(guideData.lastUpdated).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const lastUpdated = (() => { const d = new Date(guideData.lastUpdated); const mm = String(d.getMonth()+1).padStart(2,'0'); const dd = String(d.getDate()).padStart(2,'0'); return `${mm}-${dd}-${d.getFullYear()}`; })();
 
   const renderStars = (rating: number) => {
     const full = Math.floor(rating);

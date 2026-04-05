@@ -24,6 +24,7 @@ import { getSiteImageUrl } from "@/lib/site-images";
 import { Store } from "@/lib/store";
 import { trpc } from "@/lib/trpc";
 import { getMembershipInfo } from "@/lib/affiliate";
+import { isoToDisplay } from "@/lib/date-utils";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -120,7 +121,7 @@ export default function SiteDetailScreen() {
     ...(backendReviews.data || []).map((r: any) => ({
       id: `db-${r.id}`,
       author: r.authorName || "Anonymous",
-      date: r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : "",
+      date: r.createdAt ? (() => { const d = new Date(r.createdAt); const mm = String(d.getMonth()+1).padStart(2,'0'); const dd = String(d.getDate()).padStart(2,'0'); return `${mm}-${dd}-${d.getFullYear()}`; })() : "",
       rating: r.rating,
       title: r.title || "",
       body: r.body,
@@ -497,7 +498,7 @@ export default function SiteDetailScreen() {
                       ))}
                     </View>
                     <Text style={[styles.reviewDate, { color: colors.muted }]}>
-                      {review.date ? new Date(review.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}
+                      {review.date ? isoToDisplay(review.date) : ""}
                     </Text>
                   </View>
                   {review.title ? <Text style={[styles.reviewTitleText, { color: colors.foreground }]}>{review.title}</Text> : null}

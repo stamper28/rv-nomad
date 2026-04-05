@@ -212,3 +212,4 @@
 - [x] Water quality/potability info for boondocking sites
 - [x] Affiliate link infrastructure with configurable tags (Amazon, Harvest Hosts, Good Sam, etc.)
 - [x] RV insurance comparison section with affiliate links
+- [x] Update ALL date inputs and displays across entire app to MM-DD-YYYY format with auto-formatting (trips, booking, tools, reviews, community, guide)

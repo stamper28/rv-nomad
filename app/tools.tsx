@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import { formatDateInput, isoToDisplay, formatDate } from "@/lib/date-utils";
 import { useRouter, useFocusEffect } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -207,7 +208,7 @@ export default function ToolsScreen() {
 
     const entry: FuelEntry = {
       id: Date.now().toString(),
-      date: fuelDate || new Date().toISOString().split("T")[0],
+      date: fuelDate || formatDate(new Date()),
       gallons, pricePerGallon: price,
       totalCost: Math.round(gallons * price * 100) / 100,
       odometer: odo, mpg,
@@ -236,7 +237,7 @@ export default function ToolsScreen() {
     if (!maintType.trim()) { Alert.alert("Error", "Enter maintenance type"); return; }
     const entry: MaintenanceEntry = {
       id: Date.now().toString(),
-      date: maintDate || new Date().toISOString().split("T")[0],
+      date: maintDate || formatDate(new Date()),
       type: maintType.trim(), description: maintDesc.trim(),
       cost: parseFloat(maintCost) || 0,
       odometerMiles: parseInt(maintOdo) || 0,
@@ -367,7 +368,7 @@ export default function ToolsScreen() {
           {fuelLogs.map((entry) => (
             <View key={entry.id} style={[styles.logCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.logRow}>
-                <Text style={[styles.logDate, { color: colors.foreground }]}>{entry.date}</Text>
+                <Text style={[styles.logDate, { color: colors.foreground }]}>{isoToDisplay(entry.date)}</Text>
                 <Text style={[styles.logCost, { color: colors.primary }]}>${entry.totalCost.toFixed(2)}</Text>
               </View>
               <View style={styles.logRow}>
@@ -411,10 +412,10 @@ export default function ToolsScreen() {
                 <Text style={[styles.logDate, { color: colors.foreground }]}>{entry.type}</Text>
                 <Text style={[styles.logCost, { color: colors.primary }]}>${entry.cost.toFixed(2)}</Text>
               </View>
-              <Text style={[styles.logDetail, { color: colors.muted }]}>{entry.date} · {entry.odometerMiles} mi</Text>
+              <Text style={[styles.logDetail, { color: colors.muted }]}>{isoToDisplay(entry.date)} · {entry.odometerMiles} mi</Text>
               {entry.description ? <Text style={[styles.logDetail, { color: colors.muted }]}>{entry.description}</Text> : null}
               {entry.nextDueDate ? (
-                <Text style={[styles.logMpg, { color: colors.warning }]}>Next due: {entry.nextDueDate}</Text>
+                <Text style={[styles.logMpg, { color: colors.warning }]}>Next due: {isoToDisplay(entry.nextDueDate)}</Text>
               ) : null}
             </View>
           ))}
@@ -560,7 +561,7 @@ export default function ToolsScreen() {
               </TouchableOpacity>
             </View>
             {[
-              { label: "Date", value: fuelDate, set: setFuelDate, placeholder: "YYYY-MM-DD", kb: "default" as const },
+              { label: "Date", value: fuelDate, set: (t: string) => setFuelDate(formatDateInput(t)), placeholder: "MM-DD-YYYY", kb: "number-pad" as const },
               { label: "Gallons", value: fuelGallons, set: setFuelGallons, placeholder: "e.g., 25.5", kb: "numeric" as const },
               { label: "Price per Gallon", value: fuelPrice, set: setFuelPrice, placeholder: "e.g., 3.49", kb: "numeric" as const },
               { label: "Odometer (miles)", value: fuelOdometer, set: setFuelOdometer, placeholder: "e.g., 45230", kb: "numeric" as const },
@@ -598,10 +599,10 @@ export default function ToolsScreen() {
             </View>
             {[
               { label: "Type", value: maintType, set: setMaintType, placeholder: "e.g., Oil Change", kb: "default" as const },
-              { label: "Date", value: maintDate, set: setMaintDate, placeholder: "YYYY-MM-DD", kb: "default" as const },
+              { label: "Date", value: maintDate, set: (t: string) => setMaintDate(formatDateInput(t)), placeholder: "MM-DD-YYYY", kb: "number-pad" as const },
               { label: "Cost ($)", value: maintCost, set: setMaintCost, placeholder: "e.g., 85.00", kb: "numeric" as const },
               { label: "Odometer (miles)", value: maintOdo, set: setMaintOdo, placeholder: "e.g., 45230", kb: "numeric" as const },
-              { label: "Next Due Date", value: maintNextDate, set: setMaintNextDate, placeholder: "YYYY-MM-DD", kb: "default" as const },
+              { label: "Next Due Date", value: maintNextDate, set: (t: string) => setMaintNextDate(formatDateInput(t)), placeholder: "MM-DD-YYYY", kb: "number-pad" as const },
             ].map((f, i) => (
               <View key={i} style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, { color: colors.foreground }]}>{f.label}</Text>

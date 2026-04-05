@@ -418,7 +418,9 @@ function getTimeAgo(dateStr: string | Date | undefined): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const mm = String(date.getMonth()+1).padStart(2,'0');
+  const dd = String(date.getDate()).padStart(2,'0');
+  return `${mm}-${dd}-${date.getFullYear()}`;
 }
 
 const styles = StyleSheet.create({
