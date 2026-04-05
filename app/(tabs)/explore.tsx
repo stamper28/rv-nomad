@@ -94,12 +94,20 @@ export default function ExploreScreen() {
     });
   }, []);
 
-  const filteredStates = useMemo(() => {
-    if (!searchQuery) return stateList;
-    const q = searchQuery.toLowerCase();
-    return stateList.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
-    );
+  const CANADIAN_CODES = new Set(["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]);
+
+  const { filteredUS, filteredCA } = useMemo(() => {
+    let list = stateList;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = stateList.filter(
+        (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
+      );
+    }
+    return {
+      filteredUS: list.filter((s) => !CANADIAN_CODES.has(s.code)),
+      filteredCA: list.filter((s) => CANADIAN_CODES.has(s.code)),
+    };
   }, [searchQuery, stateList]);
 
   function getSitesForSection(section: typeof EXPLORE_SECTIONS[number]): CampSite[] {
@@ -322,12 +330,18 @@ export default function ExploreScreen() {
           </TouchableOpacity>
         </ScrollView>
       ) : (
-        <FlatList
-          data={filteredStates}
-          keyExtractor={(item) => item.code}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          renderItem={({ item }) => (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+          {/* United States */}
+          {filteredUS.length > 0 && (
+            <View style={[styles.countrySectionHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+              <Text style={styles.countrySectionFlag}>{"\ud83c\uddfa\ud83c\uddf8"}</Text>
+              <Text style={[styles.countrySectionText, { color: colors.foreground }]}>United States</Text>
+              <Text style={[styles.countrySectionCount, { color: colors.muted }]}>{filteredUS.length} states</Text>
+            </View>
+          )}
+          {filteredUS.map((item) => (
             <TouchableOpacity
+              key={item.code}
               style={[styles.stateRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() =>
                 router.push({ pathname: "/state-detail", params: { stateCode: item.code, stateName: item.name } })
@@ -339,12 +353,40 @@ export default function ExploreScreen() {
               </View>
               <View style={styles.stateInfo}>
                 <Text style={[styles.stateName, { color: colors.foreground }]}>{item.name}</Text>
-                <Text style={[styles.stateSiteCount, { color: colors.muted }]}>{item.siteCount} camping sites</Text>
+                <Text style={[styles.stateSiteCount, { color: colors.muted }]}>{item.siteCount} sites</Text>
               </View>
               <IconSymbol name="chevron.right" size={18} color={colors.muted} />
             </TouchableOpacity>
+          ))}
+
+          {/* Canada */}
+          {filteredCA.length > 0 && (
+            <View style={[styles.countrySectionHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+              <Text style={styles.countrySectionFlag}>{"\ud83c\udde8\ud83c\udde6"}</Text>
+              <Text style={[styles.countrySectionText, { color: colors.foreground }]}>Canada</Text>
+              <Text style={[styles.countrySectionCount, { color: colors.muted }]}>{filteredCA.length} provinces</Text>
+            </View>
           )}
-        />
+          {filteredCA.map((item) => (
+            <TouchableOpacity
+              key={item.code}
+              style={[styles.stateRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() =>
+                router.push({ pathname: "/state-detail", params: { stateCode: item.code, stateName: item.name } })
+              }
+              activeOpacity={0.7}
+            >
+              <View style={[styles.stateCodeBox, { backgroundColor: "#D32F2F15" }]}>
+                <Text style={[styles.stateCode, { color: "#D32F2F" }]}>{item.code}</Text>
+              </View>
+              <View style={styles.stateInfo}>
+                <Text style={[styles.stateName, { color: colors.foreground }]}>{item.name}</Text>
+                <Text style={[styles.stateSiteCount, { color: colors.muted }]}>{item.siteCount} sites</Text>
+              </View>
+              <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       )}
     </ScreenContainer>
   );
@@ -396,4 +438,18 @@ const styles = StyleSheet.create({
   stateInfo: { flex: 1 },
   stateName: { fontSize: 16, fontWeight: "600" },
   stateSiteCount: { fontSize: 13, marginTop: 2 },
+  countrySectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  countrySectionFlag: { fontSize: 22 },
+  countrySectionText: { fontSize: 16, fontWeight: "700", flex: 1 },
+  countrySectionCount: { fontSize: 13 },
 });

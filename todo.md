@@ -175,3 +175,6 @@
 - [x] Add Canada: dump stations, truck stops, and RV services for all provinces
 - [x] Add Canada: provincial RV laws and boondocking rules (Crown Land camping, winter tire rules, ferry info)
 - [x] Update state/province selector UI to include Canadian provinces (63 total: 50 US + 13 Canada)
+- [x] Add many more Canadian RV parks, campgrounds, dump stations, and truck stops for all provinces (expanded from 90 to 743 Canadian sites)
+- [x] Ensure Canadian provinces display properly in state/province selector alongside US states
+- [x] Separate US states and Canadian provinces in the state selector with section headers (🇺🇸 United States / 🇨🇦 Canada sections on Home + Explore tabs)

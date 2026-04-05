@@ -96,6 +96,8 @@ const STATE_NAMES: Record<string, string> = {
   SK: "Saskatchewan", YT: "Yukon",
 };
 
+const CANADIAN_CODES = new Set(["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]);
+
 /** Open a location in the device's native maps app */
 function openInMaps(name: string, latitude: number, longitude: number) {
   const encodedName = encodeURIComponent(name);
@@ -152,14 +154,18 @@ export default function HomeScreen() {
   }, [selectedFilter, weightScales.length]);
 
   // Get unique states with counts
-  const stateOptions = useMemo(() => {
+  const { usStates, canadaProvinces } = useMemo(() => {
     const counts: Record<string, number> = {};
     allSites.forEach((s) => {
       counts[s.state] = (counts[s.state] || 0) + 1;
     });
-    return Object.entries(counts)
+    const all = Object.entries(counts)
       .map(([code, count]) => ({ code, name: STATE_NAMES[code] || code, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      usStates: all.filter((s) => !CANADIAN_CODES.has(s.code)),
+      canadaProvinces: all.filter((s) => CANADIAN_CODES.has(s.code)),
+    };
   }, [allSites]);
 
   // Filter sites
@@ -430,7 +436,7 @@ export default function HomeScreen() {
       <View style={[styles.statePickerOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
         <View style={[styles.statePickerContainer, { backgroundColor: colors.background }]}>
           <View style={styles.statePickerHeader}>
-            <Text style={[styles.statePickerTitle, { color: colors.foreground }]}>Select State</Text>
+            <Text style={[styles.statePickerTitle, { color: colors.foreground }]}>Select State / Province</Text>
             <Pressable
               onPress={() => setShowStatePicker(false)}
               style={({ pressed }) => [pressed && { opacity: 0.6 }]}
@@ -462,14 +468,17 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
 
-          <FlatList
-            data={stateOptions}
-            keyExtractor={(item) => item.code}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => {
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* United States */}
+            <View style={[styles.sectionHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+              <Text style={[styles.sectionHeaderFlag]}>🇺🇸</Text>
+              <Text style={[styles.sectionHeaderText, { color: colors.foreground }]}>United States</Text>
+            </View>
+            {usStates.map((item) => {
               const isSelected = selectedState === item.code;
               return (
                 <Pressable
+                  key={item.code}
                   onPress={() => handleStateSelect(item.code)}
                   style={({ pressed }) => [
                     styles.statePickerItem,
@@ -491,8 +500,41 @@ export default function HomeScreen() {
                   </Text>
                 </Pressable>
               );
-            }}
-          />
+            })}
+
+            {/* Canada */}
+            <View style={[styles.sectionHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+              <Text style={[styles.sectionHeaderFlag]}>🇨🇦</Text>
+              <Text style={[styles.sectionHeaderText, { color: colors.foreground }]}>Canada</Text>
+            </View>
+            {canadaProvinces.map((item) => {
+              const isSelected = selectedState === item.code;
+              return (
+                <Pressable
+                  key={item.code}
+                  onPress={() => handleStateSelect(item.code)}
+                  style={({ pressed }) => [
+                    styles.statePickerItem,
+                    { borderBottomColor: colors.border },
+                    isSelected && { backgroundColor: colors.primary + "15" },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statePickerItemText,
+                      { color: isSelected ? colors.primary : colors.foreground, fontWeight: isSelected ? "700" : "500" },
+                    ]}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text style={[styles.statePickerItemCount, { color: colors.muted }]}>
+                    {item.count} sites
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
     );
@@ -896,6 +938,16 @@ const styles = StyleSheet.create({
   },
   statePickerItemText: { fontSize: 16 },
   statePickerItemCount: { fontSize: 13 },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  sectionHeaderFlag: { fontSize: 20 },
+  sectionHeaderText: { fontSize: 15, fontWeight: "700", textTransform: "uppercase", letterSpacing: 1 },
   filterGroupLabel: { fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginLeft: 10, marginRight: 4 },
   cardImage: { width: "100%" as any, height: 160 },
   cardBody: { padding: 12, gap: 4 },
