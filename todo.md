@@ -234,3 +234,14 @@
 - [ ] Campground Comparison — side-by-side compare 2-3 campgrounds
 - [ ] Dark Mode Toggle in settings/profile
 - [ ] Search History / Recent Searches
+
+## ADA/Handicap-Accessible Campgrounds
+- [x] Research real ADA-accessible campgrounds across US and Canada
+- [x] Update campsite data with accurate ADA accessibility details (accessible sites, paved paths, accessible restrooms, accessible showers)
+- [x] Add Google Maps links to all ADA-accessible campgrounds
+- [x] Add ADA/Wheelchair filter chip on Home screen
+- [x] Enhance site-detail ADA section with detailed accessibility info
+- [x] Add rental equipment field to CampSite type (beach wheelchairs, track chairs, mobility scooters, etc.)
+- [x] Research which campgrounds offer wheelchair/mobility equipment rentals
+- [x] Update all-sites-data with accurate ADA details and equipment rental info for all campgrounds
+- [x] Display rental equipment info on site-detail screen

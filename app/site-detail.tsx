@@ -367,16 +367,53 @@ export default function SiteDetailScreen() {
               </View>
               {/* ADA Accessibility */}
               {site.adaAccessible != null && (
-                <View style={[styles.adaBanner, { backgroundColor: site.adaAccessible ? colors.primary + "10" : colors.muted + "10", borderColor: site.adaAccessible ? colors.primary + "30" : colors.border }]}>
-                  <MaterialIcons name="accessible" size={18} color={site.adaAccessible ? colors.primary : colors.muted} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: site.adaAccessible ? colors.primary : colors.muted, fontSize: 13, fontWeight: "700" }}>
-                      {site.adaAccessible ? "ADA Accessible" : "Limited Accessibility"}
-                    </Text>
-                    {site.adaDetails && (
-                      <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{site.adaDetails}</Text>
-                    )}
+                <View style={{ marginTop: 10, gap: 8 }}>
+                  <View style={[styles.adaBanner, { backgroundColor: site.adaAccessible ? "#1565C010" : colors.muted + "10", borderColor: site.adaAccessible ? "#1565C030" : colors.border }]}>
+                    <MaterialIcons name="accessible" size={20} color={site.adaAccessible ? "#1565C0" : colors.muted} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: site.adaAccessible ? "#1565C0" : colors.muted, fontSize: 14, fontWeight: "700" }}>
+                        {site.adaAccessible ? "ADA Accessible" : "Limited Accessibility"}
+                      </Text>
+                      {site.adaDetails && (
+                        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 3, lineHeight: 18 }}>{site.adaDetails}</Text>
+                      )}
+                    </View>
                   </View>
+
+                  {/* Equipment Rental */}
+                  {site.adaEquipmentRental && site.adaEquipmentRental.length > 0 && (
+                    <View style={[styles.adaBanner, { backgroundColor: "#2E7D3210", borderColor: "#2E7D3230" }]}>
+                      <MaterialIcons name="sports-handball" size={18} color="#2E7D32" />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#2E7D32", fontSize: 13, fontWeight: "700", marginBottom: 4 }}>Equipment Rental Available</Text>
+                        {site.adaEquipmentRental.map((item: string, idx: number) => (
+                          <View key={idx} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                            <MaterialIcons name="check-circle" size={14} color="#2E7D32" />
+                            <Text style={{ color: colors.foreground, fontSize: 12 }}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* ADA Map Link */}
+                  {site.adaAccessible && site.adaMapUrl && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        Linking.openURL(site.adaMapUrl!);
+                      }}
+                      style={[styles.adaBanner, { backgroundColor: "#0288D110", borderColor: "#0288D130" }]}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="map" size={18} color="#0288D1" />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#0288D1", fontSize: 13, fontWeight: "700" }}>View on Google Maps</Text>
+                        <Text style={{ color: colors.muted, fontSize: 11, marginTop: 1 }}>Open accessible area in Maps</Text>
+                      </View>
+                      <MaterialIcons name="open-in-new" size={16} color="#0288D1" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
             </View>

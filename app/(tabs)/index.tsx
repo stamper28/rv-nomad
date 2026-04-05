@@ -132,6 +132,9 @@ export default function HomeScreen() {
   const { location: userLocation, loading: locationLoading, requestLocation } = useUserLocation();
   const [sortByDistance, setSortByDistance] = useState(false);
 
+  // ADA filter
+  const [adaOnly, setAdaOnly] = useState(false);
+
   // Lazy-loaded data
   const [allSites, setAllSites] = useState<CampSite[]>([]);
   const [stateLaws, setStateLaws] = useState<Record<string, StateLaws>>({});
@@ -187,6 +190,11 @@ export default function HomeScreen() {
       filtered = filtered.filter((s) => s.category === selectedFilter);
     }
 
+    // ADA filter
+    if (adaOnly) {
+      filtered = filtered.filter((s) => s.adaAccessible === true);
+    }
+
     // Search
     if (searchQuery.length > 1) {
       const lower = searchQuery.toLowerCase();
@@ -209,7 +217,7 @@ export default function HomeScreen() {
     }
 
     return filtered;
-  }, [allSites, selectedState, selectedFilter, searchQuery, sortByDistance, userLocation]);
+  }, [allSites, selectedState, selectedFilter, searchQuery, sortByDistance, userLocation, adaOnly]);
 
   // Filter weight scales
   const filteredScales = useMemo(() => {
@@ -341,6 +349,16 @@ export default function HomeScreen() {
             </View>
 
             {/* Military ID Notice */}
+            {/* ADA Badge */}
+            {site.adaAccessible && (
+              <View style={[styles.militaryNotice, { backgroundColor: "#1565C015", borderColor: "#1565C040" }]}>
+                <MaterialIcons name="accessible" size={14} color="#1565C0" />
+                <Text style={[styles.militaryNoticeText, { color: "#1565C0" }]}>
+                  ADA Accessible{site.adaEquipmentRental && site.adaEquipmentRental.length > 0 ? " • Equipment Available" : ""}
+                </Text>
+              </View>
+            )}
+
             {site.category === "military" && (
               <View style={[styles.militaryNotice, { backgroundColor: colors.warning + "15", borderColor: colors.warning + "40" }]}>
                 <MaterialIcons name="verified-user" size={14} color={colors.warning} />
@@ -622,6 +640,27 @@ export default function HomeScreen() {
                 <MaterialIcons name="close" size={16} color={colors.muted} />
               </Pressable>
             )}
+          </Pressable>
+
+          {/* ADA Filter Button */}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setAdaOnly(!adaOnly);
+            }}
+            style={({ pressed }) => [
+              styles.nearMeBtn,
+              {
+                backgroundColor: adaOnly ? "#1565C0" : colors.surface,
+                borderColor: adaOnly ? "#1565C0" : colors.border,
+              },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            <MaterialIcons name="accessible" size={18} color={adaOnly ? "#FFF" : "#1565C0"} />
+            <Text style={[styles.nearMeBtnText, { color: adaOnly ? "#FFF" : "#1565C0" }]}>
+              ADA
+            </Text>
           </Pressable>
 
           {/* Near Me Button */}

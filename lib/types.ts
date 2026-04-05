@@ -135,6 +135,8 @@ export interface CampSite {
   // === Accessibility ===
   adaAccessible?: boolean; // ADA/wheelchair accessible sites
   adaDetails?: string; // e.g. "2 ADA sites, paved paths, accessible restrooms"
+  adaEquipmentRental?: string[]; // e.g. ["Beach wheelchair", "Track chair", "All-terrain wheelchair"]
+  adaMapUrl?: string; // Google Maps link to the accessible area/campground
   // === Quiet Hours & Rules ===
   generatorHours?: string; // e.g. "8 AM - 8 PM", "No generators"
   quietHours?: string; // e.g. "10 PM - 7 AM"
