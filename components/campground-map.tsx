@@ -105,12 +105,12 @@ function buildMapHTML(
 ): string {
   const markersJSON = JSON.stringify(markers);
   const bgColor = isDark ? "#151718" : "#ffffff";
+  // Use CartoDB tiles for both light and dark — they don't require Referer headers
+  // unlike tile.openstreetmap.org which blocks WebView requests
   const tileUrl = isDark
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const tileAttrib = isDark
-    ? '&copy; <a href="https://carto.com/">CARTO</a>'
-    : '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>';
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  const tileAttrib = '&copy; <a href="https://openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>';
 
   return `<!DOCTYPE html>
 <html>
