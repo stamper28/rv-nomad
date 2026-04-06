@@ -64,27 +64,49 @@ export default function AITripPlannerScreen() {
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [showForm, setShowForm] = useState(true);
   const [excludedCampgrounds, setExcludedCampgrounds] = useState<string[]>([]);
+  const [excludedKeywords, setExcludedKeywords] = useState<string[]>([]);
   const [excludeSearch, setExcludeSearch] = useState("");
   const [showExcludeResults, setShowExcludeResults] = useState(false);
 
-  // Load persisted exclusion list
+  const COMMON_BRANDS = [
+    "KOA", "Jellystone", "Thousand Trails", "Good Sam", "Harvest Hosts",
+    "Encore", "Sun RV", "Yogi Bear", "Passport America", "Escapees",
+    "Kampgrounds", "Carefree", "Leisure Systems", "Kampground",
+  ];
+
+  // Load persisted exclusion lists
   useEffect(() => {
     AsyncStorage.getItem("rv_nomad_excluded_campgrounds").then(val => {
       if (val) setExcludedCampgrounds(JSON.parse(val));
     }).catch(() => {});
+    AsyncStorage.getItem("rv_nomad_excluded_keywords").then(val => {
+      if (val) setExcludedKeywords(JSON.parse(val));
+    }).catch(() => {});
   }, []);
 
-  // Save exclusion list when it changes
+  // Save exclusion lists when they change
   useEffect(() => {
     AsyncStorage.setItem("rv_nomad_excluded_campgrounds", JSON.stringify(excludedCampgrounds)).catch(() => {});
   }, [excludedCampgrounds]);
+  useEffect(() => {
+    AsyncStorage.setItem("rv_nomad_excluded_keywords", JSON.stringify(excludedKeywords)).catch(() => {});
+  }, [excludedKeywords]);
 
+  // Count how many campgrounds a keyword matches
+  const keywordMatchCount = (keyword: string) =>
+    ALL_SITES.filter(s => s.name.toLowerCase().includes(keyword.toLowerCase())).length;
+
+  // Search results: show matching campgrounds AND suggest adding as keyword
   const excludeSearchResults = excludeSearch.trim().length >= 2
     ? ALL_SITES.filter(s =>
         s.name.toLowerCase().includes(excludeSearch.toLowerCase()) &&
         !excludedCampgrounds.includes(s.name)
-      ).slice(0, 8)
+      ).slice(0, 6)
     : [];
+
+  // Check if search term matches a brand pattern
+  const searchMatchesBrand = excludeSearch.trim().length >= 2 &&
+    !excludedKeywords.includes(excludeSearch.trim());
 
   const addExclusion = (name: string) => {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -93,9 +115,24 @@ export default function AITripPlannerScreen() {
     setShowExcludeResults(false);
   };
 
+  const addKeywordExclusion = (keyword: string) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const trimmed = keyword.trim();
+    if (trimmed && !excludedKeywords.includes(trimmed)) {
+      setExcludedKeywords(prev => [...prev, trimmed]);
+    }
+    setExcludeSearch("");
+    setShowExcludeResults(false);
+  };
+
   const removeExclusion = (name: string) => {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setExcludedCampgrounds(prev => prev.filter(n => n !== name));
+  };
+
+  const removeKeyword = (keyword: string) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setExcludedKeywords(prev => prev.filter(k => k !== keyword));
   };
 
   const planTripMutation = trpc.ai.planTrip.useMutation();
@@ -133,7 +170,14 @@ export default function AITripPlannerScreen() {
         interests: selectedInterests.length > 0 ? selectedInterests : undefined,
         travelers: parseInt(travelers) || 2,
         pets,
-        excludedCampgrounds: excludedCampgrounds.length > 0 ? excludedCampgrounds : undefined,
+        excludedCampgrounds: (() => {
+          // Merge specific campgrounds + keyword-matched campgrounds into one list
+          const keywordMatches = excludedKeywords.length > 0
+            ? ALL_SITES.filter(s => excludedKeywords.some(k => s.name.toLowerCase().includes(k.toLowerCase()))).map(s => s.name)
+            : [];
+          const merged = [...new Set([...excludedCampgrounds, ...keywordMatches])];
+          return merged.length > 0 ? merged : undefined;
+        })(),
       });
       setTripPlan(result as TripPlan);
     } catch (e: any) {
@@ -142,7 +186,7 @@ export default function AITripPlannerScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startLocation, endLocation, duration, rvType, rvLength, budget, selectedInterests, travelers, pets, excludedCampgrounds]);
+  }, [startLocation, endLocation, duration, rvType, rvLength, budget, selectedInterests, travelers, pets, excludedCampgrounds, excludedKeywords]);
 
   const getCampTypeIcon = (type: string) => {
     switch (type) {
@@ -300,18 +344,36 @@ export default function AITripPlannerScreen() {
             {/* Exclude Campgrounds */}
             <Text style={[styles.label, { color: colors.foreground }]}>🚫 Exclude Campgrounds</Text>
             <Text style={[styles.excludeHint, { color: colors.muted }]}>
-              Search and add campgrounds you don't want to stay at
+              Search for a specific campground or type a brand name (e.g. "KOA") to exclude all of that type
             </Text>
             <TextInput
               style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border }]}
-              placeholder="Search campgrounds to exclude..."
+              placeholder='Type a name or brand (e.g. "KOA")...'
               placeholderTextColor={colors.muted}
               value={excludeSearch}
               onChangeText={(text) => { setExcludeSearch(text); setShowExcludeResults(true); }}
-              returnKeyType="search"
+              returnKeyType="done"
+              onSubmitEditing={() => { if (excludeSearch.trim().length >= 2) addKeywordExclusion(excludeSearch); }}
             />
-            {showExcludeResults && excludeSearchResults.length > 0 && (
+            {showExcludeResults && excludeSearch.trim().length >= 2 && (
               <View style={[styles.excludeDropdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                {/* Keyword/Brand exclusion option */}
+                {searchMatchesBrand && (
+                  <Pressable
+                    onPress={() => addKeywordExclusion(excludeSearch)}
+                    style={({ pressed }) => [
+                      styles.excludeResult,
+                      { borderBottomColor: colors.border, backgroundColor: colors.primary + "10" },
+                      pressed && { backgroundColor: colors.primary + "25" },
+                    ]}
+                  >
+                    <Text style={[styles.excludeResultName, { color: colors.primary }]}>🚫 Exclude ALL "{excludeSearch.trim()}" campgrounds</Text>
+                    <Text style={[styles.excludeResultMeta, { color: colors.muted }]}>
+                      Matches {keywordMatchCount(excludeSearch)} campgrounds in database
+                    </Text>
+                  </Pressable>
+                )}
+                {/* Specific campground results */}
                 {excludeSearchResults.map(site => (
                   <Pressable
                     key={site.id}
@@ -328,8 +390,50 @@ export default function AITripPlannerScreen() {
                 ))}
               </View>
             )}
+
+            {/* Common brand quick-exclude buttons */}
+            {excludedKeywords.length === 0 && excludedCampgrounds.length === 0 && !showExcludeResults && (
+              <View style={styles.brandRow}>
+                {COMMON_BRANDS.slice(0, 6).filter(b => !excludedKeywords.includes(b)).map(brand => (
+                  <Pressable
+                    key={brand}
+                    onPress={() => addKeywordExclusion(brand)}
+                    style={({ pressed }) => [
+                      styles.brandChip,
+                      { borderColor: colors.border },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Text style={[styles.brandChipText, { color: colors.muted }]}>🚫 {brand}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            {/* Keyword exclusion chips (orange) */}
+            {excludedKeywords.length > 0 && (
+              <View style={styles.excludeChipWrap}>
+                <Text style={[styles.excludeChipLabel, { color: colors.muted }]}>Excluded brands/keywords:</Text>
+                {excludedKeywords.map(keyword => (
+                  <Pressable
+                    key={keyword}
+                    onPress={() => removeKeyword(keyword)}
+                    style={({ pressed }) => [
+                      styles.excludeChip,
+                      { backgroundColor: colors.warning + "18", borderColor: colors.warning },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Text style={[styles.excludeChipText, { color: colors.warning }]} numberOfLines={1}>🚫 ✕ {keyword} ({keywordMatchCount(keyword)})</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            {/* Specific campground exclusion chips (red) */}
             {excludedCampgrounds.length > 0 && (
               <View style={styles.excludeChipWrap}>
+                <Text style={[styles.excludeChipLabel, { color: colors.muted }]}>Excluded campgrounds:</Text>
                 {excludedCampgrounds.map(name => (
                   <Pressable
                     key={name}
@@ -343,13 +447,21 @@ export default function AITripPlannerScreen() {
                     <Text style={[styles.excludeChipText, { color: colors.error }]} numberOfLines={1}>✕ {name}</Text>
                   </Pressable>
                 ))}
-                <Pressable
-                  onPress={() => { setExcludedCampgrounds([]); if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                  style={({ pressed }) => [pressed && { opacity: 0.6 }]}
-                >
-                  <Text style={[styles.clearAllText, { color: colors.muted }]}>Clear all</Text>
-                </Pressable>
               </View>
+            )}
+
+            {/* Clear all exclusions */}
+            {(excludedCampgrounds.length > 0 || excludedKeywords.length > 0) && (
+              <Pressable
+                onPress={() => {
+                  setExcludedCampgrounds([]);
+                  setExcludedKeywords([]);
+                  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+              >
+                <Text style={[styles.clearAllText, { color: colors.muted }]}>Clear all exclusions</Text>
+              </Pressable>
             )}
 
             {/* Pets toggle */}
@@ -565,4 +677,8 @@ const styles = StyleSheet.create({
   excludeChip: { flexDirection: "row" as const, alignItems: "center" as const, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, maxWidth: "90%" as any },
   excludeChipText: { fontSize: 13, fontWeight: "500" },
   clearAllText: { fontSize: 13, fontWeight: "500", textDecorationLine: "underline" as const, paddingVertical: 4 },
+  brandRow: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8, marginTop: 6 },
+  brandChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
+  brandChipText: { fontSize: 12, fontWeight: "500" },
+  excludeChipLabel: { fontSize: 12, fontWeight: "600", width: "100%" as any, marginBottom: 2 },
 });

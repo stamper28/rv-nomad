@@ -339,6 +339,7 @@ export const appRouter = router({
           travelers: z.number().optional(),
           pets: z.boolean().optional(),
           excludedCampgrounds: z.array(z.string()).optional(),
+          excludedKeywords: z.array(z.string()).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -353,7 +354,8 @@ ${input.budget ? `- Budget: ${input.budget}` : ""}
 ${input.interests?.length ? `- Interests: ${input.interests.join(", ")}` : ""}
 ${input.travelers ? `- Travelers: ${input.travelers}` : ""}
 ${input.pets ? "- Traveling with pets" : ""}
-${input.excludedCampgrounds?.length ? `\nIMPORTANT: Do NOT include any of these campgrounds in the trip plan (the user does not want to stay at them):\n${input.excludedCampgrounds.map(c => `- ${c}`).join("\n")}` : ""}
+${input.excludedCampgrounds?.length ? `\nIMPORTANT: Do NOT include any of these specific campgrounds in the trip plan (the user does not want to stay at them):\n${input.excludedCampgrounds.map(c => `- ${c}`).join("\n")}` : ""}
+${input.excludedKeywords?.length ? `\nIMPORTANT: Do NOT include ANY campgrounds whose name contains any of these brands or keywords (the user wants to avoid all campgrounds of these types):\n${input.excludedKeywords.map(k => `- "${k}" (exclude ALL campgrounds with "${k}" in the name)`).join("\n")}` : ""}
 
 Return a JSON object with this structure:
 {

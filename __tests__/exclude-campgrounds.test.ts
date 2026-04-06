@@ -66,3 +66,78 @@ describe("Exclude Campgrounds Feature", () => {
     });
   });
 });
+
+describe("Brand/Keyword Exclusion Feature", () => {
+  it("keyword 'KOA' matches multiple campgrounds", () => {
+    const keyword = "KOA";
+    const matches = ALL_SITES.filter((s) =>
+      s.name.toLowerCase().includes(keyword.toLowerCase())
+    );
+    expect(matches.length).toBeGreaterThan(0);
+    matches.forEach((m) => {
+      expect(m.name.toLowerCase()).toContain("koa");
+    });
+  });
+
+  it("keyword matching is case-insensitive", () => {
+    const keyword1 = "koa";
+    const keyword2 = "KOA";
+    const keyword3 = "Koa";
+    const matches1 = ALL_SITES.filter((s) => s.name.toLowerCase().includes(keyword1.toLowerCase()));
+    const matches2 = ALL_SITES.filter((s) => s.name.toLowerCase().includes(keyword2.toLowerCase()));
+    const matches3 = ALL_SITES.filter((s) => s.name.toLowerCase().includes(keyword3.toLowerCase()));
+    expect(matches1.length).toBe(matches2.length);
+    expect(matches2.length).toBe(matches3.length);
+  });
+
+  it("keyword count function returns correct number of matches", () => {
+    const keywordMatchCount = (keyword: string) =>
+      ALL_SITES.filter((s) => s.name.toLowerCase().includes(keyword.toLowerCase())).length;
+
+    const koaCount = keywordMatchCount("KOA");
+    expect(koaCount).toBeGreaterThan(0);
+
+    // A very specific name should match fewer
+    const specificCount = keywordMatchCount("Denali National Park Riley Creek");
+    expect(specificCount).toBeLessThanOrEqual(koaCount);
+  });
+
+  it("multiple keywords can be excluded independently", () => {
+    const keywords = ["KOA", "Jellystone"];
+    const excluded = ALL_SITES.filter((s) =>
+      keywords.some((k) => s.name.toLowerCase().includes(k.toLowerCase()))
+    );
+    const remaining = ALL_SITES.filter((s) =>
+      !keywords.some((k) => s.name.toLowerCase().includes(k.toLowerCase()))
+    );
+    expect(excluded.length + remaining.length).toBe(ALL_SITES.length);
+    remaining.forEach((s) => {
+      keywords.forEach((k) => {
+        expect(s.name.toLowerCase()).not.toContain(k.toLowerCase());
+      });
+    });
+  });
+
+  it("keyword exclusion list can be serialized separately from campground exclusion list", () => {
+    const excludedCampgrounds = ["Denali National Park Riley Creek"];
+    const excludedKeywords = ["KOA", "Jellystone"];
+    const serializedCamps = JSON.stringify(excludedCampgrounds);
+    const serializedKeywords = JSON.stringify(excludedKeywords);
+    expect(JSON.parse(serializedCamps)).toEqual(excludedCampgrounds);
+    expect(JSON.parse(serializedKeywords)).toEqual(excludedKeywords);
+    // They are stored independently
+    expect(serializedCamps).not.toBe(serializedKeywords);
+  });
+
+  it("common brand names are valid strings", () => {
+    const COMMON_BRANDS = [
+      "KOA", "Jellystone", "Thousand Trails", "Good Sam", "Harvest Hosts",
+      "Encore", "Sun RV", "Yogi Bear", "Passport America", "Escapees",
+    ];
+    COMMON_BRANDS.forEach((brand) => {
+      expect(brand).toBeTruthy();
+      expect(typeof brand).toBe("string");
+      expect(brand.length).toBeGreaterThan(1);
+    });
+  });
+});

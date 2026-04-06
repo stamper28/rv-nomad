@@ -339,3 +339,9 @@
 - [x] Show excluded campgrounds as removable chips/tags
 - [x] Pass exclusion list to AI trip generation so it skips those campgrounds
 - [x] Persist exclusion list in AsyncStorage so it remembers across sessions
+
+## Exclude by Brand/Keyword in AI Trip Planner
+- [x] Add ability to type a brand name (KOA, Jellystone, Thousand Trails, etc.) and exclude all matching campgrounds
+- [x] Show brand exclusions as separate keyword chips (orange for brands, red for specific campgrounds)
+- [x] Pass both specific exclusions and brand/keyword exclusions to the AI prompt
+- [x] Add common campground brand suggestions for quick exclusion (KOA, Jellystone, Thousand Trails, Good Sam, Harvest Hosts, Encore)
