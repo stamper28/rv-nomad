@@ -351,3 +351,10 @@
 - [x] Navigate to site-detail screen when tapping a campsite in the trip plan
 - [x] Match AI-generated campsite names to actual campsite data for navigation (exact, partial, and word-based matching)
 - [x] Add visual indicator ("View Details & Reserve" button) showing campsites are tappable
+
+## Play Store Assets
+- [x] Generate professional app icon
+- [x] Create privacy policy page
+- [x] Write store description (short + full)
+- [x] Write feature list for Play Store listing
+- [x] Generate feature graphic (1024x500) + 3 phone screenshots
