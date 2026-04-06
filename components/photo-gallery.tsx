@@ -28,6 +28,7 @@ import {
   deletePhoto,
   type SitePhoto,
 } from "@/lib/photo-store";
+import { ReportContentModal } from "@/components/report-content-modal";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const THUMB_SIZE = (SCREEN_WIDTH - 48 - 12) / 3; // 3 columns with gaps
@@ -46,6 +47,7 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
   const [caption, setCaption] = useState("");
   const [siteNumber, setSiteNumber] = useState("");
   const [selectedUri, setSelectedUri] = useState<string | null>(null);
+  const [reportPhotoId, setReportPhotoId] = useState<string | null>(null);
 
   const loadPhotos = useCallback(async () => {
     const loaded = await getPhotosForSite(siteId);
@@ -254,6 +256,12 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
               {viewerIndex + 1} / {photos.length}
             </Text>
             <TouchableOpacity
+              onPress={() => photos[viewerIndex] && setReportPhotoId(photos[viewerIndex].id)}
+              style={styles.viewerDelete}
+            >
+              <MaterialIcons name="flag" size={24} color="#FF6B6B" />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => photos[viewerIndex] && handleDeletePhoto(photos[viewerIndex].id)}
               style={styles.viewerDelete}
             >
@@ -302,6 +310,18 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
           />
         </View>
       </Modal>
+      {/* Report Modal */}
+      <ReportContentModal
+        visible={!!reportPhotoId}
+        onClose={() => setReportPhotoId(null)}
+        contentId={reportPhotoId || ""}
+        contentType="photo"
+        onReported={() => {
+          setReportPhotoId(null);
+          if (viewerVisible) setViewerVisible(false);
+          loadPhotos();
+        }}
+      />
     </View>
   );
 }

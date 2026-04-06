@@ -4,6 +4,7 @@
  * See LICENSE file for details.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getBlockedContentIds } from "@/lib/content-moderation";
 
 export interface SitePhoto {
   id: string;
@@ -26,9 +27,10 @@ export async function getPhotosForSite(siteId: string): Promise<SitePhoto[]> {
     const raw = await AsyncStorage.getItem(PHOTOS_KEY);
     if (!raw) return [];
     const all: SitePhoto[] = JSON.parse(raw);
-    return all.filter((p) => p.siteId === siteId).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const blockedIds = await getBlockedContentIds("photo");
+    return all
+      .filter((p) => p.siteId === siteId && !blockedIds.has(p.id))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch {
     return [];
   }

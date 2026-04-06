@@ -418,3 +418,15 @@
 - [x] Photo context provider for managing user photos across app
 - [ ] Photo count badge on campground cards
 - [ ] Full-screen photo viewer with swipe navigation
+
+## Play Store Listing Materials
+- [ ] Write short description (80 chars max)
+- [ ] Write full description (4000 chars max)
+- [ ] Generate feature graphic (1024x500)
+- [ ] Generate promotional phone screenshots with feature callouts
+
+### Report/Block User-Generated Content
+- [x] Create content moderation store (report, block, hide content)
+- [x] Add report/block buttons to photo gallery
+- [x] Add report/block buttons to cell signal reports
+- [x] Add blocked content filtering (reported content auto-hidden)

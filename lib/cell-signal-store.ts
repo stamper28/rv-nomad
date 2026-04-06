@@ -4,6 +4,7 @@
  * See LICENSE file for details.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getBlockedContentIds } from "@/lib/content-moderation";
 
 export type Carrier = "Verizon" | "AT&T" | "T-Mobile" | "US Cellular" | "Other";
 export type SignalStrength = 0 | 1 | 2 | 3 | 4 | 5; // 0 = no signal, 5 = excellent
@@ -70,9 +71,10 @@ export async function getSignalReportsForSite(siteId: string): Promise<CellSigna
     const raw = await AsyncStorage.getItem(SIGNAL_KEY);
     if (!raw) return [];
     const all: CellSignalReport[] = JSON.parse(raw);
-    return all.filter((r) => r.siteId === siteId).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const blockedIds = await getBlockedContentIds("signal_report");
+    return all
+      .filter((r) => r.siteId === siteId && !blockedIds.has(r.id))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   } catch {
     return [];
   }

@@ -31,6 +31,7 @@ import {
   type Carrier,
   type SignalStrength,
 } from "@/lib/cell-signal-store";
+import { ReportContentModal } from "@/components/report-content-modal";
 
 interface CellSignalSectionProps {
   siteId: string;
@@ -51,6 +52,7 @@ export function CellSignalSection({ siteId, siteName }: CellSignalSectionProps) 
   const [canVideoCall, setCanVideoCall] = useState(false);
   const [boosterUsed, setBoosterUsed] = useState(false);
   const [notes, setNotes] = useState("");
+  const [reportId, setReportId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const [r, s] = await Promise.all([
@@ -184,6 +186,14 @@ export function CellSignalSection({ siteId, siteName }: CellSignalSectionProps) 
               {r.notes && (
                 <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{r.notes}</Text>
               )}
+              <TouchableOpacity
+                onPress={() => setReportId(r.id)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="flag" size={14} color={colors.muted} />
+                <Text style={{ color: colors.muted, fontSize: 10 }}>Report</Text>
+              </TouchableOpacity>
             </View>
           ))}
         </View>
@@ -310,6 +320,17 @@ export function CellSignalSection({ siteId, siteName }: CellSignalSectionProps) 
           </View>
         </View>
       </Modal>
+      {/* Report Modal */}
+      <ReportContentModal
+        visible={!!reportId}
+        onClose={() => setReportId(null)}
+        contentId={reportId || ""}
+        contentType="signal_report"
+        onReported={() => {
+          setReportId(null);
+          loadData();
+        }}
+      />
     </View>
   );
 }
