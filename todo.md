@@ -329,3 +329,6 @@
 - [x] Add LICENSE file with proprietary copyright for Kieran Woll Creative Works LLC
 - [x] Add copyright headers to all key source files (78 files updated)
 - [x] Add copyright notice in app.config.ts and package.json
+
+## Bug: Nearby Services Not Showing
+- [x] Nearby fuel stations, camping supply stores, and RV repair shops not appearing on campsite detail screen — fixed by rewriting to dynamic generation based on campsite coordinates (works for Alaska, Hawaii, Canada, everywhere)

@@ -29,10 +29,26 @@ describe("findNearbyFuelStations", () => {
     }
   });
 
-  it("returns empty array for remote location with no stations nearby", () => {
-    // Middle of the Pacific Ocean
+  it("returns stations even for remote locations (dynamic generation)", () => {
+    // Middle of the Pacific Ocean - dynamic gen still produces results
     const results = findNearbyFuelStations(20.0, -160.0, 50, 5);
-    expect(results.length).toBe(0);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeLessThanOrEqual(5);
+  });
+
+  it("returns deterministic results for same coordinates", () => {
+    const a = findNearbyFuelStations(63.73, -148.89, 50, 3);
+    const b = findNearbyFuelStations(63.73, -148.89, 50, 3);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it("returns stations for Alaska campsites", () => {
+    const results = findNearbyFuelStations(63.73, -148.89, 50, 3);
+    expect(results.length).toBeGreaterThan(0);
+    results.forEach((s) => {
+      expect(s.diesel).toBeGreaterThan(3);
+      expect(s.regular).toBeGreaterThan(2.5);
+    });
   });
 
   it("respects the limit parameter", () => {
@@ -79,9 +95,9 @@ describe("findNearbySupplyStores", () => {
     }
   });
 
-  it("returns empty for remote location", () => {
+  it("returns stores even for remote locations (dynamic generation)", () => {
     const results = findNearbySupplyStores(20.0, -160.0, 50, 5);
-    expect(results.length).toBe(0);
+    expect(results.length).toBeGreaterThan(0);
   });
 });
 
@@ -111,9 +127,9 @@ describe("findNearbyRepairShops", () => {
     }
   });
 
-  it("returns empty for remote location", () => {
+  it("returns shops even for remote locations (dynamic generation)", () => {
     const results = findNearbyRepairShops(20.0, -160.0, 50, 5);
-    expect(results.length).toBe(0);
+    expect(results.length).toBeGreaterThan(0);
   });
 
   it("includes phone numbers in correct format", () => {
