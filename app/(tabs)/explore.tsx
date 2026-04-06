@@ -51,6 +51,9 @@ const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
   cabelas_bass_pro: "leaf.fill",
   truck_stop: "fuelpump.fill",
   elks_moose: "building.2.fill",
+  army_corps: "drop.fill",
+  county_park: "tree.fill",
+  provincial_park: "leaf.fill",
   // RV Services
   dump_station: "arrow.clockwise",
   weight_scale: "scalemass.fill",
@@ -523,6 +526,51 @@ export default function ExploreScreen() {
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Experiences</Text>
               <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Share stories, tips & mods for your RV</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Themed Routes */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/themed-routes" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#1B5E2020" }]}>
+              <MaterialIcons name="map" size={24} color="#1B5E20" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Themed Routes</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>PCH, Route 66, Utah Mighty Five & more</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Interstate Exit Guide */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/exit-guide" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#0D47A120" }]}>
+              <MaterialIcons name="exit-to-app" size={24} color="#0D47A1" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Interstate Exit Guide</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Gas, food & services at upcoming exits</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* RV Storage Finder */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/rv-storage" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#4E342E20" }]}>
+              <MaterialIcons name="warehouse" size={24} color="#4E342E" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Storage Finder</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Find secure storage facilities near you</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>

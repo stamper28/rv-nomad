@@ -69,8 +69,17 @@ export const AFFILIATE_CONFIG = {
   },
 } as const;
 
-/** Build an Amazon product URL with affiliate tag */
-export function amazonUrl(asin: string): string {
+/** Build an Amazon product URL with affiliate tag.
+ * Uses search URL for reliability — ASIN links can break if the product listing changes.
+ */
+export function amazonUrl(asin: string, productName?: string, brand?: string): string {
+  // If we have a product name, use Amazon search URL (always works)
+  if (productName) {
+    const searchQuery = brand ? `${brand} ${productName}` : productName;
+    const encoded = encodeURIComponent(searchQuery);
+    return `https://www.amazon.com/s?k=${encoded}&tag=${AFFILIATE_CONFIG.amazon.tag}`;
+  }
+  // Fallback to ASIN direct link
   return `${AFFILIATE_CONFIG.amazon.baseUrl}${asin}?tag=${AFFILIATE_CONFIG.amazon.tag}`;
 }
 

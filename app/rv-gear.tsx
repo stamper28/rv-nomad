@@ -385,7 +385,7 @@ export default function RVGearScreen() {
                     style={[styles.shopBtn, { backgroundColor: "#FF9900" }]}
                     activeOpacity={0.8}
                     onPress={() => {
-                      openUrl(amazonUrl(item.asin)).catch(() => {});
+                      openUrl(amazonUrl(item.asin, item.name, item.brand)).catch(() => {});
                     }}
                   >
                     <MaterialIcons name="shopping-cart" size={18} color="#fff" />

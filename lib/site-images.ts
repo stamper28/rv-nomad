@@ -268,6 +268,24 @@ const CATEGORY_IMAGES: Record<string, Record<string, string[]>> = {
       "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=400&fit=crop", // visitor center
     ],
   },
+  army_corps: {
+    default: [
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=400&fit=crop", // lake campground
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=400&fit=crop", // lakeside camping
+    ],
+  },
+  county_park: {
+    default: [
+      "https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=600&h=400&fit=crop", // park trail
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=400&fit=crop", // park camping
+    ],
+  },
+  provincial_park: {
+    default: [
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop", // Canadian forest
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=400&fit=crop", // lake view
+    ],
+  },
 };
 
 /**

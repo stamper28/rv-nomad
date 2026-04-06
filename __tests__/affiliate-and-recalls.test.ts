@@ -7,7 +7,7 @@ describe("Affiliate Links", () => {
     const result = getBookingOptions("national_park", "Yosemite Upper Pines", "CA", "Yosemite");
     expect(result.primary.name).toBe("Recreation.gov");
     expect(result.primary.url).toContain("recreation.gov");
-    expect(result.primary.url).toContain("Yosemite");
+    expect(result.primary.url).toContain("Upper%20Pines");
   });
 
   it("returns ReserveAmerica as primary for state parks", () => {
@@ -62,9 +62,9 @@ describe("Affiliate Links", () => {
     expect(url.length).toBeGreaterThan(20);
   });
 
-  it("includes affiliate tags in URLs", () => {
+  it("includes search query in URLs", () => {
     const result = getBookingOptions("national_park", "Yosemite", "CA", "Yosemite");
-    expect(result.primary.url).toContain("affiliate=");
+    expect(result.primary.url).toContain("q=");
   });
 });
 

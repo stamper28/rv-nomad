@@ -376,3 +376,45 @@
 ## Bug: Affiliate Links Not Connecting
 - [x] Fix Reserve Now buttons not connecting to campground booking sites — replaced Linking.openURL with expo-web-browser openBrowserAsync across all 7 files
 - [x] Fix Amazon affiliate links not working — all external links now use in-app browser (Safari/Chrome Custom Tabs)
+
+## Bug: Broken Affiliate/Product Links
+- [x] Fix campground booking URLs showing "Site not found" — URLs are malformed or pointing to wrong pages
+- [x] Fix Amazon product links showing "page not found" — ASINs are fake/placeholder, need real product URLs
+- [x] Fix all other external links that may have similar issues (gear shop, NHTSA, etc.)
+
+## Make RV Nomad The Best RV App (Gap Analysis Fix)
+
+### Database Expansion
+- [x] Expand National Park campgrounds from 68 to 400+ (all NPS-managed campgrounds)
+- [x] Expand Military FamCamps from 5 to 100+ (all US military base campgrounds)
+- [x] Expand BLM camping sites from 3 to 200+ (designated BLM camping areas)
+- [x] Add Army Corps of Engineers campgrounds (200+ sites added)
+- [x] Add County/City park campgrounds (100+ popular ones)
+- [x] Add National Forest campgrounds beyond current 52 (expand to 300+)
+- [ ] Add primitive/dispersed camping areas with GPS coordinates
+
+### Missing Data Fields
+- [x] Add open season / closure dates to new campgrounds
+- [x] Add elevation data to new campgrounds
+- [x] Add age restrictions field (55+ parks, family-only, etc.)
+- [x] Add boat launch info to campgrounds near water
+- [x] Add firewood availability and pricing info
+- [ ] Add pet restriction details (breed/size limits, leash rules)
+
+### New Features
+- [x] Interstate Exit Guide — show services at upcoming highway exits (gas, food, rest stops, showers)
+- [x] Restaurant Finder near campgrounds (nearby dining options on site-detail)
+- [x] User-Submitted Cell Signal Reports (carrier, signal bars, crowdsourced per campground)
+- [x] Themed Route Suggestions (Pacific Coast Highway, Route 66, Blue Ridge Parkway, Great River Road, etc.)
+- [ ] First-Time Onboarding Flow (3-4 screens, RVer type selection, personalized home)
+- [x] RV Storage Facility Finder (covered/uncovered, pricing, security, size limits)
+- [ ] RV Rental Locations (Cruise America, Road Bear, El Monte, Outdoorsy pickup points)
+
+### User Photo Gallery (Campground Photos)
+- [x] Photo gallery component on site-detail page showing user-submitted photos
+- [x] "Add Photo" button with camera/image picker (expo-image-picker)
+- [x] Photo captions and metadata (date, rig type, site number)
+- [x] Local photo storage using expo-file-system
+- [x] Photo context provider for managing user photos across app
+- [ ] Photo count badge on campground cards
+- [ ] Full-screen photo viewer with swipe navigation

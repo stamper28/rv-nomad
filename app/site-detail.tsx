@@ -36,6 +36,9 @@ import { findNearbyTrackChairs, type NearbyTrackChair } from "@/lib/nearby-track
 import { getBookingOptions, isReservable, getBookingButtonLabel } from "@/lib/affiliate-links";
 import { findNearbyFuelStations, findNearbySupplyStores, findNearbyRepairShops, type NearbyFuelStation, type NearbySupplyStore, type NearbyRepairShop } from "@/lib/nearby-services";
 import { openUrl } from "@/lib/open-url";
+import { PhotoGallery } from "@/components/photo-gallery";
+import { findNearbyRestaurants, getRestaurantCategoryInfo } from "@/lib/nearby-restaurants";
+import { CellSignalSection } from "@/components/cell-signal-section";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -385,6 +388,33 @@ export default function SiteDetailScreen() {
                     <View>
                       <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>QUIET HOURS</Text>
                       <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.quietHours}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.ageRestriction && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="person" size={16} color="#D32F2F" />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>AGE RESTRICTION</Text>
+                      <Text style={{ color: "#D32F2F", fontSize: 13, fontWeight: "700" }}>{site.ageRestriction}</Text>
+                    </View>
+                  </View>
+                )}
+                {site.boatLaunch && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="directions-boat" size={16} color="#0288D1" />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>BOAT LAUNCH</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>Available</Text>
+                    </View>
+                  </View>
+                )}
+                {site.firewood && (
+                  <View style={[styles.facilityItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <MaterialIcons name="local-fire-department" size={16} color="#E65100" />
+                    <View>
+                      <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "600" }}>FIREWOOD</Text>
+                      <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>{site.firewood}</Text>
                     </View>
                   </View>
                 )}
@@ -833,6 +863,62 @@ export default function SiteDetailScreen() {
             })()}
           </View>
 
+          {/* Nearby Restaurants */}
+          {(() => {
+            const restaurants = findNearbyRestaurants(site.latitude, site.longitude, 15, 6);
+            if (restaurants.length === 0) return null;
+            return (
+              <View style={[styles.section, { borderColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                  <MaterialIcons name="restaurant" size={18} color="#1565C0" />
+                  <Text style={{ color: colors.foreground, fontSize: 17, fontWeight: "700" }}>Nearby Dining</Text>
+                </View>
+                {restaurants.map((r) => {
+                  const catInfo = getRestaurantCategoryInfo(r.category);
+                  return (
+                    <TouchableOpacity
+                      key={r.id}
+                      style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => openUrl(r.directionsUrl)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <View style={{ backgroundColor: catInfo.color + "15", padding: 6, borderRadius: 8 }}>
+                            <MaterialIcons name={catInfo.icon as any} size={16} color={catInfo.color} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{r.name}</Text>
+                            <Text style={{ color: colors.muted, fontSize: 12, marginTop: 1 }}>{catInfo.label} · {r.priceRange}</Text>
+                          </View>
+                        </View>
+                        <Text style={{ color: "#1565C0", fontSize: 14, fontWeight: "800" }}>{r.distanceMiles} mi</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                        {r.rvParking && (
+                          <View style={{ backgroundColor: "#2E7D3215", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                            <Text style={{ color: "#2E7D32", fontSize: 10, fontWeight: "700" }}>RV Parking</Text>
+                          </View>
+                        )}
+                        {r.open24Hours && (
+                          <View style={{ backgroundColor: colors.muted + "15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                            <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "700" }}>Open 24hr</Text>
+                          </View>
+                        )}
+                        {r.familyFriendly && (
+                          <View style={{ backgroundColor: "#1565C015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                            <Text style={{ color: "#1565C0", fontSize: 10, fontWeight: "700" }}>Family Friendly</Text>
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+                <Text style={{ color: colors.muted, fontSize: 10, marginTop: 4, fontStyle: "italic" }}>Restaurant availability may vary. Verify hours before visiting.</Text>
+              </View>
+            );
+          })()}
+
           {/* Cancellation Alert */}
           <View style={[styles.section, { borderColor: colors.border }]}>
             <TouchableOpacity
@@ -851,6 +937,16 @@ export default function SiteDetailScreen() {
                 {wantsCancellationAlert ? "Cancellation Alert Set" : "Notify Me When a Site Opens"}
               </Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Camper Photo Gallery */}
+          <View style={[styles.section, { borderColor: colors.border }]}>
+            <PhotoGallery siteId={site.id} siteName={site.name} />
+          </View>
+
+          {/* Cell Signal Reports */}
+          <View style={[styles.section, { borderColor: colors.border }]}>
+            <CellSignalSection siteId={site.id} siteName={site.name} />
           </View>
 
           {/* Reviews Section */}

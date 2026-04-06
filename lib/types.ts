@@ -21,6 +21,9 @@ export type SiteCategory =
   | "cabelas_bass_pro"
   | "truck_stop"
   | "elks_moose"
+  | "army_corps"
+  | "county_park"
+  | "provincial_park"
   // === RV Services ===
   | "dump_station"
   | "weight_scale"
@@ -145,6 +148,10 @@ export interface CampSite {
   // === Quiet Hours & Rules ===
   generatorHours?: string; // e.g. "8 AM - 8 PM", "No generators"
   quietHours?: string; // e.g. "10 PM - 7 AM"
+  // === New Gap-Closing Fields ===
+  ageRestriction?: string; // e.g. "55+", "None", "21+ only"
+  boatLaunch?: boolean; // has boat ramp/launch
+  firewood?: string; // e.g. "Sold on-site $7/bundle", "Gathering allowed", "Bring your own"
   // === Social & Check-in ===
   checkedInUsers?: number; // current users checked in
 }
@@ -188,6 +195,9 @@ export const CATEGORY_LABELS: Record<SiteCategory, string> = {
   cabelas_bass_pro: "Cabela's / Bass Pro",
   truck_stop: "Truck Stop",
   elks_moose: "Elks / Moose Lodge",
+  army_corps: "Army Corps of Engineers",
+  county_park: "County/City Park",
+  provincial_park: "Provincial Park",
   // RV Services
   dump_station: "Dump Station",
   weight_scale: "Weight Scale",
@@ -236,6 +246,9 @@ export const CATEGORY_COLORS: Record<SiteCategory, string> = {
   cabelas_bass_pro: "#33691E",
   truck_stop: "#E64A19",
   elks_moose: "#283593",
+  army_corps: "#00695C",
+  county_park: "#7CB342",
+  provincial_park: "#43A047",
   // RV Services
   dump_station: "#455A64",
   weight_scale: "#FF6F00",

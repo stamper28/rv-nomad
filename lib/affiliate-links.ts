@@ -51,13 +51,41 @@ interface BookingPlatform {
   description: string;
 }
 
+/**
+ * Extract just the campground-specific name from a full name.
+ * e.g., "Denali National Park Riley Creek" → "Riley Creek"
+ * e.g., "Yellowstone Madison Campground" → "Madison Campground"
+ * If the name is short enough already, return as-is.
+ */
+function simplifyName(fullName: string): string {
+  // Common patterns to strip from the beginning
+  const prefixes = [
+    /^(Denali|Yellowstone|Yosemite|Glacier|Zion|Grand Canyon|Rocky Mountain|Acadia|Olympic|Sequoia|Joshua Tree|Big Bend|Everglades|Shenandoah|Great Smoky|Cuyahoga|Arches|Bryce Canyon|Capitol Reef|Canyonlands|Mesa Verde|Mount Rainier|North Cascades|Crater Lake|Lassen|Redwood|Pinnacles|Channel Islands|Death Valley|Badlands|Theodore Roosevelt|Wind Cave|Voyageurs|Isle Royale|Mammoth Cave|Congaree|Biscayne|Dry Tortugas|Virgin Islands|Haleakala|Hawaii Volcanoes|Kenai Fjords|Wrangell|Katmai|Kobuk Valley|Lake Clark|Gates of the Arctic)\s+(National Park\s+)?/i,
+    /^[A-Z][a-z]+ (National Forest|National Monument|National Recreation Area|National Seashore|National Lakeshore)\s+/i,
+  ];
+
+  let simplified = fullName;
+  for (const prefix of prefixes) {
+    simplified = simplified.replace(prefix, "");
+  }
+
+  // If we stripped too much or nothing, use original
+  if (simplified.length < 3) {
+    simplified = fullName;
+  }
+
+  return simplified;
+}
+
 const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   recreation_gov: {
     name: "Recreation.gov",
     baseUrl: "https://www.recreation.gov",
     buildUrl: (name, _state, _city) => {
-      const query = encodeURIComponent(name);
-      return `https://www.recreation.gov/search?q=${query}&affiliate=${AFFILIATE_TAGS.impact}`;
+      // Use simplified campground name for better search results
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(searchName);
+      return `https://www.recreation.gov/search?q=${query}`;
     },
     icon: "park",
     color: "#1a5632",
@@ -66,9 +94,11 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   reserve_america: {
     name: "ReserveAmerica",
     baseUrl: "https://www.reserveamerica.com",
-    buildUrl: (name, state, _city) => {
-      const query = encodeURIComponent(name);
-      return `https://www.reserveamerica.com/explore/search-results?q=${query}&state=${state}`;
+    buildUrl: (name, _state, _city) => {
+      // ReserveAmerica search — use just the campground name
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(searchName);
+      return `https://www.reserveamerica.com/explore/search-results?q=${query}`;
     },
     icon: "calendar-today",
     color: "#2E7D32",
@@ -77,9 +107,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   koa: {
     name: "KOA.com",
     baseUrl: "https://koa.com",
-    buildUrl: (name, state, city) => {
+    buildUrl: (_name, state, city) => {
+      // KOA search by location works best
       const query = encodeURIComponent(`${city} ${state}`);
-      return `https://koa.com/campgrounds/search/?query=${query}&affiliate=${AFFILIATE_TAGS.impact}`;
+      return `https://koa.com/campgrounds/search/?query=${query}`;
     },
     icon: "cabin",
     color: "#FFD700",
@@ -88,8 +119,9 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   campspot: {
     name: "Campspot",
     baseUrl: "https://www.campspot.com",
-    buildUrl: (name, state, city) => {
-      const query = encodeURIComponent(`${name} ${city} ${state}`);
+    buildUrl: (_name, state, city) => {
+      // Campspot search by location
+      const query = encodeURIComponent(`${city}, ${state}`);
       return `https://www.campspot.com/search?q=${query}`;
     },
     icon: "terrain",
@@ -99,9 +131,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   hipcamp: {
     name: "Hipcamp",
     baseUrl: "https://www.hipcamp.com",
-    buildUrl: (name, state, _city) => {
-      const query = encodeURIComponent(name);
-      return `https://www.hipcamp.com/en-US/search?q=${query}&ref=${AFFILIATE_TAGS.hipcamp}`;
+    buildUrl: (_name, state, city) => {
+      // Hipcamp search by location
+      const query = encodeURIComponent(`${city}, ${state}`);
+      return `https://www.hipcamp.com/en-US/search?q=${query}`;
     },
     icon: "nature-people",
     color: "#00A86B",
@@ -110,9 +143,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   harvest_hosts: {
     name: "Harvest Hosts",
     baseUrl: "https://www.harvesthosts.com",
-    buildUrl: (name, _state, _city) => {
-      const query = encodeURIComponent(name);
-      return `https://www.harvesthosts.com/search?q=${query}&ref=${AFFILIATE_TAGS.harvestHosts}`;
+    buildUrl: (_name, state, city) => {
+      // Harvest Hosts — link to their explore page with location
+      const query = encodeURIComponent(`${city}, ${state}`);
+      return `https://www.harvesthosts.com/search?q=${query}`;
     },
     icon: "wine-bar",
     color: "#722F37",
@@ -134,11 +168,6 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
 // ─── Category → Platform Mapping ──────────────────────────────────
 
 import type { SiteCategory } from "./types";
-
-interface BookingOption {
-  platform: BookingPlatform;
-  isPrimary: boolean;
-}
 
 /**
  * Get booking platform options for a campground based on its category.
@@ -175,6 +204,15 @@ export function getBookingOptions(
     case "military":
       primaryKey = "google_maps";
       secondaryKeys = [];
+      break;
+    case "army_corps":
+      primaryKey = "recreation_gov";
+      secondaryKeys = ["google_maps"];
+      break;
+    case "county_park":
+    case "provincial_park":
+      primaryKey = "reserve_america";
+      secondaryKeys = ["google_maps"];
       break;
     case "boondocking":
     case "walmart":
@@ -243,6 +281,9 @@ export function isReservable(category: SiteCategory): boolean {
     "rv_park",
     "harvest_host",
     "military",
+    "army_corps",
+    "county_park",
+    "provincial_park",
   ];
   return reservableCategories.includes(category);
 }
