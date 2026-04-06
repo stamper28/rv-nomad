@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 // Since the screen uses inline data, we test the patterns and logic
 
 describe("RV Experiences", () => {
-  const CATEGORIES = ["Problems", "Mods & Upgrades", "Tips & Tricks", "Trip Stories", "Maintenance", "Reviews"];
+  const CATEGORIES = ["Don't Buy", "Problems", "Mods & Upgrades", "Tips & Tricks", "Trip Stories", "Maintenance", "Reviews"];
   
   const RV_MAKES = [
     "Forest River", "Thor Industries", "Winnebago", "Keystone RV", "Jayco",
@@ -21,8 +21,9 @@ describe("RV Experiences", () => {
 
   const RV_TYPES = ["Class A", "Class B", "Class C", "Travel Trailer", "Fifth Wheel", "Toy Hauler", "Pop-Up", "Truck Camper", "Teardrop", "Other"];
 
-  it("should have 6 experience categories", () => {
-    expect(CATEGORIES).toHaveLength(6);
+  it("should have 7 experience categories including Don't Buy", () => {
+    expect(CATEGORIES).toHaveLength(7);
+    expect(CATEGORIES).toContain("Don't Buy");
     expect(CATEGORIES).toContain("Problems");
     expect(CATEGORIES).toContain("Mods & Upgrades");
     expect(CATEGORIES).toContain("Trip Stories");

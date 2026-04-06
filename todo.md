@@ -368,3 +368,7 @@
 - [x] Pre-populate with 8 sample experiences from different RV brands
 - [x] Add link to RV Experiences from Explore tab
 - [x] Add search/filter by RV make or category + sort by recent/most helpful
+
+## Don't Buy RV Category
+- [x] Add "Don't Buy" category to RV Experiences with warning icon (red block icon)
+- [x] Add 3 sample "Don't Buy" experiences (Coachmen Freelander, Forest River Sunseeker, Thor Chateau)

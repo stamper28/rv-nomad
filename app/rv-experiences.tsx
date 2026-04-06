@@ -41,11 +41,12 @@ interface RVExperience {
   author: string;
 }
 
-type ExperienceCategory = "Problems" | "Mods & Upgrades" | "Tips & Tricks" | "Trip Stories" | "Maintenance" | "Reviews";
+type ExperienceCategory = "Don't Buy" | "Problems" | "Mods & Upgrades" | "Tips & Tricks" | "Trip Stories" | "Maintenance" | "Reviews";
 
-const CATEGORIES: ExperienceCategory[] = ["Problems", "Mods & Upgrades", "Tips & Tricks", "Trip Stories", "Maintenance", "Reviews"];
+const CATEGORIES: ExperienceCategory[] = ["Don't Buy", "Problems", "Mods & Upgrades", "Tips & Tricks", "Trip Stories", "Maintenance", "Reviews"];
 
 const CATEGORY_ICONS: Record<ExperienceCategory, { icon: string; color: string }> = {
+  "Don't Buy": { icon: "block", color: "#DC2626" },
   "Problems": { icon: "error-outline", color: "#EF4444" },
   "Mods & Upgrades": { icon: "build", color: "#8B5CF6" },
   "Tips & Tricks": { icon: "lightbulb-outline", color: "#F59E0B" },
@@ -166,6 +167,48 @@ const SAMPLE_EXPERIENCES: RVExperience[] = [
     helpful: 38,
     date: "2025-12-03",
     author: "Bob & Linda S.",
+  },
+  {
+    id: "sample-9",
+    rvMake: "Coachmen",
+    rvModel: "Freelander 26DS",
+    rvYear: "2023",
+    rvType: "Class C",
+    category: "Don't Buy",
+    title: "Avoid the Freelander — constant electrical issues",
+    story: "We bought this brand new and within the first year had: the slide-out motor fail twice, the generator auto-start stopped working, the inverter died, and the awning motor burned out. The dealer took 6 weeks each time for repairs. We spent more time in the shop than on the road. The build quality is terrible — cabinet screws falling out, trim peeling off, and the bathroom door warped after 3 months. We traded it in at a $12K loss after 14 months. Save yourself the headache and spend a little more on a better brand.",
+    rating: 1,
+    helpful: 134,
+    date: "2026-02-18",
+    author: "Steve & Karen D.",
+  },
+  {
+    id: "sample-10",
+    rvMake: "Forest River",
+    rvModel: "Sunseeker 2440DS",
+    rvYear: "2022",
+    rvType: "Class C",
+    category: "Don't Buy",
+    title: "Water damage from factory — DO NOT BUY without thorough inspection",
+    story: "Bought this used with only 8K miles thinking it was a great deal. Turns out it had water damage from a factory window seal defect that Forest River knew about but never recalled. The wall behind the dinette was completely rotted. Repair estimate: $7,500. Forest River refused to help because it was out of the original warranty. I've since learned this is a known issue with 2021-2023 Sunseekers. If you're looking at one, pull the trim panels and check for soft spots. I wish someone had warned me.",
+    rating: 1,
+    helpful: 98,
+    date: "2025-12-22",
+    author: "Angela T.",
+  },
+  {
+    id: "sample-11",
+    rvMake: "Thor Industries",
+    rvModel: "Chateau 22E",
+    rvYear: "2024",
+    rvType: "Class C",
+    category: "Don't Buy",
+    title: "Worst purchase of my life — 9 warranty claims in 10 months",
+    story: "Where do I start? Roof leak on day 3. Fridge stopped cooling week 2. Hot water heater failed month 2. Slide-out leaked month 3. AC compressor died month 5. Leveling jacks stuck month 6. Awning ripped in light wind month 7. Generator wouldn't start month 8. And the cherry on top — the frame had rust spots at month 10. Thor's customer service is a joke. They kept saying 'take it to your dealer' and the dealer had a 4-week wait. We've spent more on Uber rentals while it was in the shop than on camping. Selling it at a massive loss. Stay far away.",
+    rating: 1,
+    helpful: 156,
+    date: "2026-03-05",
+    author: "Jason R.",
   },
   {
     id: "sample-8",
