@@ -477,3 +477,4 @@
 - [x] Fix photo upload not working — users unable to add photos to campground galleries
 - [x] Fix Canadian fuel stops showing US locations instead of Canadian ones
 - [x] Fix Canadian fuel stations still showing US brands — now uses campground's known state instead of coordinate guessing
+- [x] Fix live availability reporting screen — added tap-outside dismiss, close button, cancel button, Android back button support, and keyboard handling

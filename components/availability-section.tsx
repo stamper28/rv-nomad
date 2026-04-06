@@ -3,7 +3,10 @@
  * All Rights Reserved. Unauthorized copying or distribution is prohibited.
  */
 import { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, Platform, Alert } from "react-native";
+import {
+  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal,
+  Platform, Alert, Pressable, KeyboardAvoidingView, ScrollView,
+} from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/use-colors";
@@ -29,11 +32,17 @@ export function AvailabilitySection({ siteId, siteName }: Props) {
 
   const latest = getLatestStatus(reports);
 
+  const closeModal = () => {
+    setShowModal(false);
+    setNotes("");
+    setSitesAvail("");
+  };
+
   const handleSubmit = async () => {
     if (!name.trim()) { Alert.alert("Required", "Enter your name"); return; }
     await addReport({ siteId, status, reporterName: name.trim(), notes: notes.trim(), sitesAvailable: parseInt(sitesAvail) || 0 });
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setShowModal(false); setNotes(""); setSitesAvail("");
+    closeModal();
     load();
   };
 
@@ -77,34 +86,76 @@ export function AvailabilitySection({ siteId, siteName }: Props) {
           </View>
         </View>
       ))}
-      <Modal visible={showModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.foreground }]}>Report Availability</Text>
-              <TouchableOpacity onPress={() => setShowModal(false)}><MaterialIcons name="close" size={24} color={colors.muted} /></TouchableOpacity>
-            </View>
-            <Text style={[styles.formLabel, { color: colors.foreground }]}>Current Status</Text>
-            <View style={styles.statusGrid}>
-              {statusOptions.map((s) => (
-                <TouchableOpacity key={s} onPress={() => setStatus(s)}
-                  style={[styles.statusOption, { backgroundColor: status === s ? STATUS_INFO[s].bg : colors.surface, borderColor: status === s ? STATUS_INFO[s].color : colors.border }]}>
-                  <MaterialIcons name={STATUS_INFO[s].icon as any} size={18} color={status === s ? STATUS_INFO[s].color : colors.muted} />
-                  <Text style={{ color: status === s ? STATUS_INFO[s].color : colors.muted, fontSize: 12, fontWeight: "600" }}>{STATUS_INFO[s].label}</Text>
+
+      {/* Report Modal */}
+      <Modal visible={showModal} transparent animationType="slide" onRequestClose={closeModal}>
+        {/* Tap outside overlay to dismiss */}
+        <Pressable style={styles.modalOverlay} onPress={closeModal}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.keyboardView}
+          >
+            {/* Stop propagation so tapping inside the modal doesn't close it */}
+            <Pressable
+              style={[styles.modalContent, { backgroundColor: colors.background }]}
+              onPress={(e) => e.stopPropagation()}
+            >
+              {/* Drag handle indicator */}
+              <View style={styles.dragHandle}>
+                <View style={[styles.dragBar, { backgroundColor: colors.muted + "40" }]} />
+              </View>
+
+              {/* Header with close button */}
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.foreground }]}>Report Availability</Text>
+                <TouchableOpacity
+                  onPress={closeModal}
+                  style={[styles.closeBtn, { backgroundColor: colors.surface }]}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <MaterialIcons name="close" size={20} color={colors.muted} />
                 </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={[styles.formLabel, { color: colors.foreground }]}>Your Name</Text>
-            <TextInput value={name} onChangeText={setName} placeholder="Your name" placeholderTextColor={colors.muted}
-              style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border }]} />
-            <Text style={[styles.formLabel, { color: colors.foreground }]}>Notes (optional)</Text>
-            <TextInput value={notes} onChangeText={setNotes} placeholder="e.g., Lots of spots in loop B" placeholderTextColor={colors.muted} multiline
-              style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border, height: 60 }]} />
-            <TouchableOpacity onPress={handleSubmit} style={[styles.submitBtn, { backgroundColor: colors.primary }]}>
-              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Submit Report</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+                <Text style={[styles.formLabel, { color: colors.foreground }]}>Current Status</Text>
+                <View style={styles.statusGrid}>
+                  {statusOptions.map((s) => (
+                    <TouchableOpacity key={s} onPress={() => setStatus(s)}
+                      style={[styles.statusOption, { backgroundColor: status === s ? STATUS_INFO[s].bg : colors.surface, borderColor: status === s ? STATUS_INFO[s].color : colors.border }]}>
+                      <MaterialIcons name={STATUS_INFO[s].icon as any} size={18} color={status === s ? STATUS_INFO[s].color : colors.muted} />
+                      <Text style={{ color: status === s ? STATUS_INFO[s].color : colors.muted, fontSize: 12, fontWeight: "600" }}>{STATUS_INFO[s].label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={[styles.formLabel, { color: colors.foreground }]}>Your Name</Text>
+                <TextInput
+                  value={name} onChangeText={setName} placeholder="Your name" placeholderTextColor={colors.muted}
+                  returnKeyType="next"
+                  style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border }]}
+                />
+
+                <Text style={[styles.formLabel, { color: colors.foreground }]}>Notes (optional)</Text>
+                <TextInput
+                  value={notes} onChangeText={setNotes} placeholder="e.g., Lots of spots in loop B" placeholderTextColor={colors.muted} multiline
+                  returnKeyType="done"
+                  style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border, height: 60 }]}
+                />
+
+                {/* Action buttons */}
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity onPress={closeModal} style={[styles.cancelBtn, { borderColor: colors.border }]}>
+                    <Text style={{ color: colors.muted, fontWeight: "600", fontSize: 15 }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleSubmit} style={[styles.submitBtn, { backgroundColor: colors.primary }]}>
+                    <Text style={{ color: "#fff", fontWeight: "700", fontSize: 15 }}>Submit Report</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -128,12 +179,18 @@ const styles = StyleSheet.create({
   historyMeta: { fontSize: 11, marginTop: 2 },
   historyNotes: { fontSize: 12, marginTop: 2, fontStyle: "italic" },
   modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" },
-  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },
+  keyboardView: { justifyContent: "flex-end" },
+  modalContent: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40, maxHeight: "85%" },
+  dragHandle: { alignItems: "center", marginBottom: 8 },
+  dragBar: { width: 36, height: 4, borderRadius: 2 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
   modalTitle: { fontSize: 18, fontWeight: "700" },
+  closeBtn: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   formLabel: { fontSize: 14, fontWeight: "600", marginTop: 12, marginBottom: 6 },
   statusGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   statusOption: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1 },
   input: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1, fontSize: 15 },
-  submitBtn: { paddingVertical: 14, borderRadius: 12, alignItems: "center", marginTop: 16 },
+  buttonRow: { flexDirection: "row", gap: 12, marginTop: 16 },
+  cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: "center", borderWidth: 1 },
+  submitBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: "center" },
 });
