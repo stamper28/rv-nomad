@@ -857,87 +857,200 @@ export default function BookingScreen() {
               </View>
             )}
 
-            {/* Apply Discounts */}
-            {availableDiscounts.discounts.length > 0 && (
-              <View style={{ gap: 10 }}>
-                <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Apply Discounts</Text>
-                <Text style={{ fontSize: 12, color: colors.muted, marginTop: -6 }}>
-                  Select all that apply. Discounts are capped at 50% off.
-                </Text>
-                {availableDiscounts.discounts
-                  .filter((d) => d.type !== "seasonal" && d.type !== "length_of_stay")
-                  .map((d) => {
-                    const isSelected = selectedDiscounts.includes(d.program);
-                    const icon = d.type === "military" ? "shield" : d.type === "age" ? "elderly" : "card-membership";
-                    return (
-                      <TouchableOpacity
-                        key={d.program}
-                        onPress={() => {
-                          setSelectedDiscounts((prev) =>
-                            prev.includes(d.program)
-                              ? prev.filter((p) => p !== d.program)
-                              : [...prev, d.program]
-                          );
-                          if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }}
-                        style={[
-                          styles.discountOption,
-                          {
-                            backgroundColor: isSelected ? colors.success + "10" : colors.surface,
-                            borderColor: isSelected ? colors.success : colors.border,
-                            borderWidth: isSelected ? 2 : 1,
-                          },
-                        ]}
-                        activeOpacity={0.7}
-                      >
-                        <View style={styles.discountOptionLeft}>
-                          <View style={[styles.discountCheck, { backgroundColor: isSelected ? colors.success : colors.surface, borderColor: isSelected ? colors.success : colors.border }]}>
-                            {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
-                          </View>
-                          <MaterialIcons name={icon as any} size={20} color={isSelected ? colors.success : colors.muted} />
-                          <View style={{ flex: 1 }}>
-                            <Text style={[styles.discountName, { color: colors.foreground }]}>{d.program}</Text>
-                            <Text style={[styles.discountDesc, { color: colors.muted }]}>{d.description}</Text>
-                            {d.requirements && (
-                              <Text style={{ fontSize: 10, color: colors.muted, marginTop: 2, fontStyle: "italic" }}>{d.requirements}</Text>
-                            )}
-                          </View>
-                        </View>
-                        <Text style={[styles.discountPercent, { color: isSelected ? colors.success : colors.primary }]}>
-                          -{d.percentOff}%
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                {/* Auto-applied length-of-stay discounts */}
-                {availableDiscounts.discounts
-                  .filter((d) => d.type === "length_of_stay")
-                  .map((d) => (
-                    <View
+            {/* ═══ APPLY DISCOUNTS SECTION ═══ */}
+            <View style={[styles.discountSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.discountSectionHeader}>
+                <MaterialIcons name="local-offer" size={22} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.discountSectionTitle, { color: colors.foreground }]}>Apply Your Discounts</Text>
+                  <Text style={{ fontSize: 12, color: colors.muted }}>Select all that apply — discounts capped at 50% off</Text>
+                </View>
+              </View>
+
+              {/* Military / Veteran */}
+              {(() => {
+                const militaryDiscount = availableDiscounts.discounts.find((d) => d.program === "Military/Veteran");
+                const isSelected = selectedDiscounts.includes("Military/Veteran");
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!militaryDiscount) return;
+                      setSelectedDiscounts((prev) =>
+                        prev.includes("Military/Veteran")
+                          ? prev.filter((p) => p !== "Military/Veteran")
+                          : [...prev, "Military/Veteran"]
+                      );
+                      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={[
+                      styles.discountOption,
+                      {
+                        backgroundColor: isSelected ? "#1B5E2010" : colors.background,
+                        borderColor: isSelected ? colors.success : colors.border,
+                        borderWidth: isSelected ? 2 : 1,
+                        opacity: militaryDiscount ? 1 : 0.4,
+                      },
+                    ]}
+                    activeOpacity={0.7}
+                    disabled={!militaryDiscount}
+                  >
+                    <View style={styles.discountOptionLeft}>
+                      <View style={[styles.discountCheck, { backgroundColor: isSelected ? colors.success : colors.background, borderColor: isSelected ? colors.success : colors.border }]}>
+                        {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
+                      </View>
+                      <MaterialIcons name="shield" size={22} color={isSelected ? colors.success : "#1B5E20"} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.discountName, { color: colors.foreground }]}>Military / Veteran</Text>
+                        <Text style={[styles.discountDesc, { color: colors.muted }]}>10% off — Active duty, veteran, or military family</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.discountPercent, { color: isSelected ? colors.success : colors.primary }]}>-10%</Text>
+                  </TouchableOpacity>
+                );
+              })()}
+
+              {/* Senior Citizen */}
+              {(() => {
+                const seniorDiscount = availableDiscounts.discounts.find((d) => d.program === "Senior Discount");
+                const isSelected = selectedDiscounts.includes("Senior Discount");
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!seniorDiscount) return;
+                      setSelectedDiscounts((prev) =>
+                        prev.includes("Senior Discount")
+                          ? prev.filter((p) => p !== "Senior Discount")
+                          : [...prev, "Senior Discount"]
+                      );
+                      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={[
+                      styles.discountOption,
+                      {
+                        backgroundColor: isSelected ? "#1B5E2010" : colors.background,
+                        borderColor: isSelected ? colors.success : colors.border,
+                        borderWidth: isSelected ? 2 : 1,
+                        opacity: seniorDiscount ? 1 : 0.4,
+                      },
+                    ]}
+                    activeOpacity={0.7}
+                    disabled={!seniorDiscount}
+                  >
+                    <View style={styles.discountOptionLeft}>
+                      <View style={[styles.discountCheck, { backgroundColor: isSelected ? colors.success : colors.background, borderColor: isSelected ? colors.success : colors.border }]}>
+                        {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
+                      </View>
+                      <MaterialIcons name="elderly" size={22} color={isSelected ? colors.success : "#5D4037"} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.discountName, { color: colors.foreground }]}>Senior Citizen (62+)</Text>
+                        <Text style={[styles.discountDesc, { color: colors.muted }]}>10% off — Must be 62 years or older</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.discountPercent, { color: isSelected ? colors.success : colors.primary }]}>-10%</Text>
+                  </TouchableOpacity>
+                );
+              })()}
+
+              {/* Other membership discounts */}
+              {availableDiscounts.discounts
+                .filter((d) => d.type === "membership")
+                .map((d) => {
+                  const isSelected = selectedDiscounts.includes(d.program);
+                  return (
+                    <TouchableOpacity
                       key={d.program}
+                      onPress={() => {
+                        setSelectedDiscounts((prev) =>
+                          prev.includes(d.program)
+                            ? prev.filter((p) => p !== d.program)
+                            : [...prev, d.program]
+                        );
+                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }}
                       style={[
                         styles.discountOption,
                         {
-                          backgroundColor: colors.success + "10",
-                          borderColor: colors.success,
-                          borderWidth: 1,
+                          backgroundColor: isSelected ? "#1B5E2010" : colors.background,
+                          borderColor: isSelected ? colors.success : colors.border,
+                          borderWidth: isSelected ? 2 : 1,
                         },
                       ]}
+                      activeOpacity={0.7}
                     >
                       <View style={styles.discountOptionLeft}>
-                        <MaterialIcons name="check-circle" size={20} color={colors.success} />
+                        <View style={[styles.discountCheck, { backgroundColor: isSelected ? colors.success : colors.background, borderColor: isSelected ? colors.success : colors.border }]}>
+                          {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
+                        </View>
+                        <MaterialIcons name="card-membership" size={20} color={isSelected ? colors.success : colors.muted} />
                         <View style={{ flex: 1 }}>
                           <Text style={[styles.discountName, { color: colors.foreground }]}>{d.program}</Text>
                           <Text style={[styles.discountDesc, { color: colors.muted }]}>{d.description}</Text>
+                          {d.requirements && (
+                            <Text style={{ fontSize: 10, color: colors.muted, marginTop: 2, fontStyle: "italic" }}>{d.requirements}</Text>
+                          )}
                         </View>
                       </View>
-                      <View style={[styles.autoAppliedBadge, { backgroundColor: colors.success + "20" }]}>
-                        <Text style={{ fontSize: 10, fontWeight: "700", color: colors.success }}>AUTO</Text>
+                      <Text style={[styles.discountPercent, { color: isSelected ? colors.success : colors.primary }]}>
+                        -{d.percentOff}%
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+              {/* Auto-applied length-of-stay discounts */}
+              {availableDiscounts.discounts
+                .filter((d) => d.type === "length_of_stay")
+                .map((d) => (
+                  <View
+                    key={d.program}
+                    style={[
+                      styles.discountOption,
+                      {
+                        backgroundColor: colors.success + "10",
+                        borderColor: colors.success,
+                        borderWidth: 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.discountOptionLeft}>
+                      <MaterialIcons name="check-circle" size={20} color={colors.success} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.discountName, { color: colors.foreground }]}>{d.program}</Text>
+                        <Text style={[styles.discountDesc, { color: colors.muted }]}>{d.description}</Text>
                       </View>
                     </View>
-                  ))}
-              </View>
-            )}
+                    <View style={[styles.autoAppliedBadge, { backgroundColor: colors.success + "20" }]}>
+                      <Text style={{ fontSize: 10, fontWeight: "700", color: colors.success }}>AUTO</Text>
+                    </View>
+                  </View>
+                ))}
+
+              {/* ⚠️ ID VERIFICATION WARNING */}
+              {selectedDiscounts.some((d) => d === "Military/Veteran" || d === "Senior Discount") && (
+                <View style={[styles.idWarningBanner, { backgroundColor: colors.warning + "15", borderColor: colors.warning + "40" }]}>
+                  <MaterialIcons name="warning" size={20} color={colors.warning} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.idWarningTitle, { color: colors.foreground }]}>ID Verification Required</Text>
+                    <Text style={[styles.idWarningText, { color: colors.muted }]}>
+                      Valid identification will be checked at check-in. Military/Veteran discount requires a valid military ID, DD-214, or VA card. Senior discount requires a government-issued photo ID showing age 62+.
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* General membership warning */}
+              {selectedDiscounts.some((d) => ["Good Sam Club", "Passport America", "Escapees RV Club", "KOA Value Kard", "AAA/CAA", "AARP"].includes(d)) && (
+                <View style={[styles.idWarningBanner, { backgroundColor: "#E3F2FD", borderColor: "#90CAF9" }]}>
+                  <MaterialIcons name="info" size={20} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.idWarningTitle, { color: colors.foreground }]}>Membership Card Required</Text>
+                    <Text style={[styles.idWarningText, { color: colors.muted }]}>
+                      Please bring your valid membership card. It will be verified at check-in. Discount may be removed if membership cannot be confirmed.
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
 
             {/* Order Summary */}
             <View style={[styles.priceBreakdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -1291,5 +1404,39 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     marginTop: 4,
+  },
+  discountSection: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  discountSectionHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 10,
+    marginBottom: 4,
+  },
+  discountSectionTitle: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+  },
+  idWarningBanner: {
+    flexDirection: "row" as const,
+    alignItems: "flex-start" as const,
+    gap: 10,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  idWarningTitle: {
+    fontSize: 13,
+    fontWeight: "700" as const,
+    marginBottom: 2,
+  },
+  idWarningText: {
+    fontSize: 11,
+    lineHeight: 16,
   },
 });

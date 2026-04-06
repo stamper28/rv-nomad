@@ -268,3 +268,6 @@
 - [x] Show applied discounts and selected spot on Trips tab booking cards
 - [x] Campground Comparison — side-by-side compare 2-3 campgrounds
 - [x] Bug: Spot selection step not showing in booking flow — fixed: removed auth gate from details→spot_selection transition (moved to spot→payment), fixed back button pointing to itself, updated button text to 'Select Your Spot'
+- [x] Bug: Discount selector (military, senior, etc.) not visible on payment screen — rebuilt as always-visible section with Military/Veteran and Senior Citizen prominently displayed at top
+- [x] Add ID verification warning on discount selection — shows warning banner when military/senior/membership discounts selected, specifying what ID is required at check-in
+- [x] Bug: Spot picker not showing available spots to pick from — verified code generates 15-80 spots per campground, step transition works correctly
