@@ -488,3 +488,4 @@
 
 ## Bug: Interactive Map Not Showing
 - [x] Fix interactive map crashing app when tapped in Expo Go — downgraded react-native-maps to 1.20.1 (Expo SDK 54 compatible) and added error boundary
+- [x] Fix map STILL crashing — replaced react-native-maps with WebView-based Leaflet/OpenStreetMap (no API key needed, works everywhere)
