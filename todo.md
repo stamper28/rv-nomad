@@ -358,3 +358,13 @@
 - [x] Write store description (short + full)
 - [x] Write feature list for Play Store listing
 - [x] Generate feature graphic (1024x500) + 3 phone screenshots
+
+## RV Experiences Section
+- [x] Build RV Experiences screen where users can share stories about their RV
+- [x] Add form to submit new experience (RV make/model/year, category, title, story)
+- [x] Categories: Problems, Mods/Upgrades, Tips & Tricks, Trip Stories, Maintenance, Reviews
+- [x] Display experiences as cards with category tags, RV info, and date
+- [x] Store experiences locally with AsyncStorage
+- [x] Pre-populate with 8 sample experiences from different RV brands
+- [x] Add link to RV Experiences from Explore tab
+- [x] Add search/filter by RV make or category + sort by recent/most helpful
