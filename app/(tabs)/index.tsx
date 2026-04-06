@@ -387,7 +387,7 @@ export default function HomeScreen() {
                   { color: site.pricePerNight === null ? colors.success : colors.primary },
                 ]}
               >
-                {site.pricePerNight ? `$${site.pricePerNight}/night` : "Free"}
+                {site.pricePerNight ? `Est. $${site.pricePerNight}/night` : "Free"}
               </Text>
               <View style={styles.amenitiesRow}>
                 {site.amenities.slice(0, 3).map((a, i) => (

@@ -1,0 +1,253 @@
+/**
+ * Affiliate Booking Links
+ *
+ * Maps campground categories to their official booking platforms.
+ * Placeholder affiliate tags are included — replace with real IDs
+ * once approved by each affiliate program.
+ *
+ * Revenue model:
+ * - Users tap "Reserve Now" → redirected to official booking site with affiliate tag
+ * - RV Nomad earns commission on completed bookings (typically 5-8%)
+ * - No fake payment processing, no wrong prices, no liability
+ */
+
+// ─── Affiliate Tag Placeholders ───────────────────────────────────
+// Replace these with your real affiliate IDs once approved
+export const AFFILIATE_TAGS = {
+  /** Impact.com publisher ID (for Recreation.gov, KOA) */
+  impact: "RVNOMAD_IMPACT_ID",
+  /** CJ Affiliate publisher ID (for Good Sam, Camping World) */
+  cj: "RVNOMAD_CJ_ID",
+  /** ShareASale affiliate ID */
+  shareasale: "RVNOMAD_SHAREASALE_ID",
+  /** Amazon Associates tag */
+  amazon: "rvnomad-20",
+  /** Harvest Hosts affiliate ID */
+  harvestHosts: "RVNOMAD_HH_ID",
+  /** Passport America affiliate ID */
+  passportAmerica: "RVNOMAD_PA_ID",
+  /** Hipcamp referral code */
+  hipcamp: "RVNOMAD_HIPCAMP_ID",
+} as const;
+
+// ─── Booking Platform Definitions ─────────────────────────────────
+
+interface BookingPlatform {
+  name: string;
+  /** Base URL for the booking platform */
+  baseUrl: string;
+  /** How to build the search/booking URL */
+  buildUrl: (campgroundName: string, state: string, city: string) => string;
+  /** Platform logo/icon name (MaterialIcons) */
+  icon: string;
+  /** Color for the platform button */
+  color: string;
+  /** Description shown to user */
+  description: string;
+}
+
+const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
+  recreation_gov: {
+    name: "Recreation.gov",
+    baseUrl: "https://www.recreation.gov",
+    buildUrl: (name, _state, _city) => {
+      const query = encodeURIComponent(name);
+      return `https://www.recreation.gov/search?q=${query}&affiliate=${AFFILIATE_TAGS.impact}`;
+    },
+    icon: "park",
+    color: "#1a5632",
+    description: "Official federal campground reservations",
+  },
+  reserve_america: {
+    name: "ReserveAmerica",
+    baseUrl: "https://www.reserveamerica.com",
+    buildUrl: (name, state, _city) => {
+      const query = encodeURIComponent(name);
+      return `https://www.reserveamerica.com/explore/search-results?q=${query}&state=${state}`;
+    },
+    icon: "calendar-today",
+    color: "#2E7D32",
+    description: "State park reservations",
+  },
+  koa: {
+    name: "KOA.com",
+    baseUrl: "https://koa.com",
+    buildUrl: (name, state, city) => {
+      const query = encodeURIComponent(`${city} ${state}`);
+      return `https://koa.com/campgrounds/search/?query=${query}&affiliate=${AFFILIATE_TAGS.impact}`;
+    },
+    icon: "cabin",
+    color: "#FFD700",
+    description: "KOA Kampgrounds reservations",
+  },
+  campspot: {
+    name: "Campspot",
+    baseUrl: "https://www.campspot.com",
+    buildUrl: (name, state, city) => {
+      const query = encodeURIComponent(`${name} ${city} ${state}`);
+      return `https://www.campspot.com/search?q=${query}`;
+    },
+    icon: "terrain",
+    color: "#FF6B35",
+    description: "Private RV park reservations",
+  },
+  hipcamp: {
+    name: "Hipcamp",
+    baseUrl: "https://www.hipcamp.com",
+    buildUrl: (name, state, _city) => {
+      const query = encodeURIComponent(name);
+      return `https://www.hipcamp.com/en-US/search?q=${query}&ref=${AFFILIATE_TAGS.hipcamp}`;
+    },
+    icon: "nature-people",
+    color: "#00A86B",
+    description: "Unique outdoor stays",
+  },
+  harvest_hosts: {
+    name: "Harvest Hosts",
+    baseUrl: "https://www.harvesthosts.com",
+    buildUrl: (name, _state, _city) => {
+      const query = encodeURIComponent(name);
+      return `https://www.harvesthosts.com/search?q=${query}&ref=${AFFILIATE_TAGS.harvestHosts}`;
+    },
+    icon: "wine-bar",
+    color: "#722F37",
+    description: "Wineries, farms & unique stays",
+  },
+  google_maps: {
+    name: "Google Maps",
+    baseUrl: "https://www.google.com/maps",
+    buildUrl: (name, state, city) => {
+      const query = encodeURIComponent(`${name} ${city} ${state}`);
+      return `https://www.google.com/maps/search/${query}`;
+    },
+    icon: "map",
+    color: "#4285F4",
+    description: "View on Google Maps",
+  },
+};
+
+// ─── Category → Platform Mapping ──────────────────────────────────
+
+import type { SiteCategory } from "./types";
+
+interface BookingOption {
+  platform: BookingPlatform;
+  isPrimary: boolean;
+}
+
+/**
+ * Get booking platform options for a campground based on its category.
+ * Returns primary + secondary options sorted by relevance.
+ */
+export function getBookingOptions(
+  category: SiteCategory,
+  name: string,
+  state: string,
+  city: string,
+): { primary: { name: string; url: string; icon: string; color: string; description: string }; secondary: { name: string; url: string; icon: string; color: string; description: string }[] } {
+  let primaryKey: string;
+  let secondaryKeys: string[];
+
+  switch (category) {
+    case "national_park":
+    case "blm":
+    case "national_forest":
+      primaryKey = "recreation_gov";
+      secondaryKeys = ["google_maps"];
+      break;
+    case "state_park":
+      primaryKey = "reserve_america";
+      secondaryKeys = ["recreation_gov", "google_maps"];
+      break;
+    case "rv_park":
+      primaryKey = "campspot";
+      secondaryKeys = ["hipcamp", "google_maps"];
+      break;
+    case "harvest_host":
+      primaryKey = "harvest_hosts";
+      secondaryKeys = ["google_maps"];
+      break;
+    case "military":
+      primaryKey = "google_maps";
+      secondaryKeys = [];
+      break;
+    case "boondocking":
+    case "walmart":
+    case "cracker_barrel":
+    case "rest_area":
+    case "casino_parking":
+    case "cabelas_bass_pro":
+    case "truck_stop":
+    case "elks_moose":
+      // Free/overnight spots — no booking needed, just directions
+      primaryKey = "google_maps";
+      secondaryKeys = [];
+      break;
+    default:
+      primaryKey = "google_maps";
+      secondaryKeys = ["campspot"];
+      break;
+  }
+
+  const primaryPlatform = BOOKING_PLATFORMS[primaryKey];
+  const primary = {
+    name: primaryPlatform.name,
+    url: primaryPlatform.buildUrl(name, state, city),
+    icon: primaryPlatform.icon,
+    color: primaryPlatform.color,
+    description: primaryPlatform.description,
+  };
+
+  const secondary = secondaryKeys
+    .filter((k) => BOOKING_PLATFORMS[k])
+    .map((k) => {
+      const p = BOOKING_PLATFORMS[k];
+      return {
+        name: p.name,
+        url: p.buildUrl(name, state, city),
+        icon: p.icon,
+        color: p.color,
+        description: p.description,
+      };
+    });
+
+  return { primary, secondary };
+}
+
+/**
+ * Get a direct booking/search URL for a campground.
+ * Convenience wrapper that returns just the primary URL.
+ */
+export function getBookingUrl(
+  category: SiteCategory,
+  name: string,
+  state: string,
+  city: string,
+): string {
+  const { primary } = getBookingOptions(category, name, state, city);
+  return primary.url;
+}
+
+/**
+ * Check if a category supports actual reservations (vs. just showing up)
+ */
+export function isReservable(category: SiteCategory): boolean {
+  const reservableCategories: SiteCategory[] = [
+    "national_park",
+    "state_park",
+    "rv_park",
+    "harvest_host",
+    "military",
+  ];
+  return reservableCategories.includes(category);
+}
+
+/**
+ * Get the label for the booking button based on category
+ */
+export function getBookingButtonLabel(category: SiteCategory): string {
+  if (!isReservable(category)) {
+    return "Get Directions";
+  }
+  return "Reserve Now";
+}

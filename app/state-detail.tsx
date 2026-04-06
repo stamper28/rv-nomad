@@ -220,7 +220,7 @@ function SiteRow({ site, colors, router }: { site: CampSite; colors: any; router
               { color: site.pricePerNight === null ? colors.success : colors.primary },
             ]}
           >
-            {site.pricePerNight === null ? "Free" : `$${site.pricePerNight}/night`}
+            {site.pricePerNight === null ? "Free" : `Est. $${site.pricePerNight}/night`}
           </Text>
         </View>
         <Text style={[styles.siteCity, { color: colors.muted }]}>{site.city}, {site.state}</Text>

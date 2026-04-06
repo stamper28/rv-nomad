@@ -27,6 +27,8 @@ import { trpc } from "@/lib/trpc";
 import { getMembershipInfo } from "@/lib/affiliate";
 import { isoToDisplay } from "@/lib/date-utils";
 import { calculateDiscounts, type DiscountResult } from "@/lib/discount-stacker";
+import { findNearbyTrackChairs, type NearbyTrackChair } from "@/lib/nearby-track-chairs";
+import { getBookingOptions, isReservable, getBookingButtonLabel } from "@/lib/affiliate-links";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -147,7 +149,7 @@ export default function SiteDetailScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtnH} onPress={async () => {
             if (!site) return;
-            const price = (site.pricePerNight ?? 0) > 0 ? `$${site.pricePerNight}/night` : "Free";
+            const price = (site.pricePerNight ?? 0) > 0 ? `Est. $${site.pricePerNight}/night` : "Free";
             const rating = site.rating ? `${site.rating}/5` : "";
             const amenities = site.amenities?.slice(0, 4).join(", ") || "";
             const message = `Check out ${site.name} in ${site.city}, ${site.state}!\n\n${CATEGORY_LABELS[site.category]} - ${price}${rating ? ` - ${rating} stars` : ""}${amenities ? `\nAmenities: ${amenities}` : ""}\n\nFound on RV Nomad - the best app for RV camping!`;
@@ -216,9 +218,9 @@ export default function SiteDetailScreen() {
             <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <IconSymbol name="dollarsign.circle.fill" size={18} color={colors.success} />
               <Text style={[styles.statValue, { color: colors.foreground }]}>
-                {site.pricePerNight === null ? "Free" : `$${site.pricePerNight}`}
+                {site.pricePerNight === null ? "Free" : `~$${site.pricePerNight}`}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>{site.pricePerNight === null ? "No cost" : "per night"}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>{site.pricePerNight === null ? "No cost" : "est./night"}</Text>
             </View>
             {site.elevation != null && (
               <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -429,24 +431,70 @@ export default function SiteDetailScreen() {
                       <MaterialIcons name="open-in-new" size={16} color="#0288D1" />
                     </TouchableOpacity>
                   )}
-                  {/* Track Chair Finder Link */}
-                  {site.adaAccessible && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push("/track-chairs");
-                      }}
-                      style={[styles.adaBanner, { backgroundColor: "#7C3AED10", borderColor: "#7C3AED30" }]}
-                      activeOpacity={0.7}
-                    >
-                      <MaterialIcons name="accessible" size={18} color="#7C3AED" />
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "700" }}>Find Track Chairs Nearby</Text>
-                        <Text style={{ color: colors.muted, fontSize: 11, marginTop: 1 }}>All-terrain wheelchairs for hiking — free at 150+ parks</Text>
+                  {/* Nearby Track Chairs (within 75 miles) */}
+                  {(() => {
+                    const nearbyChairs = findNearbyTrackChairs(site.latitude, site.longitude, 75);
+                    if (nearbyChairs.length === 0) return (
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push("/track-chairs");
+                        }}
+                        style={[styles.adaBanner, { backgroundColor: "#7C3AED10", borderColor: "#7C3AED30" }]}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name="accessible" size={18} color="#7C3AED" />
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "700" }}>Find Track Chairs</Text>
+                          <Text style={{ color: colors.muted, fontSize: 11, marginTop: 1 }}>All-terrain wheelchairs for hiking — free at 150+ parks</Text>
+                        </View>
+                        <MaterialIcons name="chevron-right" size={16} color="#7C3AED" />
+                      </TouchableOpacity>
+                    );
+                    return (
+                      <View style={{ gap: 6 }}>
+                        <Text style={{ color: "#7C3AED", fontSize: 14, fontWeight: "700", marginBottom: 2 }}>
+                          ♿ Track Chairs Within 75 Miles ({nearbyChairs.length})
+                        </Text>
+                        {nearbyChairs.slice(0, 5).map((chair) => (
+                          <TouchableOpacity
+                            key={chair.id}
+                            onPress={() => {
+                              if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              Linking.openURL(chair.directionsUrl);
+                            }}
+                            style={[styles.adaBanner, { backgroundColor: "#7C3AED08", borderColor: "#7C3AED20" }]}
+                            activeOpacity={0.7}
+                          >
+                            <MaterialIcons name="accessible" size={18} color="#7C3AED" />
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "700" }}>{chair.parkName}</Text>
+                              <Text style={{ color: colors.muted, fontSize: 11, marginTop: 1 }}>
+                                {chair.distanceMiles} mi · {chair.chairCount} {chair.chairType} · {chair.cost}
+                              </Text>
+                              <Text style={{ color: colors.muted, fontSize: 10, marginTop: 1 }}>
+                                {chair.reservationMethod} · {chair.availability}
+                              </Text>
+                            </View>
+                            <View style={{ alignItems: "center" }}>
+                              <MaterialIcons name="directions" size={20} color="#7C3AED" />
+                              <Text style={{ color: "#7C3AED", fontSize: 9, fontWeight: "600" }}>Directions</Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            router.push("/track-chairs");
+                          }}
+                          style={{ alignSelf: "flex-start", marginTop: 4 }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ color: "#7C3AED", fontSize: 12, fontWeight: "600" }}>View All Track Chair Locations →</Text>
+                        </TouchableOpacity>
                       </View>
-                      <MaterialIcons name="chevron-right" size={16} color="#7C3AED" />
-                    </TouchableOpacity>
-                  )}
+                    );
+                  })()}
                 </View>
               )}
             </View>
@@ -737,17 +785,63 @@ export default function SiteDetailScreen() {
             )}
           </View>
 
-          {/* Book Now Button */}
-          {site.pricePerNight !== null && site.pricePerNight > 0 && (
-            <TouchableOpacity
-              style={[styles.bookBtn, { backgroundColor: colors.success }]}
-              onPress={() => router.push({ pathname: "/booking", params: { siteId: site.id } })}
-              activeOpacity={0.8}
-            >
-              <IconSymbol name="creditcard.fill" size={18} color="#fff" />
-              <Text style={styles.primaryBtnText}>Book Now — ${site.pricePerNight}/night</Text>
-            </TouchableOpacity>
-          )}
+          {/* Reserve Now — Affiliate Booking */}
+          {(() => {
+            const bookingOptions = getBookingOptions(site.category, site.name, site.state, site.city);
+            const reservable = isReservable(site.category);
+            return (
+              <View style={{ gap: 8 }}>
+                {/* Primary booking button */}
+                <TouchableOpacity
+                  style={[styles.bookBtn, { backgroundColor: bookingOptions.primary.color }]}
+                  onPress={() => {
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    Linking.openURL(bookingOptions.primary.url);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <MaterialIcons name={bookingOptions.primary.icon as any} size={20} color="#fff" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.primaryBtnText}>
+                      {reservable ? "Reserve Now" : "View Location"} — {bookingOptions.primary.name}
+                    </Text>
+                    {site.pricePerNight != null && site.pricePerNight > 0 && (
+                      <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 2 }}>
+                        Est. ${site.pricePerNight}/night — verify price on {bookingOptions.primary.name}
+                      </Text>
+                    )}
+                  </View>
+                  <MaterialIcons name="open-in-new" size={16} color="rgba(255,255,255,0.8)" />
+                </TouchableOpacity>
+
+                {/* Secondary booking options */}
+                {bookingOptions.secondary.length > 0 && (
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {bookingOptions.secondary.map((opt) => (
+                      <TouchableOpacity
+                        key={opt.name}
+                        style={[styles.secondaryBtn, { borderColor: opt.color, flex: 1 }]}
+                        onPress={() => Linking.openURL(opt.url)}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialIcons name={opt.icon as any} size={16} color={opt.color} />
+                        <Text style={[styles.secondaryBtnText, { color: opt.color, fontSize: 12 }]}>{opt.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* Price Disclaimer */}
+                {site.pricePerNight != null && site.pricePerNight > 0 && (
+                  <View style={{ backgroundColor: colors.surface, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: colors.border }}>
+                    <Text style={{ color: colors.muted, fontSize: 11, lineHeight: 16, textAlign: "center" }}>
+                      Prices shown are estimates. Actual rates may vary by season, site type, and availability. Always verify current rates on the booking platform before completing your reservation.
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          })()}
 
           {/* Who's Here & Cancellation Watch */}
           <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>

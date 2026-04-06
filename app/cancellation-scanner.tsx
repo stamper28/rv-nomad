@@ -75,7 +75,7 @@ export default function CancellationScannerScreen() {
     }
     Alert.alert(
       "Book This Spot?",
-      `${opening.campgroundName}\n${opening.siteNumber}\n${opening.dates}\n$${opening.pricePerNight}/night`,
+      `${opening.campgroundName}\n${opening.siteNumber}\n${opening.dates}\nEst. $${opening.pricePerNight}/night`,
       [
         { text: "Cancel", style: "cancel" },
         { text: "Book Now", onPress: () => Alert.alert("Redirecting...", "Taking you to the booking page to secure this spot before someone else does!") },
@@ -289,7 +289,7 @@ export default function CancellationScannerScreen() {
                   </View>
                   <View style={styles.openingDetail}>
                     <MaterialIcons name="attach-money" size={14} color={colors.muted} />
-                    <Text style={[styles.openingDetailText, { color: colors.foreground }]}>${opening.pricePerNight}/night</Text>
+                    <Text style={[styles.openingDetailText, { color: colors.foreground }]}>Est. ${opening.pricePerNight}/night</Text>
                   </View>
                   <View style={styles.openingDetail}>
                     <MaterialIcons name="power" size={14} color={colors.muted} />

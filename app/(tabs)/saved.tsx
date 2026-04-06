@@ -82,7 +82,7 @@ export default function SavedScreen() {
               className="text-sm font-semibold"
               style={{ color: item.pricePerNight === null ? colors.success : colors.primary }}
             >
-              {item.pricePerNight === null ? "Free" : `$${item.pricePerNight}/night`}
+              {item.pricePerNight === null ? "Free" : `Est. $${item.pricePerNight}/night`}
             </Text>
           </View>
         </View>

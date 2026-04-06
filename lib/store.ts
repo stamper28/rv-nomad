@@ -142,6 +142,33 @@ export const DEFAULT_MEMBERSHIPS: DiscountMemberships = {
   aarp: false,
 };
 
+// ── Equipment Report ──
+export interface EquipmentReport {
+  id: string;
+  parkName: string;
+  state: string;
+  equipmentType: string; // "Track Chair" | "Beach Wheelchair" | "Mobility Scooter" | "All-Terrain Wheelchair" | "Other"
+  description: string;
+  cost: string; // "Free" | "$10/day" etc.
+  contactInfo: string;
+  submittedDate: string;
+  submittedBy: string;
+}
+
+// ── RV Problem Report ──
+export interface RVProblemReport {
+  id: string;
+  make: string;
+  model: string;
+  year: string;
+  category: string; // "Water Leak" | "Electrical" | "Slide-Out" | "Roof" | "Plumbing" | "HVAC" | "Tires" | "Other"
+  severity: "minor" | "moderate" | "severe";
+  description: string;
+  fixCost: string;
+  submittedDate: string;
+  submittedBy: string;
+}
+
 // ── Storage Keys ──
 const KEYS = {
   RV_PROFILE: "rv_nomad_rv_profile",
@@ -156,6 +183,8 @@ const KEYS = {
   CHECKLISTS: "rv_nomad_checklists",
   MEMBERSHIPS: "rv_nomad_memberships",
   SEARCH_HISTORY: "rv_nomad_search_history",
+  EQUIPMENT_REPORTS: "rv_nomad_equipment_reports",
+  RV_PROBLEMS: "rv_nomad_rv_problems",
 };
 
 // ── Storage Helpers ──
@@ -234,4 +263,18 @@ export const Store = {
     return next;
   },
   clearSearchHistory: () => setJSON(KEYS.SEARCH_HISTORY, []),
+
+  // Equipment Reports
+  getEquipmentReports: () => getJSON<EquipmentReport[]>(KEYS.EQUIPMENT_REPORTS, []),
+  addEquipmentReport: async (report: EquipmentReport) => {
+    const reports = await Store.getEquipmentReports();
+    await setJSON(KEYS.EQUIPMENT_REPORTS, [report, ...reports]);
+  },
+
+  // RV Problem Reports
+  getRVProblems: () => getJSON<RVProblemReport[]>(KEYS.RV_PROBLEMS, []),
+  addRVProblem: async (problem: RVProblemReport) => {
+    const problems = await Store.getRVProblems();
+    await setJSON(KEYS.RV_PROBLEMS, [problem, ...problems]);
+  },
 };

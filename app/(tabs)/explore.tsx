@@ -160,7 +160,7 @@ export default function ExploreScreen() {
                 { color: site.pricePerNight === null ? colors.success : colors.primary },
               ]}
             >
-              {site.pricePerNight === null ? "Free" : `$${site.pricePerNight}/night`}
+              {site.pricePerNight === null ? "Free" : `Est. $${site.pricePerNight}/night`}
             </Text>
           </View>
         </View>
@@ -470,6 +470,22 @@ export default function ExploreScreen() {
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>Cancellation Scanner</Text>
               <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Get notified when booked-up sites have openings</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* RV Problems & Recalls */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/rv-recalls" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#D3260020" }]}>
+              <MaterialIcons name="warning" size={24} color="#D32600" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Problems & Recalls</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>NHTSA recalls, common issues & VIN lookup</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>

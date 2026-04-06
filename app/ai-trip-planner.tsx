@@ -352,7 +352,7 @@ export default function AITripPlannerScreen() {
                   <View style={styles.campInfo}>
                     <Text style={[styles.campName, { color: colors.foreground }]}>{stop.campground}</Text>
                     <Text style={[styles.campType, { color: colors.muted }]}>
-                      {getCampTypeLabel(stop.campgroundType)} • ${stop.pricePerNight}/night • {stop.nights} night{stop.nights !== 1 ? "s" : ""}
+                      {getCampTypeLabel(stop.campgroundType)} • Est. ${stop.pricePerNight}/night • {stop.nights} night{stop.nights !== 1 ? "s" : ""}
                     </Text>
                   </View>
                 </View>

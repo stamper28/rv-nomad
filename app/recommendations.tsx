@@ -155,7 +155,7 @@ export default function RecommendationsScreen() {
                 </View>
                 <View style={styles.priceRating}>
                   <Text style={[styles.recPrice, { color: colors.primary }]}>
-                    {rec.pricePerNight === 0 ? "FREE" : `$${rec.pricePerNight}/night`}
+                    {rec.pricePerNight === 0 ? "FREE" : `Est. $${rec.pricePerNight}/night`}
                   </Text>
                   <View style={styles.ratingRow}>
                     <MaterialIcons name="star" size={14} color="#F9A825" />

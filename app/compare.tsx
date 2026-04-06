@@ -70,7 +70,7 @@ export default function CompareScreen() {
     {
       label: "Price/Night",
       icon: "attach-money",
-      getValue: (s) => s.pricePerNight ? `$${s.pricePerNight}` : "Free",
+      getValue: (s) => s.pricePerNight ? `Est. $${s.pricePerNight}` : "Free",
       highlight: (s, all) => {
         const prices = all.map((a) => a.pricePerNight ?? 0).filter((p) => p > 0);
         return prices.length > 0 && (s.pricePerNight ?? 0) === Math.min(...prices);
@@ -227,7 +227,7 @@ export default function CompareScreen() {
                         {item.name}
                       </Text>
                       <Text style={[styles.resultLocation, { color: colors.muted }]}>
-                        {item.city}, {item.state} - {item.pricePerNight ? `$${item.pricePerNight}/night` : "Free"}
+                        {item.city}, {item.state} - {item.pricePerNight ? `Est. $${item.pricePerNight}/night` : "Free"}
                       </Text>
                     </View>
                     <MaterialIcons name="add-circle-outline" size={22} color={colors.primary} />

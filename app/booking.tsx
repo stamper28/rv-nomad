@@ -356,7 +356,7 @@ export default function BookingScreen() {
               {site.city}, {site.state}
             </Text>
             <Text style={[styles.sitePrice, { color: colors.primary }]}>
-              ${pricePerNight}/night
+              Est. ${pricePerNight}/night
             </Text>
           </View>
 
@@ -629,7 +629,7 @@ export default function BookingScreen() {
                   </View>
                   <View style={{ alignItems: "flex-end" }}>
                     <Text style={[styles.spotPrice, { color: colors.primary }]}>
-                      ${spotPrice}/night
+                      Est. ${spotPrice}/night
                     </Text>
                     {spot.priceModifier !== 0 && (
                       <Text style={{ fontSize: 10, color: spot.priceModifier > 0 ? colors.warning : colors.success }}>
@@ -691,7 +691,7 @@ export default function BookingScreen() {
                 Spot {selectedSpot.spotNumber} • {SPOT_TYPE_LABELS[selectedSpot.spotType]}
               </Text>
               <Text style={{ fontSize: 17, fontWeight: "700", color: colors.primary }}>
-                ${Math.max(0, pricePerNight + selectedSpot.priceModifier)}/night
+                Est. ${Math.max(0, pricePerNight + selectedSpot.priceModifier)}/night
               </Text>
             </View>
           ) : (
@@ -1067,7 +1067,7 @@ export default function BookingScreen() {
               )}
               <View style={styles.priceRow}>
                 <Text style={[styles.priceLabel, { color: colors.muted }]}>
-                  ${effectivePricePerNight}/night × {nights} night{nights !== 1 ? "s" : ""} × {siteCount} site{siteCount !== 1 ? "s" : ""}
+                  Est. ${effectivePricePerNight}/night × {nights} night{nights !== 1 ? "s" : ""} × {siteCount} site{siteCount !== 1 ? "s" : ""}
                 </Text>
                 <Text style={[styles.priceValue, { color: colors.foreground }]}>${subtotal.toFixed(2)}</Text>
               </View>

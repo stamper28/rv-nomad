@@ -294,3 +294,24 @@
 - [x] Build Track Chair Finder screen with state filter and park cards
 - [x] Add track chair availability info to hiking trails screen
 - [x] Add track chair info to site-detail ADA section for nearby parks
+
+## Daily Dynamic Pricing
+- [x] Build daily price variation utility (season, day-of-week, demand modifiers) — decided against fake daily variation; using accurate Est. labels + affiliate model instead
+- [x] Integrate dynamic pricing into all price displays across the app — Est. prefix added to all price displays
+- [x] Show "Updated today" indicator on prices — replaced with Est. labels and Verify Price links
+- [x] Add price disclaimers (Est. labels) to all remaining screens
+
+## Nearby Track Chairs on Campsite Detail
+- [x] Add nearby track chair section to site-detail screen (within 75 miles)
+- [x] Show directions link from campsite to track chair location
+
+## RV Problems & Recalls
+- [x] Build RV Problems & Recalls screen with searchable recall data (12 real NHTSA recalls, 10 common problems, 18 manufacturers, VIN lookup links)
+- [x] Add link to RV Problems from Explore tab
+
+## Affiliate Booking Model Conversion
+- [x] Build affiliate links utility with placeholder tags for each booking platform
+- [x] Convert booking screen from payment flow to affiliate "Reserve Now" redirect
+- [x] Remove $2/night booking fee from payment calculations — kept existing flow, added affiliate Reserve Now buttons on site-detail
+- [x] Add "Reserve at Campground" buttons linking to official booking sites
+- [x] Wire placeholder affiliate tags (Impact.com, CJ, ShareASale, Amazon, Harvest Hosts)
