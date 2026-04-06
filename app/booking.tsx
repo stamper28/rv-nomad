@@ -23,6 +23,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDateInput, displayToISO, isoToDisplay } from "@/lib/date-utils";
 import { generateSpotsForSite, SPOT_TYPE_LABELS, SPOT_TYPE_ICONS, type CampsiteSpot } from "@/lib/campsite-spots";
+import { calculateDiscounts, type Discount } from "@/lib/discount-stacker";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 type Step = "details" | "spot_selection" | "payment" | "confirmation";
@@ -52,6 +53,8 @@ export default function BookingScreen() {
   // Spot selection
   const [selectedSpot, setSelectedSpot] = useState<CampsiteSpot | null>(null);
   const [spotFilter, setSpotFilter] = useState<SpotFilter>("all");
+  // Discounts
+  const [selectedDiscounts, setSelectedDiscounts] = useState<string[]>([]);
   // Payment
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -115,7 +118,39 @@ export default function BookingScreen() {
     () => calculatePayment({ pricePerNight: effectivePricePerNight, nights, sites: siteCount }),
     [effectivePricePerNight, nights, siteCount]
   );
-  const { campsiteSubtotal: subtotal, platformFee, taxes, total } = payment;
+  // Discount calculation
+  const availableDiscounts = useMemo(() => {
+    if (!site) return { discounts: [], bestCombo: [], totalSavings: 0, bestPrice: 0, originalPrice: 0 };
+    return calculateDiscounts(effectivePricePerNight, nights || 1, site.category, site.name);
+  }, [site, effectivePricePerNight, nights]);
+
+  const discountSavings = useMemo(() => {
+    if (selectedDiscounts.length === 0 || !site) return 0;
+    let totalPercent = 0;
+    for (const program of selectedDiscounts) {
+      const d = availableDiscounts.discounts.find((dd) => dd.program === program);
+      if (d?.percentOff) totalPercent += d.percentOff;
+    }
+    // Cap at 50%
+    totalPercent = Math.min(totalPercent, 50);
+    return Math.round(effectivePricePerNight * (nights || 1) * siteCount * totalPercent / 100 * 100) / 100;
+  }, [selectedDiscounts, availableDiscounts, effectivePricePerNight, nights, siteCount, site]);
+
+  const { campsiteSubtotal: subtotal, platformFee, taxes: baseTaxes, total: baseTotal } = payment;
+  const discountedSubtotal = Math.max(0, subtotal - discountSavings);
+  const taxes = Math.round(discountedSubtotal * 0.06 * 100) / 100;
+  const total = Math.round((discountedSubtotal + platformFee + taxes) * 100) / 100;
+
+  // Auto-apply length-of-stay discounts
+  useEffect(() => {
+    if (!site) return;
+    const losDiscounts = availableDiscounts.discounts.filter((d) => d.type === "length_of_stay");
+    for (const d of losDiscounts) {
+      if (!selectedDiscounts.includes(d.program)) {
+        setSelectedDiscounts((prev) => prev.includes(d.program) ? prev : [...prev, d.program]);
+      }
+    }
+  }, [availableDiscounts.discounts, site]);
 
   // Check availability when dates change
   useEffect(() => {
@@ -238,6 +273,8 @@ export default function BookingScreen() {
         pricePerNight: effectivePricePerNight,
         spotNumber: selectedSpot?.spotNumber,
         spotType: selectedSpot?.spotType,
+        appliedDiscounts: selectedDiscounts.length > 0 ? selectedDiscounts : undefined,
+        discountSavings: discountSavings > 0 ? discountSavings : undefined,
         paymentMethod:
           paymentMethod === "card"
             ? `visa_${cardNumber.replace(/\s/g, "").slice(-4)}`
@@ -660,7 +697,7 @@ export default function BookingScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setStep("details")} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => setStep("spot_selection")} style={styles.backBtn}>
             <IconSymbol name="chevron.left" size={24} color={colors.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Payment</Text>
@@ -786,6 +823,88 @@ export default function BookingScreen() {
               </View>
             )}
 
+            {/* Apply Discounts */}
+            {availableDiscounts.discounts.length > 0 && (
+              <View style={{ gap: 10 }}>
+                <Text style={[styles.sectionLabel, { color: colors.foreground }]}>Apply Discounts</Text>
+                <Text style={{ fontSize: 12, color: colors.muted, marginTop: -6 }}>
+                  Select all that apply. Discounts are capped at 50% off.
+                </Text>
+                {availableDiscounts.discounts
+                  .filter((d) => d.type !== "seasonal" && d.type !== "length_of_stay")
+                  .map((d) => {
+                    const isSelected = selectedDiscounts.includes(d.program);
+                    const icon = d.type === "military" ? "shield" : d.type === "age" ? "elderly" : "card-membership";
+                    return (
+                      <TouchableOpacity
+                        key={d.program}
+                        onPress={() => {
+                          setSelectedDiscounts((prev) =>
+                            prev.includes(d.program)
+                              ? prev.filter((p) => p !== d.program)
+                              : [...prev, d.program]
+                          );
+                          if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        }}
+                        style={[
+                          styles.discountOption,
+                          {
+                            backgroundColor: isSelected ? colors.success + "10" : colors.surface,
+                            borderColor: isSelected ? colors.success : colors.border,
+                            borderWidth: isSelected ? 2 : 1,
+                          },
+                        ]}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.discountOptionLeft}>
+                          <View style={[styles.discountCheck, { backgroundColor: isSelected ? colors.success : colors.surface, borderColor: isSelected ? colors.success : colors.border }]}>
+                            {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
+                          </View>
+                          <MaterialIcons name={icon as any} size={20} color={isSelected ? colors.success : colors.muted} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.discountName, { color: colors.foreground }]}>{d.program}</Text>
+                            <Text style={[styles.discountDesc, { color: colors.muted }]}>{d.description}</Text>
+                            {d.requirements && (
+                              <Text style={{ fontSize: 10, color: colors.muted, marginTop: 2, fontStyle: "italic" }}>{d.requirements}</Text>
+                            )}
+                          </View>
+                        </View>
+                        <Text style={[styles.discountPercent, { color: isSelected ? colors.success : colors.primary }]}>
+                          -{d.percentOff}%
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                {/* Auto-applied length-of-stay discounts */}
+                {availableDiscounts.discounts
+                  .filter((d) => d.type === "length_of_stay")
+                  .map((d) => (
+                    <View
+                      key={d.program}
+                      style={[
+                        styles.discountOption,
+                        {
+                          backgroundColor: colors.success + "10",
+                          borderColor: colors.success,
+                          borderWidth: 1,
+                        },
+                      ]}
+                    >
+                      <View style={styles.discountOptionLeft}>
+                        <MaterialIcons name="check-circle" size={20} color={colors.success} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.discountName, { color: colors.foreground }]}>{d.program}</Text>
+                          <Text style={[styles.discountDesc, { color: colors.muted }]}>{d.description}</Text>
+                        </View>
+                      </View>
+                      <View style={[styles.autoAppliedBadge, { backgroundColor: colors.success + "20" }]}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: colors.success }}>AUTO</Text>
+                      </View>
+                    </View>
+                  ))}
+              </View>
+            )}
+
             {/* Order Summary */}
             <View style={[styles.priceBreakdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={[styles.summaryTitle, { color: colors.foreground }]}>Order Summary</Text>
@@ -801,14 +920,42 @@ export default function BookingScreen() {
               )}
               <View style={styles.priceRow}>
                 <Text style={[styles.priceLabel, { color: colors.muted }]}>
-                  {nights} night{nights !== 1 ? "s" : ""}, {guests} guest{guests !== 1 ? "s" : ""}
+                  ${effectivePricePerNight}/night × {nights} night{nights !== 1 ? "s" : ""} × {siteCount} site{siteCount !== 1 ? "s" : ""}
                 </Text>
+                <Text style={[styles.priceValue, { color: colors.foreground }]}>${subtotal.toFixed(2)}</Text>
+              </View>
+              {discountSavings > 0 && (
+                <View style={styles.priceRow}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 4, flex: 1 }}>
+                    <MaterialIcons name="local-offer" size={14} color={colors.success} />
+                    <Text style={[styles.priceLabel, { color: colors.success }]} numberOfLines={1}>
+                      Discount ({selectedDiscounts.join(", ")})
+                    </Text>
+                  </View>
+                  <Text style={[styles.priceValue, { color: colors.success, fontWeight: "700" }]}>-${discountSavings.toFixed(2)}</Text>
+                </View>
+              )}
+              <View style={styles.priceRow}>
+                <Text style={[styles.priceLabel, { color: colors.muted }]}>Booking Fee</Text>
+                <Text style={[styles.priceValue, { color: colors.foreground }]}>${platformFee.toFixed(2)}</Text>
+              </View>
+              <View style={styles.priceRow}>
+                <Text style={[styles.priceLabel, { color: colors.muted }]}>Taxes (6%)</Text>
+                <Text style={[styles.priceValue, { color: colors.foreground }]}>${taxes.toFixed(2)}</Text>
               </View>
               <View style={[styles.priceDivider, { borderColor: colors.border }]} />
               <View style={styles.priceRow}>
                 <Text style={[styles.totalLabel, { color: colors.foreground }]}>Total</Text>
                 <Text style={[styles.totalValue, { color: colors.primary }]}>${total.toFixed(2)}</Text>
               </View>
+              {discountSavings > 0 && (
+                <View style={[styles.savingsBanner, { backgroundColor: colors.success + "12" }]}>
+                  <MaterialIcons name="savings" size={16} color={colors.success} />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.success }}>
+                    You're saving ${discountSavings.toFixed(2)} with your discount{selectedDiscounts.length > 1 ? "s" : ""}!
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Pay Button */}
@@ -887,6 +1034,20 @@ export default function BookingScreen() {
               <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Nights</Text>
               <Text style={[styles.confirmDetailValue, { color: colors.foreground }]}>{nights}</Text>
             </View>
+            {selectedDiscounts.length > 0 && (
+              <View style={styles.confirmDetail}>
+                <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Discounts</Text>
+                <Text style={[styles.confirmDetailValue, { color: colors.success }]}>
+                  {selectedDiscounts.join(", ")}
+                </Text>
+              </View>
+            )}
+            {discountSavings > 0 && (
+              <View style={styles.confirmDetail}>
+                <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Savings</Text>
+                <Text style={[styles.confirmDetailValue, { color: colors.success, fontWeight: "700" }]}>-${discountSavings.toFixed(2)}</Text>
+              </View>
+            )}
             <View style={styles.confirmDetail}>
               <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Total Paid</Text>
               <Text style={[styles.confirmDetailValue, { color: colors.primary, fontWeight: "700" }]}>${total.toFixed(2)}</Text>
@@ -1057,5 +1218,44 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     borderTopWidth: 1,
     gap: 12,
+  },
+  // Discount styles
+  discountOption: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    padding: 14,
+    borderRadius: 12,
+    gap: 10,
+  },
+  discountOptionLeft: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 10,
+    flex: 1,
+  },
+  discountCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  discountName: { fontSize: 14, fontWeight: "600" as const },
+  discountDesc: { fontSize: 11, marginTop: 1 },
+  discountPercent: { fontSize: 16, fontWeight: "800" as const },
+  autoAppliedBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  savingsBanner: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 4,
   },
 });

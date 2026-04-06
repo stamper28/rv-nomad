@@ -23,6 +23,8 @@ export interface Booking {
   notes: string;
   spotNumber?: string;  // selected individual spot (e.g. "A1", "12")
   spotType?: string;    // e.g. "rv_full", "tent"
+  appliedDiscounts?: string[];  // e.g. ["Military/Veteran", "Senior Discount"]
+  discountSavings?: number;     // total discount amount in dollars
 }
 
 const KEY = "rv_nomad_bookings";
@@ -79,6 +81,8 @@ export const BookingStore = {
     notes: string;
     spotNumber?: string;
     spotType?: string;
+    appliedDiscounts?: string[];
+    discountSavings?: number;
   }): Promise<Booking> => {
     const nights = daysBetween(params.checkIn, params.checkOut);
     const booking: Booking = {
@@ -102,6 +106,8 @@ export const BookingStore = {
       notes: params.notes,
       spotNumber: params.spotNumber,
       spotType: params.spotType,
+      appliedDiscounts: params.appliedDiscounts,
+      discountSavings: params.discountSavings,
     };
     const all = await getAll();
     all.unshift(booking);

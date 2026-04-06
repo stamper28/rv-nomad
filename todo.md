@@ -253,3 +253,9 @@
 - [x] Update backend booking API to accept and store selected spot number
 - [x] Show selected spot on booking confirmation
 - [x] Prevent double-booking of same spot on same dates
+
+## Discount on Payment Screen
+- [x] Add discount selector UI to booking details/payment step (military, senior, Good Sam, AAA, AARP, Passport America)
+- [x] Calculate and show discount savings in real-time price breakdown
+- [x] Store applied discount in booking record
+- [x] Show applied discount on booking confirmation screen
