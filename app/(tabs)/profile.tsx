@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { useThemeContext, type ThemePreference } from "@/lib/theme-provider";
 import {
   Store,
   RVProfile,
@@ -22,6 +23,8 @@ import {
   DEFAULT_SETTINGS,
   UserStats,
   DEFAULT_STATS,
+  DiscountMemberships,
+  DEFAULT_MEMBERSHIPS,
 } from "@/lib/store";
 
 const RV_TYPES = [
@@ -35,12 +38,20 @@ const RV_TYPES = [
   "Camper Van",
 ];
 
+const THEME_OPTIONS: { key: ThemePreference; label: string; icon: string }[] = [
+  { key: "system", label: "System", icon: "gear" },
+  { key: "light", label: "Light", icon: "sun.max.fill" },
+  { key: "dark", label: "Dark", icon: "moon.fill" },
+];
+
 export default function ProfileScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { themePreference, setThemePreference } = useThemeContext();
   const [profile, setProfile] = useState<RVProfile>(DEFAULT_RV_PROFILE);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
+  const [memberships, setMemberships] = useState<DiscountMemberships>(DEFAULT_MEMBERSHIPS);
   const [editingRV, setEditingRV] = useState(false);
   const [editProfile, setEditProfile] = useState<RVProfile>(DEFAULT_RV_PROFILE);
   const [activeStatTab, setActiveStatTab] = useState<"visited" | "reviews" | "miles">("visited");
@@ -52,14 +63,22 @@ export default function ProfileScreen() {
   );
 
   async function loadData() {
-    const [p, s, st] = await Promise.all([
+    const [p, s, st, m] = await Promise.all([
       Store.getRVProfile(),
       Store.getSettings(),
       Store.getStats(),
+      Store.getMemberships(),
     ]);
     setProfile(p);
     setSettings(s);
     setStats(st);
+    setMemberships(m);
+  }
+
+  async function toggleMembership(key: keyof DiscountMemberships) {
+    const next = { ...memberships, [key]: !memberships[key] };
+    setMemberships(next);
+    await Store.setMemberships(next);
   }
 
   async function saveProfile() {
@@ -277,6 +296,53 @@ export default function ProfileScreen() {
             </View>
           )}
 
+          {/* My Memberships */}
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xl font-bold text-foreground">My Memberships</Text>
+            <Text className="text-xs text-muted">Auto-applied at booking</Text>
+          </View>
+          <View className="bg-surface rounded-2xl p-4 border border-border gap-3">
+            {([
+              { key: "military" as const, label: "Military / Veteran", icon: "shield" },
+              { key: "senior" as const, label: "Senior (62+)", icon: "person.fill" },
+              { key: "goodSam" as const, label: "Good Sam Club", icon: "star.fill" },
+              { key: "passportAmerica" as const, label: "Passport America", icon: "globe" },
+              { key: "escapees" as const, label: "Escapees RV Club", icon: "point.topleft.down.to.point.bottomright.curvepath.fill" },
+              { key: "koaValueKard" as const, label: "KOA Value Kard", icon: "tent.fill" },
+              { key: "aaa" as const, label: "AAA / CAA", icon: "car.fill" },
+              { key: "aarp" as const, label: "AARP", icon: "person.2.fill" },
+            ]).map((m) => (
+              <TouchableOpacity
+                key={m.key}
+                className="flex-row items-center"
+                onPress={() => toggleMembership(m.key)}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 6,
+                    borderWidth: 2,
+                    borderColor: memberships[m.key] ? colors.primary : colors.border,
+                    backgroundColor: memberships[m.key] ? colors.primary : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12,
+                  }}
+                >
+                  {memberships[m.key] && (
+                    <IconSymbol name="checkmark" size={14} color="#fff" />
+                  )}
+                </View>
+                <Text className="flex-1 text-foreground text-sm">{m.label}</Text>
+                {memberships[m.key] && (
+                  <Text className="text-xs font-medium" style={{ color: colors.success }}>Active</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+
           {/* Premium & Offline */}
           <TouchableOpacity
             className="bg-surface rounded-2xl p-4 border border-border flex-row items-center gap-3"
@@ -311,6 +377,34 @@ export default function ProfileScreen() {
           {/* Settings Section */}
           <Text className="text-xl font-bold text-foreground">Settings</Text>
           <View className="bg-surface rounded-2xl border border-border overflow-hidden">
+            {/* Appearance / Dark Mode */}
+            <View className="px-4 py-3.5 border-b border-border">
+              <View className="flex-row items-center mb-2">
+                <IconSymbol name="moon.fill" size={20} color={colors.muted} />
+                <Text className="flex-1 ml-3 text-foreground">Appearance</Text>
+              </View>
+              <View className="flex-row gap-2">
+                {THEME_OPTIONS.map((opt) => (
+                  <TouchableOpacity
+                    key={opt.key}
+                    className="flex-1 flex-row items-center justify-center py-2 rounded-lg border"
+                    style={{
+                      borderColor: themePreference === opt.key ? colors.primary : colors.border,
+                      backgroundColor: themePreference === opt.key ? colors.primary + '15' : 'transparent',
+                    }}
+                    onPress={() => setThemePreference(opt.key)}
+                  >
+                    <Text
+                      className="text-xs font-medium"
+                      style={{ color: themePreference === opt.key ? colors.primary : colors.muted }}
+                    >
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             {/* Distance */}
             <TouchableOpacity
               className="flex-row items-center px-4 py-3.5 border-b border-border"

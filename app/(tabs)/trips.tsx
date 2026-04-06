@@ -345,14 +345,28 @@ export default function TripsScreen() {
               <Text style={[styles.bookingValue, { color: colors.foreground }]}>{item.guests}</Text>
             </View>
             <View style={styles.bookingCol}>
-              <Text style={[styles.bookingLabel, { color: colors.muted }]}>Sites</Text>
-              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{item.sites}</Text>
+              <Text style={[styles.bookingLabel, { color: colors.muted }]}>{item.spotNumber ? "Spot" : "Sites"}</Text>
+              <Text style={[styles.bookingValue, { color: colors.foreground }]}>{item.spotNumber || item.sites}</Text>
             </View>
             <View style={styles.bookingCol}>
               <Text style={[styles.bookingLabel, { color: colors.muted }]}>Total</Text>
               <Text style={[styles.bookingValue, { color: colors.primary, fontWeight: "700" }]}>${item.totalPrice.toFixed(2)}</Text>
             </View>
           </View>
+          {/* Discount savings */}
+          {item.discountSavings && item.discountSavings > 0 && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 10, gap: 6 }}>
+              <MaterialIcons name="local-offer" size={14} color={colors.success} />
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.success }}>
+                Saved ${item.discountSavings.toFixed(2)}
+              </Text>
+              {item.appliedDiscounts && item.appliedDiscounts.length > 0 && (
+                <Text style={{ fontSize: 11, color: colors.muted }}>
+                  ({item.appliedDiscounts.join(", ")})
+                </Text>
+              )}
+            </View>
+          )}
         </View>
 
         {item.status === "upcoming" && (

@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -357,6 +358,22 @@ export default function ExploreScreen() {
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Route Warnings</Text>
               <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Low bridges, tunnels, steep grades & restrictions</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Compare Campgrounds */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/compare")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#6A1B9A20" }]}>
+              <MaterialIcons name="compare-arrows" size={24} color="#6A1B9A" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Compare Campgrounds</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Side-by-side comparison of up to 3 campgrounds</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>

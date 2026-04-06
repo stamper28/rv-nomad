@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatDateInput, displayToISO, isoToDisplay } from "@/lib/date-utils";
 import { generateSpotsForSite, SPOT_TYPE_LABELS, SPOT_TYPE_ICONS, type CampsiteSpot } from "@/lib/campsite-spots";
 import { calculateDiscounts, type Discount } from "@/lib/discount-stacker";
+import { Store, type DiscountMemberships } from "@/lib/store";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 type Step = "details" | "spot_selection" | "payment" | "confirmation";
@@ -151,6 +152,39 @@ export default function BookingScreen() {
       }
     }
   }, [availableDiscounts.discounts, site]);
+
+  // Auto-apply saved membership discounts from profile
+  useEffect(() => {
+    if (!site) return;
+    Store.getMemberships().then((memberships) => {
+      const programMap: Record<string, keyof DiscountMemberships> = {
+        "Military/Veteran": "military",
+        "Senior (62+)": "senior",
+        "Good Sam": "goodSam",
+        "Passport America": "passportAmerica",
+        "Escapees": "escapees",
+        "KOA Value Kard": "koaValueKard",
+        "AAA/CAA": "aaa",
+        "AARP": "aarp",
+      };
+      const toApply: string[] = [];
+      for (const d of availableDiscounts.discounts) {
+        const membershipKey = programMap[d.program];
+        if (membershipKey && memberships[membershipKey]) {
+          toApply.push(d.program);
+        }
+      }
+      if (toApply.length > 0) {
+        setSelectedDiscounts((prev) => {
+          const next = [...prev];
+          for (const p of toApply) {
+            if (!next.includes(p)) next.push(p);
+          }
+          return next;
+        });
+      }
+    });
+  }, [site, availableDiscounts.discounts]);
 
   // Check availability when dates change
   useEffect(() => {
@@ -485,19 +519,12 @@ export default function BookingScreen() {
                   Alert.alert("Dates Unavailable", "Please select different dates for your stay.");
                   return;
                 }
-                if (!isAuthenticated) {
-                  Alert.alert("Sign In Required", "Please sign in to book a campsite.", [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Sign In", onPress: () => router.push("/(tabs)/profile") },
-                  ]);
-                  return;
-                }
                 setStep("spot_selection");
               }}
               disabled={nights <= 0 || availabilityStatus === "unavailable"}
               activeOpacity={0.8}
             >
-              <Text style={styles.primaryBtnText}>Continue to Payment</Text>
+              <Text style={styles.primaryBtnText}>Select Your Spot</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -519,7 +546,7 @@ export default function BookingScreen() {
     return (
       <ScreenContainer edges={["top", "left", "right"]}>
         <View style={styles.header}>
-            <TouchableOpacity onPress={() => setStep("spot_selection")} style={styles.backBtn}>
+            <TouchableOpacity onPress={() => setStep("details")} style={styles.backBtn}>
             <IconSymbol name="chevron.left" size={24} color={colors.primary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: colors.foreground }]}>Select Your Spot</Text>
@@ -678,6 +705,13 @@ export default function BookingScreen() {
             onPress={() => {
               if (!selectedSpot) {
                 Alert.alert("Select a Spot", "Please tap on a campsite spot to select it before continuing.");
+                return;
+              }
+              if (!isAuthenticated) {
+                Alert.alert("Sign In Required", "Please sign in to complete your booking.", [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Sign In", onPress: () => router.push("/(tabs)/profile") },
+                ]);
                 return;
               }
               setStep("payment");

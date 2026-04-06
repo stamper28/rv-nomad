@@ -225,15 +225,15 @@
 - [x] RV-Safe Route Warnings — low bridge alerts, weight-restricted roads, propane tunnel bans
 - [x] Low clearance database with crowdsourced user reports
 - [ ] Cancellation Scanner with real Push Notifications
-- [ ] Share a Campsite — text/email/social sharing
+- [x] Share a Campsite — text/email/social sharing
 - [ ] Who's Here Check-in — see other RV Nomad users at same campground
 - [ ] RVer Meetup Coordination — see how many members at a campground this weekend
 - [ ] User Photo Uploads on reviews
 - [ ] Insider Boondocking Spots — user-submitted secret free camping spots (premium only)
 - [ ] Personalized Recommendations — AI-based "campgrounds you'd love" based on RV size, budget, past stays
-- [ ] Campground Comparison — side-by-side compare 2-3 campgrounds
-- [ ] Dark Mode Toggle in settings/profile
-- [ ] Search History / Recent Searches
+- [x] Campground Comparison — side-by-side compare 2-3 campgrounds
+- [x] Dark Mode Toggle in settings/profile
+- [x] Search History / Recent Searches
 
 ## ADA/Handicap-Accessible Campgrounds
 - [x] Research real ADA-accessible campgrounds across US and Canada
@@ -259,3 +259,12 @@
 - [x] Calculate and show discount savings in real-time price breakdown
 - [x] Store applied discount in booking record
 - [x] Show applied discount on booking confirmation screen
+
+## App Improvements (Make It Better)
+- [x] Dark Mode toggle in Profile settings (manual light/dark/system switch)
+- [x] Search History / Recent Searches on Home screen
+- [x] Share a Campsite — share campground details via text/email/social
+- [x] Save user discount memberships to profile (military, senior, Good Sam, etc.) for auto-selection on bookings
+- [x] Show applied discounts and selected spot on Trips tab booking cards
+- [x] Campground Comparison — side-by-side compare 2-3 campgrounds
+- [x] Bug: Spot selection step not showing in booking flow — fixed: removed auth gate from details→spot_selection transition (moved to spot→payment), fixed back button pointing to itself, updated button text to 'Select Your Spot'

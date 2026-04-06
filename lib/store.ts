@@ -119,6 +119,29 @@ export interface CommunityPost {
   category: string;
 }
 
+// ── Discount Memberships ──
+export interface DiscountMemberships {
+  military: boolean;
+  senior: boolean;
+  goodSam: boolean;
+  passportAmerica: boolean;
+  escapees: boolean;
+  koaValueKard: boolean;
+  aaa: boolean;
+  aarp: boolean;
+}
+
+export const DEFAULT_MEMBERSHIPS: DiscountMemberships = {
+  military: false,
+  senior: false,
+  goodSam: false,
+  passportAmerica: false,
+  escapees: false,
+  koaValueKard: false,
+  aaa: false,
+  aarp: false,
+};
+
 // ── Storage Keys ──
 const KEYS = {
   RV_PROFILE: "rv_nomad_rv_profile",
@@ -131,6 +154,8 @@ const KEYS = {
   FUEL_LOG: "rv_nomad_fuel_log",
   REVIEWS: "rv_nomad_reviews",
   CHECKLISTS: "rv_nomad_checklists",
+  MEMBERSHIPS: "rv_nomad_memberships",
+  SEARCH_HISTORY: "rv_nomad_search_history",
 };
 
 // ── Storage Helpers ──
@@ -194,4 +219,19 @@ export const Store = {
   // Checklists
   getChecklists: () => getJSON<Record<string, boolean[]>>(KEYS.CHECKLISTS, {}),
   setChecklists: (c: Record<string, boolean[]>) => setJSON(KEYS.CHECKLISTS, c),
+
+  // Discount Memberships
+  getMemberships: () => getJSON<DiscountMemberships>(KEYS.MEMBERSHIPS, DEFAULT_MEMBERSHIPS),
+  setMemberships: (m: DiscountMemberships) => setJSON(KEYS.MEMBERSHIPS, m),
+
+  // Search History
+  getSearchHistory: () => getJSON<string[]>(KEYS.SEARCH_HISTORY, []),
+  addSearchTerm: async (term: string) => {
+    const history = await Store.getSearchHistory();
+    const filtered = history.filter((t) => t.toLowerCase() !== term.toLowerCase());
+    const next = [term, ...filtered].slice(0, 10);
+    await setJSON(KEYS.SEARCH_HISTORY, next);
+    return next;
+  },
+  clearSearchHistory: () => setJSON(KEYS.SEARCH_HISTORY, []),
 };

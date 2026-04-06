@@ -135,6 +135,10 @@ export default function HomeScreen() {
   // ADA filter
   const [adaOnly, setAdaOnly] = useState(false);
 
+  // Search history
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+
   // Lazy-loaded data
   const [allSites, setAllSites] = useState<CampSite[]>([]);
   const [stateLaws, setStateLaws] = useState<Record<string, StateLaws>>({});
@@ -146,6 +150,10 @@ export default function HomeScreen() {
       setAllSites(mod.ALL_SITES);
       setStateLaws(mod.STATE_LAWS);
       setDataLoaded(true);
+    });
+    // Load search history
+    import("@/lib/store").then(({ Store: S }) => {
+      S.getSearchHistory().then(setSearchHistory);
     });
   }, []);
 
@@ -595,9 +603,23 @@ export default function HomeScreen() {
             placeholder="Search campgrounds, parks, scales..."
             placeholderTextColor={colors.muted}
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={(t) => {
+              setSearchQuery(t);
+              setShowSearchHistory(t.length === 0);
+            }}
+            onFocus={() => {
+              if (searchQuery.length === 0 && searchHistory.length > 0) setShowSearchHistory(true);
+            }}
             returnKeyType="search"
-            onSubmitEditing={() => Keyboard.dismiss()}
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+              if (searchQuery.trim().length > 1) {
+                import("@/lib/store").then(({ Store: S }) => {
+                  S.addSearchTerm(searchQuery.trim()).then(setSearchHistory);
+                });
+              }
+              setShowSearchHistory(false);
+            }}
           />
           {searchQuery.length > 0 && (
             <Pressable
@@ -608,6 +630,42 @@ export default function HomeScreen() {
             </Pressable>
           )}
         </View>
+
+        {/* Search History */}
+        {showSearchHistory && searchHistory.length > 0 && (
+          <View style={[styles.searchHistoryContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.muted }}>Recent Searches</Text>
+              <TouchableOpacity onPress={() => {
+                import("@/lib/store").then(({ Store: S }) => {
+                  S.clearSearchHistory().then(() => {
+                    setSearchHistory([]);
+                    setShowSearchHistory(false);
+                  });
+                });
+              }}>
+                <Text style={{ fontSize: 11, color: colors.primary }}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {searchHistory.map((term, i) => (
+                <TouchableOpacity
+                  key={`${term}-${i}`}
+                  style={[styles.searchHistoryChip, { backgroundColor: colors.primary + '12', borderColor: colors.primary + '30' }]}
+                  onPress={() => {
+                    setSearchQuery(term);
+                    setShowSearchHistory(false);
+                    Keyboard.dismiss();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <MaterialIcons name="history" size={14} color={colors.primary} />
+                  <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 4 }}>{term}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* State Selector + Near Me */}
         <View style={styles.locationRow}>
@@ -1061,4 +1119,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   distanceText: { fontSize: 11, fontWeight: "600" },
+  searchHistoryContainer: { marginTop: 8, padding: 12, borderRadius: 12, borderWidth: 1 },
+  searchHistoryChip: { flexDirection: "row", alignItems: "center", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
 });

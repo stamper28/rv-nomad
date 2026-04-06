@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Share,
 } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -144,7 +145,21 @@ export default function SiteDetailScreen() {
           <TouchableOpacity onPress={toggleSave} style={styles.actionBtnH}>
             <IconSymbol name={isSaved ? "heart.fill" : "heart"} size={22} color={isSaved ? colors.error : colors.muted} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtnH}>
+          <TouchableOpacity style={styles.actionBtnH} onPress={async () => {
+            if (!site) return;
+            const price = (site.pricePerNight ?? 0) > 0 ? `$${site.pricePerNight}/night` : "Free";
+            const rating = site.rating ? `${site.rating}/5` : "";
+            const amenities = site.amenities?.slice(0, 4).join(", ") || "";
+            const message = `Check out ${site.name} in ${site.city}, ${site.state}!\n\n${CATEGORY_LABELS[site.category]} - ${price}${rating ? ` - ${rating} stars` : ""}${amenities ? `\nAmenities: ${amenities}` : ""}\n\nFound on RV Nomad - the best app for RV camping!`;
+            try {
+              await Share.share({
+                message,
+                title: `${site.name} - RV Nomad`,
+              });
+            } catch (e) {
+              // user cancelled
+            }
+          }}>
             <IconSymbol name="square.and.arrow.up" size={22} color={colors.muted} />
           </TouchableOpacity>
         </View>
