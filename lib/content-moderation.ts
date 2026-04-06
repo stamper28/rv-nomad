@@ -7,7 +7,7 @@
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export type ContentType = "photo" | "signal_report" | "review" | "experience";
+export type ContentType = "photo" | "signal_report" | "review" | "experience" | "message";
 
 export type ReportReason =
   | "inappropriate"

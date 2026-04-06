@@ -574,6 +574,81 @@ export default function ExploreScreen() {
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
+          {/* Weather Alerts */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/weather-alerts" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#EF444420" }]}>
+              <MaterialIcons name="warning" size={24} color="#EF4444" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Weather Alerts</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Wind, storm & fire alerts for your campgrounds</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Caravan Mode */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/caravan" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#8B5CF620" }]}>
+              <MaterialIcons name="groups" size={24} color="#8B5CF6" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Caravan Mode</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Group trip planning & coordination</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Badges & Passport */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/badges" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#F59E0B20" }]}>
+              <MaterialIcons name="military-tech" size={24} color="#F59E0B" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Badges & Passport</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Track your camping achievements</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Maintenance Tracker */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/maintenance" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#06B6D420" }]}>
+              <MaterialIcons name="build" size={24} color="#06B6D4" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Maintenance Tracker</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Oil, tires, generator & slide-out reminders</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Fuel Calculator */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/fuel-calculator" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#22C55E20" }]}>
+              <MaterialIcons name="local-gas-station" size={24} color="#22C55E" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Fuel Calculator</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Estimate trip fuel costs by RV type</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
         </ScrollView>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>

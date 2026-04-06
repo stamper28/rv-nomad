@@ -430,3 +430,45 @@
 - [x] Add report/block buttons to photo gallery
 - [x] Add report/block buttons to cell signal reports
 - [x] Add blocked content filtering (reported content auto-hidden)
+
+## Game-Changing Features (Rise Above All Competitors)
+### 1. Offline Mode Enhancement
+- [x] Full database caching with auto-sync on WiFi
+- [x] Offline search capability across all cached campgrounds
+- [x] Smart cache management with size tracking
+### 2. Real-Time Campsite Availability (Crowdsourced)
+- [x] AvailabilitySection component on site-detail page
+- [x] Users can report site status (Available, Full, Partial, Closed)
+- [x] Time-ago display showing freshness of reports
+### 3. RV-Safe Routing / Low Bridge Warnings
+- [x] Height/weight clearance checker function added to rv-route-warnings
+- [x] Enhanced route warnings with clearance data
+### 4. Community Forum (Per-Campground Chat)
+- [x] CampgroundChat component on site-detail page
+- [x] Per-campground message board with questions and replies
+- [x] Report/block integration for chat messages
+### 5. Maintenance Tracker
+- [x] Maintenance store with task categories (engine, tires, generator, slides, etc.)
+- [x] Maintenance screen with add/complete/overdue tracking
+- [x] Mileage and date-based reminders
+### 6. Fuel Cost Calculator
+- [x] Fuel calculator screen with RV type presets
+- [x] Trip distance and MPG-based cost estimation
+- [x] Diesel vs gas pricing
+### 7. Weather Alerts
+- [x] Weather alerts store for saved campground monitoring
+- [x] Weather alerts screen with wind, storm, fire, flood warnings
+- [x] Alert severity levels (watch, warning, emergency)
+### 8. Campground Comparison Tool
+- [x] Already existed — side-by-side comparison feature verified
+### 9. Caravan Mode (Group Trip Sharing)
+- [x] Caravan store with trip creation and member management
+- [x] Caravan screen with itinerary, member list, share codes
+- [x] Waypoint tracking and status updates
+### 10. Loyalty / Gamification (Badges & Passport)
+- [x] Badges store with 15+ achievement badges
+- [x] Badges screen with progress tracking and passport view
+- [x] State-visited tracking, campground milestones, category achievements
+### Navigation Wiring
+- [x] All 6 new features linked from Explore screen
+- [x] AvailabilitySection and CampgroundChat added to site-detail

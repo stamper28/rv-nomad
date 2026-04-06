@@ -39,6 +39,8 @@ import { openUrl } from "@/lib/open-url";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { findNearbyRestaurants, getRestaurantCategoryInfo } from "@/lib/nearby-restaurants";
 import { CellSignalSection } from "@/components/cell-signal-section";
+import { AvailabilitySection } from "@/components/availability-section";
+import { CampgroundChat } from "@/components/campground-chat";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -944,9 +946,19 @@ export default function SiteDetailScreen() {
             <PhotoGallery siteId={site.id} siteName={site.name} />
           </View>
 
+          {/* Live Availability */}
+          <View style={[styles.section, { borderColor: colors.border }]}>
+            <AvailabilitySection siteId={site.id} siteName={site.name} />
+          </View>
+
           {/* Cell Signal Reports */}
           <View style={[styles.section, { borderColor: colors.border }]}>
             <CellSignalSection siteId={site.id} siteName={site.name} />
+          </View>
+
+          {/* Campground Chat */}
+          <View style={[styles.section, { borderColor: colors.border }]}>
+            <CampgroundChat siteId={site.id} siteName={site.name} />
           </View>
 
           {/* Reviews Section */}
