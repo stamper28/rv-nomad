@@ -52,6 +52,8 @@ export const bookings = mysqlTable("bookings", {
   rvType: varchar("rvType", { length: 64 }),
   rvLength: varchar("rvLength", { length: 16 }),
   specialRequests: text("specialRequests"),
+  spotNumber: varchar("spotNumber", { length: 16 }),
+  spotType: varchar("spotType", { length: 32 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

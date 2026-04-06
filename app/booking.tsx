@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   ScrollView,
   Text,
@@ -22,8 +22,11 @@ import { calculatePayment, PLATFORM_FEE_PER_NIGHT } from "@/lib/stripe";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDateInput, displayToISO, isoToDisplay } from "@/lib/date-utils";
+import { generateSpotsForSite, SPOT_TYPE_LABELS, SPOT_TYPE_ICONS, type CampsiteSpot } from "@/lib/campsite-spots";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-type Step = "details" | "payment" | "confirmation";
+type Step = "details" | "spot_selection" | "payment" | "confirmation";
+type SpotFilter = "all" | "rv_full" | "rv_we" | "rv_electric" | "tent" | "cabin" | "ada";
 
 export default function BookingScreen() {
   const colors = useColors();
@@ -46,6 +49,9 @@ export default function BookingScreen() {
   const [guests, setGuests] = useState(2);
   const [siteCount, setSiteCount] = useState(1);
   const [notes, setNotes] = useState("");
+  // Spot selection
+  const [selectedSpot, setSelectedSpot] = useState<CampsiteSpot | null>(null);
+  const [spotFilter, setSpotFilter] = useState<SpotFilter>("all");
   // Payment
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -81,10 +87,33 @@ export default function BookingScreen() {
     }
   }, [checkIn, checkOut]);
 
+  // Generate spots for this campground
+  const spots = useMemo(() => {
+    if (!site) return [];
+    return generateSpotsForSite(
+      site.id,
+      site.category,
+      site.hookupType,
+      site.ampService,
+      site.adaAccessible,
+      site.pullThrough,
+      site.bigRigFriendly,
+      site.pricePerNight,
+    );
+  }, [site]);
+
+  const filteredSpots = useMemo(() => {
+    if (spotFilter === "all") return spots;
+    if (spotFilter === "ada") return spots.filter((s) => s.adaAccessible);
+    return spots.filter((s) => s.spotType === spotFilter);
+  }, [spots, spotFilter]);
+
   const pricePerNight = site?.pricePerNight ?? 0;
+  const spotPriceModifier = selectedSpot?.priceModifier ?? 0;
+  const effectivePricePerNight = Math.max(0, pricePerNight + spotPriceModifier);
   const payment = useMemo(
-    () => calculatePayment({ pricePerNight, nights, sites: siteCount }),
-    [pricePerNight, nights, siteCount]
+    () => calculatePayment({ pricePerNight: effectivePricePerNight, nights, sites: siteCount }),
+    [effectivePricePerNight, nights, siteCount]
   );
   const { campsiteSubtotal: subtotal, platformFee, taxes, total } = payment;
 
@@ -206,7 +235,9 @@ export default function BookingScreen() {
         checkOut: displayToISO(checkOut) || checkOut,
         guests,
         sites: siteCount,
-        pricePerNight,
+        pricePerNight: effectivePricePerNight,
+        spotNumber: selectedSpot?.spotNumber,
+        spotType: selectedSpot?.spotType,
         paymentMethod:
           paymentMethod === "card"
             ? `visa_${cardNumber.replace(/\s/g, "").slice(-4)}`
@@ -424,7 +455,7 @@ export default function BookingScreen() {
                   ]);
                   return;
                 }
-                setStep("payment");
+                setStep("spot_selection");
               }}
               disabled={nights <= 0 || availabilityStatus === "unavailable"}
               activeOpacity={0.8}
@@ -437,7 +468,194 @@ export default function BookingScreen() {
     );
   }
 
-  // ── Step 2: Payment ──
+  // ── Step 2: Spot Selection ──
+  if (step === "spot_selection") {
+    const spotFilterOptions: { key: SpotFilter; label: string }[] = [
+      { key: "all", label: "All Spots" },
+      { key: "rv_full", label: "Full Hookup" },
+      { key: "rv_we", label: "W/E" },
+      { key: "rv_electric", label: "Electric" },
+      { key: "tent", label: "Tent" },
+      { key: "ada", label: "ADA" },
+    ];
+
+    return (
+      <ScreenContainer edges={["top", "left", "right"]}>
+        <View style={styles.header}>
+            <TouchableOpacity onPress={() => setStep("spot_selection")} style={styles.backBtn}>
+            <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Select Your Spot</Text>
+          <View style={{ width: 32 }} />
+        </View>
+
+        {/* Spot Filters */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, marginBottom: 8 }} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+          {spotFilterOptions.map((f) => (
+            <TouchableOpacity
+              key={f.key}
+              onPress={() => setSpotFilter(f.key)}
+              style={[
+                styles.spotFilterChip,
+                {
+                  backgroundColor: spotFilter === f.key ? colors.primary : colors.surface,
+                  borderColor: spotFilter === f.key ? colors.primary : colors.border,
+                },
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.spotFilterText, { color: spotFilter === f.key ? "#fff" : colors.foreground }]}>
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <Text style={[styles.spotCountLabel, { color: colors.muted }]}>
+          {filteredSpots.length} spot{filteredSpots.length !== 1 ? "s" : ""} available
+        </Text>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 10 }}>
+          {filteredSpots.map((spot) => {
+            const isSelected = selectedSpot?.id === spot.id;
+            const spotPrice = Math.max(0, pricePerNight + spot.priceModifier);
+            const typeLabel = SPOT_TYPE_LABELS[spot.spotType];
+            const typeIcon = SPOT_TYPE_ICONS[spot.spotType];
+
+            return (
+              <TouchableOpacity
+                key={spot.id}
+                onPress={() => {
+                  setSelectedSpot(isSelected ? null : spot);
+                  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                style={[
+                  styles.spotCard,
+                  {
+                    backgroundColor: isSelected ? colors.primary + "08" : colors.surface,
+                    borderColor: isSelected ? colors.primary : colors.border,
+                    borderWidth: isSelected ? 2 : 1,
+                  },
+                ]}
+                activeOpacity={0.7}
+              >
+                <View style={styles.spotCardHeader}>
+                  <View style={styles.spotNumberBadge}>
+                    <View style={[styles.spotNumberCircle, { backgroundColor: isSelected ? colors.primary : colors.muted + "30" }]}>
+                      <Text style={[styles.spotNumberText, { color: isSelected ? "#fff" : colors.foreground }]}>
+                        {spot.spotNumber}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text style={[styles.spotTypeLabel, { color: colors.foreground }]}>{typeLabel}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                        <MaterialIcons name={typeIcon as any} size={14} color={colors.muted} />
+                        {spot.hookup !== "none" && (
+                          <Text style={{ fontSize: 11, color: colors.muted }}>
+                            {spot.hookup === "full" ? "Full Hookup" : spot.hookup === "water_electric" ? "W/E" : "Electric"}
+                          </Text>
+                        )}
+                        {spot.ampService !== "none" && (
+                          <Text style={{ fontSize: 11, color: colors.muted }}>
+                            {spot.ampService === "50_30" ? "50/30A" : `${spot.ampService}A`}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={[styles.spotPrice, { color: colors.primary }]}>
+                      ${spotPrice}/night
+                    </Text>
+                    {spot.priceModifier !== 0 && (
+                      <Text style={{ fontSize: 10, color: spot.priceModifier > 0 ? colors.warning : colors.success }}>
+                        {spot.priceModifier > 0 ? `+$${spot.priceModifier}` : `-$${Math.abs(spot.priceModifier)}`}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Spot Details Row */}
+                <View style={styles.spotDetailsRow}>
+                  {spot.maxRVLength > 0 && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: colors.background }]}>
+                      <MaterialIcons name="straighten" size={12} color={colors.muted} />
+                      <Text style={[styles.spotDetailText, { color: colors.muted }]}>Max {spot.maxRVLength}ft</Text>
+                    </View>
+                  )}
+                  {spot.pullThrough && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: colors.success + "15" }]}>
+                      <MaterialIcons name="swap-horiz" size={12} color={colors.success} />
+                      <Text style={[styles.spotDetailText, { color: colors.success }]}>Pull-Through</Text>
+                    </View>
+                  )}
+                  {spot.shade !== "none" && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: colors.background }]}>
+                      <MaterialIcons name="park" size={12} color={colors.muted} />
+                      <Text style={[styles.spotDetailText, { color: colors.muted }]}>{spot.shade === "full" ? "Full Shade" : "Partial Shade"}</Text>
+                    </View>
+                  )}
+                  {spot.waterfront && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: "#0288D115" }]}>
+                      <MaterialIcons name="water" size={12} color="#0288D1" />
+                      <Text style={[styles.spotDetailText, { color: "#0288D1" }]}>Waterfront</Text>
+                    </View>
+                  )}
+                  {spot.adaAccessible && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: "#1565C015" }]}>
+                      <MaterialIcons name="accessible" size={12} color="#1565C0" />
+                      <Text style={[styles.spotDetailText, { color: "#1565C0" }]}>ADA</Text>
+                    </View>
+                  )}
+                  {spot.premium && !spot.waterfront && (
+                    <View style={[styles.spotDetailChip, { backgroundColor: colors.warning + "15" }]}>
+                      <MaterialIcons name="star" size={12} color={colors.warning} />
+                      <Text style={[styles.spotDetailText, { color: colors.warning }]}>Premium</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* Bottom Bar */}
+        <View style={[styles.spotBottomBar, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+          {selectedSpot ? (
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, color: colors.muted }}>
+                Spot {selectedSpot.spotNumber} • {SPOT_TYPE_LABELS[selectedSpot.spotType]}
+              </Text>
+              <Text style={{ fontSize: 17, fontWeight: "700", color: colors.primary }}>
+                ${Math.max(0, pricePerNight + selectedSpot.priceModifier)}/night
+              </Text>
+            </View>
+          ) : (
+            <Text style={{ flex: 1, fontSize: 14, color: colors.muted }}>Tap a spot to select it</Text>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.primaryBtn,
+              { backgroundColor: selectedSpot ? colors.primary : colors.muted, flex: 0, paddingHorizontal: 24, paddingVertical: 14 },
+            ]}
+            onPress={() => {
+              if (!selectedSpot) {
+                Alert.alert("Select a Spot", "Please tap on a campsite spot to select it before continuing.");
+                return;
+              }
+              setStep("payment");
+            }}
+            disabled={!selectedSpot}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.primaryBtnText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // ── Step 3: Payment ──
   if (step === "payment") {
     return (
       <ScreenContainer edges={["top", "left", "right"]}>
@@ -574,9 +792,16 @@ export default function BookingScreen() {
               <View style={styles.priceRow}>
                 <Text style={[styles.priceLabel, { color: colors.muted }]} numberOfLines={1}>{site.name}</Text>
               </View>
+              {selectedSpot && (
+                <View style={styles.priceRow}>
+                  <Text style={[styles.priceLabel, { color: colors.primary }]}>
+                    Spot {selectedSpot.spotNumber} • {SPOT_TYPE_LABELS[selectedSpot.spotType]}
+                  </Text>
+                </View>
+              )}
               <View style={styles.priceRow}>
                 <Text style={[styles.priceLabel, { color: colors.muted }]}>
-                  {nights} night{nights !== 1 ? "s" : ""}, {guests} guest{guests !== 1 ? "s" : ""}, {siteCount} site{siteCount !== 1 ? "s" : ""}
+                  {nights} night{nights !== 1 ? "s" : ""}, {guests} guest{guests !== 1 ? "s" : ""}
                 </Text>
               </View>
               <View style={[styles.priceDivider, { borderColor: colors.border }]} />
@@ -650,6 +875,14 @@ export default function BookingScreen() {
               <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Check-out</Text>
               <Text style={[styles.confirmDetailValue, { color: colors.foreground }]}>{checkOut}</Text>
             </View>
+            {selectedSpot && (
+              <View style={styles.confirmDetail}>
+                <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Spot</Text>
+                <Text style={[styles.confirmDetailValue, { color: colors.primary }]}>
+                  #{selectedSpot.spotNumber} • {SPOT_TYPE_LABELS[selectedSpot.spotType]}
+                </Text>
+              </View>
+            )}
             <View style={styles.confirmDetail}>
               <Text style={[styles.confirmDetailLabel, { color: colors.muted }]}>Nights</Text>
               <Text style={[styles.confirmDetailValue, { color: colors.foreground }]}>{nights}</Text>
@@ -764,4 +997,65 @@ const styles = StyleSheet.create({
   confirmDetail: { flexDirection: "row", justifyContent: "space-between" },
   confirmDetailLabel: { fontSize: 14 },
   confirmDetailValue: { fontSize: 14, fontWeight: "600" },
+  // Spot selection
+  spotFilterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  spotFilterText: { fontSize: 13, fontWeight: "600" },
+  spotCountLabel: { fontSize: 13, fontWeight: "500", paddingHorizontal: 16, marginBottom: 8 },
+  spotCard: {
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+  },
+  spotCardHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+  },
+  spotNumberBadge: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 10,
+  },
+  spotNumberCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  spotNumberText: { fontSize: 15, fontWeight: "800" as const },
+  spotTypeLabel: { fontSize: 14, fontWeight: "600" as const },
+  spotPrice: { fontSize: 16, fontWeight: "700" as const },
+  spotDetailsRow: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 6,
+  },
+  spotDetailChip: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  spotDetailText: { fontSize: 11, fontWeight: "500" as const },
+  spotBottomBar: {
+    position: "absolute" as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+    gap: 12,
+  },
 });

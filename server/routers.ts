@@ -60,6 +60,8 @@ export const appRouter = router({
           rvType: z.string().optional(),
           rvLength: z.string().optional(),
           specialRequests: z.string().optional(),
+          spotNumber: z.string().optional(),
+          spotType: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -94,6 +96,8 @@ export const appRouter = router({
           rvType: input.rvType,
           rvLength: input.rvLength,
           specialRequests: input.specialRequests,
+          spotNumber: input.spotNumber,
+          spotType: input.spotType,
         });
 
         return { bookingId, success: true };

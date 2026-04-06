@@ -21,6 +21,8 @@ export interface Booking {
   confirmationCode: string;
   createdAt: string;
   notes: string;
+  spotNumber?: string;  // selected individual spot (e.g. "A1", "12")
+  spotType?: string;    // e.g. "rv_full", "tent"
 }
 
 const KEY = "rv_nomad_bookings";
@@ -75,6 +77,8 @@ export const BookingStore = {
     pricePerNight: number;
     paymentMethod: string;
     notes: string;
+    spotNumber?: string;
+    spotType?: string;
   }): Promise<Booking> => {
     const nights = daysBetween(params.checkIn, params.checkOut);
     const booking: Booking = {
@@ -96,6 +100,8 @@ export const BookingStore = {
       confirmationCode: generateConfirmationCode(),
       createdAt: new Date().toISOString(),
       notes: params.notes,
+      spotNumber: params.spotNumber,
+      spotType: params.spotType,
     };
     const all = await getAll();
     all.unshift(booking);

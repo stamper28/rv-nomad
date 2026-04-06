@@ -245,3 +245,11 @@
 - [x] Research which campgrounds offer wheelchair/mobility equipment rentals
 - [x] Update all-sites-data with accurate ADA details and equipment rental info for all campgrounds
 - [x] Display rental equipment info on site-detail screen
+
+## Campsite Spot Reservation
+- [x] Add CampsiteSpot type with spot number, type (tent/RV/cabin), hookup info, max RV length, ADA accessible flag
+- [x] Generate individual spots for all campgrounds (e.g. Site #1-#30 per park)
+- [x] Build spot selection grid/list UI in booking flow (show spot type, hookup, availability)
+- [x] Update backend booking API to accept and store selected spot number
+- [x] Show selected spot on booking confirmation
+- [x] Prevent double-booking of same spot on same dates
