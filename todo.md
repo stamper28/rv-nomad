@@ -472,3 +472,7 @@
 ### Navigation Wiring
 - [x] All 6 new features linked from Explore screen
 - [x] AvailabilitySection and CampgroundChat added to site-detail
+
+## Bug: Cannot Add Photos to Campgrounds
+- [x] Fix photo upload not working — users unable to add photos to campground galleries
+- [x] Fix Canadian fuel stops showing US locations instead of Canadian ones

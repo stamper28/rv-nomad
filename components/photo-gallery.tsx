@@ -3,7 +3,7 @@
  * All Rights Reserved. Unauthorized copying or distribution is prohibited.
  * See LICENSE file for details.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   FlatList,
   TextInput,
   ScrollView,
+  AppState,
 } from "react-native";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -48,6 +49,8 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
   const [siteNumber, setSiteNumber] = useState("");
   const [selectedUri, setSelectedUri] = useState<string | null>(null);
   const [reportPhotoId, setReportPhotoId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const pendingPick = useRef(false);
 
   const loadPhotos = useCallback(async () => {
     const loaded = await getPhotosForSite(siteId);
@@ -58,51 +61,127 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
     loadPhotos();
   }, [loadPhotos]);
 
-  const pickFromLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+  // Handle Android MainActivity destruction — recover pending image picker result
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async (nextAppState) => {
+      if (nextAppState === "active" && pendingPick.current) {
+        pendingPick.current = false;
+        try {
+          const result = await ImagePicker.getPendingResultAsync();
+          if (result && !("canceled" in result && result.canceled)) {
+            const assets = (result as ImagePicker.ImagePickerResult).assets;
+            if (assets && assets[0]) {
+              setSelectedUri(assets[0].uri);
+              setShowAddForm(true);
+            }
+          }
+        } catch {
+          // No pending result
+        }
+      }
     });
-    if (!result.canceled && result.assets[0]) {
-      setSelectedUri(result.assets[0].uri);
-      setShowAddForm(true);
+    return () => subscription.remove();
+  }, []);
+
+  const requestMediaLibraryPermission = async (): Promise<boolean> => {
+    if (Platform.OS === "web") return true;
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Needed",
+          "Photo library access is required to select photos. Please enable it in your device settings.",
+          [{ text: "OK" }]
+        );
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn("Failed to request media library permission:", err);
+      Alert.alert("Error", "Could not request photo library permission. Please try again.");
+      return false;
+    }
+  };
+
+  const pickFromLibrary = async () => {
+    try {
+      const hasPermission = await requestMediaLibraryPermission();
+      if (!hasPermission) return;
+
+      pendingPick.current = true;
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      pendingPick.current = false;
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setSelectedUri(result.assets[0].uri);
+        setShowAddForm(true);
+      }
+    } catch (err) {
+      pendingPick.current = false;
+      console.warn("Image picker error:", err);
+      Alert.alert("Error", "Could not open photo library. Please try again.");
     }
   };
 
   const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Needed", "Camera permission is required to take photos.");
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setSelectedUri(result.assets[0].uri);
-      setShowAddForm(true);
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Needed",
+          "Camera permission is required to take photos. Please enable it in your device settings.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      pendingPick.current = true;
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      pendingPick.current = false;
+
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setSelectedUri(result.assets[0].uri);
+        setShowAddForm(true);
+      }
+    } catch (err) {
+      pendingPick.current = false;
+      console.warn("Camera error:", err);
+      Alert.alert("Error", "Could not open camera. Please try again.");
     }
   };
 
   const handleAddPhoto = async () => {
     if (!selectedUri) return;
-    if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await addPhoto({
-      siteId,
-      uri: selectedUri,
-      caption: caption.trim() || undefined,
-      siteNumber: siteNumber.trim() || undefined,
-      authorName: "You",
-    });
-    setShowAddForm(false);
-    setCaption("");
-    setSiteNumber("");
-    setSelectedUri(null);
-    loadPhotos();
+    setLoading(true);
+    try {
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      await addPhoto({
+        siteId,
+        uri: selectedUri,
+        caption: caption.trim() || undefined,
+        siteNumber: siteNumber.trim() || undefined,
+        authorName: "You",
+      });
+      setShowAddForm(false);
+      setCaption("");
+      setSiteNumber("");
+      setSelectedUri(null);
+      loadPhotos();
+    } catch (err) {
+      console.warn("Save photo error:", err);
+      Alert.alert("Error", "Could not save photo. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeletePhoto = (photoId: string) => {
@@ -233,12 +312,13 @@ export function PhotoGallery({ siteId, siteName }: PhotoGalleryProps) {
               </View>
 
               <TouchableOpacity
-                style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                style={[styles.submitBtn, { backgroundColor: loading ? colors.muted : colors.primary }]}
                 onPress={handleAddPhoto}
                 activeOpacity={0.8}
+                disabled={loading}
               >
                 <MaterialIcons name="cloud-upload" size={20} color="#fff" />
-                <Text style={styles.submitBtnText}>Save Photo</Text>
+                <Text style={styles.submitBtnText}>{loading ? "Saving..." : "Save Photo"}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

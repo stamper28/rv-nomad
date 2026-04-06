@@ -717,10 +717,10 @@ export default function SiteDetailScreen() {
                       </View>
                       <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
                         <View style={{ backgroundColor: "#E65100" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                          <Text style={{ color: "#E65100", fontSize: 12, fontWeight: "700" }}>Diesel ${s.diesel.toFixed(2)}</Text>
+                          <Text style={{ color: "#E65100", fontSize: 12, fontWeight: "700" }}>Diesel {s.currency === "CAD" ? "C" : ""}${s.diesel.toFixed(2)}</Text>
                         </View>
                         <View style={{ backgroundColor: colors.primary + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Regular ${s.regular.toFixed(2)}</Text>
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Regular {s.currency === "CAD" ? "C" : ""}${s.regular.toFixed(2)}</Text>
                         </View>
                         {s.hasRVLanes && (
                           <View style={{ backgroundColor: colors.success + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
@@ -739,7 +739,7 @@ export default function SiteDetailScreen() {
                       </View>
                     </TouchableOpacity>
                   ))}
-                  <Text style={{ color: colors.muted, fontSize: 10, marginTop: 4, fontStyle: "italic" }}>Fuel prices are estimates. Verify at the station.</Text>
+                  <Text style={{ color: colors.muted, fontSize: 10, marginTop: 4, fontStyle: "italic" }}>Fuel prices are estimates{stations[0]?.currency === "CAD" ? " (CAD)" : ""}. Verify at the station.</Text>
                 </View>
               );
             })()}
