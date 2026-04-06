@@ -485,3 +485,6 @@
 - [x] Integrate real EIA/NRCan fuel prices by PADD region instead of random generation
 - [x] Update STATE_LIST with actual counts for all 64 states/provinces
 - [x] Add vitest config with @ path alias resolution
+
+## Bug: Interactive Map Not Showing
+- [x] Fix interactive map crashing app when tapped in Expo Go — downgraded react-native-maps to 1.20.1 (Expo SDK 54 compatible) and added error boundary
