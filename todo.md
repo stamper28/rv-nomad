@@ -345,3 +345,9 @@
 - [x] Show brand exclusions as separate keyword chips (orange for brands, red for specific campgrounds)
 - [x] Pass both specific exclusions and brand/keyword exclusions to the AI prompt
 - [x] Add common campground brand suggestions for quick exclusion (KOA, Jellystone, Thousand Trails, Good Sam, Harvest Hosts, Encore)
+
+## Tappable Campsite Cards in AI Trip Planner
+- [x] Make campsite names in AI trip itinerary tappable
+- [x] Navigate to site-detail screen when tapping a campsite in the trip plan
+- [x] Match AI-generated campsite names to actual campsite data for navigation (exact, partial, and word-based matching)
+- [x] Add visual indicator ("View Details & Reserve" button) showing campsites are tappable

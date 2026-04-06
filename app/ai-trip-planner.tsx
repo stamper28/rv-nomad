@@ -208,6 +208,46 @@ export default function AITripPlannerScreen() {
     }
   };
 
+  // Match AI-generated campground name to a real campsite in our database
+  const findMatchingSite = (campgroundName: string) => {
+    if (!campgroundName) return null;
+    const lower = campgroundName.toLowerCase().trim();
+    // Exact match first
+    let match = ALL_SITES.find(s => s.name.toLowerCase() === lower);
+    if (match) return match;
+    // Partial match — campground name contains or is contained by site name
+    match = ALL_SITES.find(s => s.name.toLowerCase().includes(lower) || lower.includes(s.name.toLowerCase()));
+    if (match) return match;
+    // Word-based match — at least 2 significant words match
+    const words = lower.split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'park', 'campground', 'camping', 'area', 'site'].includes(w));
+    if (words.length >= 2) {
+      match = ALL_SITES.find(s => {
+        const siteLower = s.name.toLowerCase();
+        const matchCount = words.filter(w => siteLower.includes(w)).length;
+        return matchCount >= 2;
+      });
+    }
+    return match || null;
+  };
+
+  const navigateToSite = (campgroundName: string) => {
+    const site = findMatchingSite(campgroundName);
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (site) {
+      router.push({ pathname: "/site-detail", params: { siteId: site.id } });
+    } else {
+      // No match found — search for it
+      Alert.alert(
+        "Campground Not in Database",
+        `"${campgroundName}" isn't in our database yet. Would you like to search for similar campgrounds?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Search", onPress: () => router.push({ pathname: "/(tabs)/explore", params: { search: campgroundName } }) },
+        ]
+      );
+    }
+  };
+
   return (
     <ScreenContainer edges={["top", "left", "right"]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -544,41 +584,59 @@ export default function AITripPlannerScreen() {
 
             {/* Stops */}
             <Text style={[styles.stopsTitle, { color: colors.foreground }]}>📍 Your Itinerary</Text>
-            {tripPlan.stops?.map((stop, i) => (
-              <View key={i} style={[styles.stopCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={styles.stopHeader}>
-                  <View style={[styles.dayBadge, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.dayBadgeText}>Day {stop.day}</Text>
+            {tripPlan.stops?.map((stop, i) => {
+              const matchedSite = findMatchingSite(stop.campground);
+              return (
+                <Pressable
+                  key={i}
+                  onPress={() => navigateToSite(stop.campground)}
+                  style={({ pressed }) => [
+                    styles.stopCard,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+                  ]}
+                >
+                  <View style={styles.stopHeader}>
+                    <View style={[styles.dayBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.dayBadgeText}>Day {stop.day}</Text>
+                    </View>
+                    <View style={styles.stopMeta}>
+                      <Text style={[styles.stopDriving, { color: colors.muted }]}>
+                        {stop.drivingMiles} mi • {stop.drivingTime}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.stopMeta}>
-                    <Text style={[styles.stopDriving, { color: colors.muted }]}>
-                      {stop.drivingMiles} mi • {stop.drivingTime}
+                  <Text style={[styles.stopLocation, { color: colors.foreground }]}>{stop.location}</Text>
+                  <View style={styles.campRow}>
+                    <Text style={styles.campIcon}>{getCampTypeIcon(stop.campgroundType)}</Text>
+                    <View style={styles.campInfo}>
+                      <Text style={[styles.campName, { color: colors.foreground }]}>{stop.campground}</Text>
+                      <Text style={[styles.campType, { color: colors.muted }]}>
+                        {getCampTypeLabel(stop.campgroundType)} • Est. ${stop.pricePerNight}/night • {stop.nights} night{stop.nights !== 1 ? "s" : ""}
+                      </Text>
+                    </View>
+                  </View>
+                  {stop.highlights && stop.highlights.length > 0 && (
+                    <View style={styles.highlightsSection}>
+                      <Text style={[styles.highlightsLabel, { color: colors.foreground }]}>Things to do:</Text>
+                      {stop.highlights.map((h, j) => (
+                        <Text key={j} style={[styles.highlightItem, { color: colors.muted }]}>✦ {h}</Text>
+                      ))}
+                    </View>
+                  )}
+                  {stop.notes && (
+                    <Text style={[styles.stopNotes, { color: colors.muted }]}>💡 {stop.notes}</Text>
+                  )}
+                  {/* View & Book button */}
+                  <View style={[styles.viewBookBtn, { backgroundColor: matchedSite ? colors.primary : colors.muted }]}>
+                    <Text style={styles.viewBookBtnText}>
+                      {matchedSite ? "📋 View Details & Reserve" : "🔍 Search Campground"}
                     </Text>
+                    <Text style={styles.viewBookChevron}>›</Text>
                   </View>
-                </View>
-                <Text style={[styles.stopLocation, { color: colors.foreground }]}>{stop.location}</Text>
-                <View style={styles.campRow}>
-                  <Text style={styles.campIcon}>{getCampTypeIcon(stop.campgroundType)}</Text>
-                  <View style={styles.campInfo}>
-                    <Text style={[styles.campName, { color: colors.foreground }]}>{stop.campground}</Text>
-                    <Text style={[styles.campType, { color: colors.muted }]}>
-                      {getCampTypeLabel(stop.campgroundType)} • Est. ${stop.pricePerNight}/night • {stop.nights} night{stop.nights !== 1 ? "s" : ""}
-                    </Text>
-                  </View>
-                </View>
-                {stop.highlights && stop.highlights.length > 0 && (
-                  <View style={styles.highlightsSection}>
-                    <Text style={[styles.highlightsLabel, { color: colors.foreground }]}>Things to do:</Text>
-                    {stop.highlights.map((h, j) => (
-                      <Text key={j} style={[styles.highlightItem, { color: colors.muted }]}>✦ {h}</Text>
-                    ))}
-                  </View>
-                )}
-                {stop.notes && (
-                  <Text style={[styles.stopNotes, { color: colors.muted }]}>💡 {stop.notes}</Text>
-                )}
-              </View>
-            ))}
+                </Pressable>
+              );
+            })}
 
             {/* Tips */}
             {tripPlan.tips && tripPlan.tips.length > 0 && (
@@ -681,4 +739,7 @@ const styles = StyleSheet.create({
   brandChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
   brandChipText: { fontSize: 12, fontWeight: "500" },
   excludeChipLabel: { fontSize: 12, fontWeight: "600", width: "100%" as any, marginBottom: 2 },
+  viewBookBtn: { flexDirection: "row" as const, alignItems: "center" as const, justifyContent: "center" as const, paddingVertical: 10, borderRadius: 10, marginTop: 6, gap: 6 },
+  viewBookBtnText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  viewBookChevron: { color: "#fff", fontSize: 18, fontWeight: "700" },
 });
