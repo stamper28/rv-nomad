@@ -27,6 +27,7 @@ import {
   type TrackChairLocation,
   type TrackChairState,
 } from "@/lib/track-chair-data";
+import { openUrl } from "@/lib/open-url";
 
 type ViewMode = "states" | "locations";
 
@@ -67,21 +68,21 @@ export default function TrackChairFinderScreen() {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    Linking.openURL(`tel:${phone}`);
+    openUrl(`tel:${phone}`);
   }, []);
 
   const handleMap = useCallback((url: string) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    Linking.openURL(url);
+    openUrl(url);
   }, []);
 
   const handleReserve = useCallback((url: string) => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    Linking.openURL(url);
+    openUrl(url);
   }, []);
 
   const handleStateSelect = useCallback((stateCode: string) => {

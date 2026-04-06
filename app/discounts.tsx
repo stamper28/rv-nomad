@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { openUrl } from "@/lib/open-url";
 
 interface DiscountProgram {
   id: string;
@@ -221,7 +222,7 @@ export default function DiscountsScreen() {
                   <TouchableOpacity
                     style={[styles.visitBtn, { backgroundColor: program.color }]}
                     activeOpacity={0.8}
-                    onPress={() => Linking.openURL(program.website).catch(() => {})}
+                    onPress={() => openUrl(program.website)}
                   >
                     <Text style={styles.visitBtnText}>Visit {program.name}</Text>
                     <MaterialIcons name="open-in-new" size={16} color="#fff" />

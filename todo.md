@@ -372,3 +372,7 @@
 ## Don't Buy RV Category
 - [x] Add "Don't Buy" category to RV Experiences with warning icon (red block icon)
 - [x] Add 3 sample "Don't Buy" experiences (Coachmen Freelander, Forest River Sunseeker, Thor Chateau)
+
+## Bug: Affiliate Links Not Connecting
+- [x] Fix Reserve Now buttons not connecting to campground booking sites — replaced Linking.openURL with expo-web-browser openBrowserAsync across all 7 files
+- [x] Fix Amazon affiliate links not working — all external links now use in-app browser (Safari/Chrome Custom Tabs)

@@ -31,6 +31,7 @@ import {
   DiscountMemberships,
   DEFAULT_MEMBERSHIPS,
 } from "@/lib/store";
+import { openUrl } from "@/lib/open-url";
 
 const RV_TYPES = [
   "Class A Motorhome",
@@ -108,7 +109,7 @@ export default function ProfileScreen() {
   }
 
   function handleContact() {
-    Linking.openURL("mailto:support@rvnomad.app?subject=RV Nomad Support");
+    openUrl("mailto:support@rvnomad.app?subject=RV Nomad Support");
   }
 
   const statTabs = [

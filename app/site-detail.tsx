@@ -35,6 +35,7 @@ import { calculateDiscounts, type DiscountResult } from "@/lib/discount-stacker"
 import { findNearbyTrackChairs, type NearbyTrackChair } from "@/lib/nearby-track-chairs";
 import { getBookingOptions, isReservable, getBookingButtonLabel } from "@/lib/affiliate-links";
 import { findNearbyFuelStations, findNearbySupplyStores, findNearbyRepairShops, type NearbyFuelStation, type NearbySupplyStore, type NearbyRepairShop } from "@/lib/nearby-services";
+import { openUrl } from "@/lib/open-url";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -203,7 +204,7 @@ export default function SiteDetailScreen() {
                 </Text>
                 <Text style={[styles.noticeSub, { color: colors.muted }]}>{membership.description}</Text>
                 {site.affiliateUrl && (
-                  <TouchableOpacity onPress={() => Linking.openURL(site.affiliateUrl!)} style={styles.joinBtn}>
+                  <TouchableOpacity onPress={() => openUrl(site.affiliateUrl!)} style={styles.joinBtn}>
                     <Text style={[styles.joinBtnText, { color: colors.primary }]}>Join {membership.name}</Text>
                     <MaterialIcons name="open-in-new" size={12} color={colors.primary} />
                   </TouchableOpacity>
@@ -424,7 +425,7 @@ export default function SiteDetailScreen() {
                     <TouchableOpacity
                       onPress={() => {
                         if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        Linking.openURL(site.adaMapUrl!);
+                        openUrl(site.adaMapUrl!);
                       }}
                       style={[styles.adaBanner, { backgroundColor: "#0288D110", borderColor: "#0288D130" }]}
                       activeOpacity={0.7}
@@ -467,7 +468,7 @@ export default function SiteDetailScreen() {
                             key={chair.id}
                             onPress={() => {
                               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                              Linking.openURL(chair.directionsUrl);
+                              openUrl(chair.directionsUrl);
                             }}
                             style={[styles.adaBanner, { backgroundColor: "#7C3AED08", borderColor: "#7C3AED20" }]}
                             activeOpacity={0.7}
@@ -620,7 +621,7 @@ export default function SiteDetailScreen() {
                       )}
                       {d.affiliateUrl && (
                         <TouchableOpacity
-                          onPress={() => Linking.openURL(d.affiliateUrl!)}
+                          onPress={() => openUrl(d.affiliateUrl!)}
                           style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}
                           activeOpacity={0.7}
                         >
@@ -639,13 +640,13 @@ export default function SiteDetailScreen() {
           <View style={[styles.section, { borderColor: colors.border }]}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Contact</Text>
             {site.phone && (
-              <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(`tel:${site.phone}`)}>
+              <TouchableOpacity style={styles.contactRow} onPress={() => openUrl(`tel:${site.phone}`)}>
                 <IconSymbol name="phone.fill" size={16} color={colors.primary} />
                 <Text style={[styles.contactText, { color: colors.primary }]}>{site.phone}</Text>
               </TouchableOpacity>
             )}
             {site.website && (
-              <TouchableOpacity style={styles.contactRow} onPress={() => Linking.openURL(site.website!)}>
+              <TouchableOpacity style={styles.contactRow} onPress={() => openUrl(site.website!)}>
                 <IconSymbol name="globe" size={16} color={colors.primary} />
                 <Text style={[styles.contactText, { color: colors.primary }]} numberOfLines={1}>{site.website}</Text>
               </TouchableOpacity>
@@ -670,7 +671,7 @@ export default function SiteDetailScreen() {
                     <TouchableOpacity
                       key={s.id}
                       style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      onPress={() => openUrl(s.directionsUrl)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -725,7 +726,7 @@ export default function SiteDetailScreen() {
                     <TouchableOpacity
                       key={s.id}
                       style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      onPress={() => openUrl(s.directionsUrl)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -784,7 +785,7 @@ export default function SiteDetailScreen() {
                     <TouchableOpacity
                       key={s.id}
                       style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      onPress={() => openUrl(s.directionsUrl)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -816,7 +817,7 @@ export default function SiteDetailScreen() {
                       </Text>
                       <Text style={{ color: colors.muted, fontSize: 11, marginTop: 2 }}>Hours: {s.hours}</Text>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
-                        <TouchableOpacity onPress={() => Linking.openURL(`tel:${s.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <TouchableOpacity onPress={() => openUrl(`tel:${s.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                           <MaterialIcons name="phone" size={14} color={colors.primary} />
                           <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{s.phone}</Text>
                         </TouchableOpacity>
@@ -982,7 +983,7 @@ export default function SiteDetailScreen() {
                   style={[styles.bookBtn, { backgroundColor: bookingOptions.primary.color }]}
                   onPress={() => {
                     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    Linking.openURL(bookingOptions.primary.url);
+                    openUrl(bookingOptions.primary.url);
                   }}
                   activeOpacity={0.8}
                 >
@@ -1007,7 +1008,7 @@ export default function SiteDetailScreen() {
                       <TouchableOpacity
                         key={opt.name}
                         style={[styles.secondaryBtn, { borderColor: opt.color, flex: 1 }]}
-                        onPress={() => Linking.openURL(opt.url)}
+                        onPress={() => openUrl(opt.url)}
                         activeOpacity={0.7}
                       >
                         <MaterialIcons name={opt.icon as any} size={16} color={opt.color} />
@@ -1059,7 +1060,7 @@ export default function SiteDetailScreen() {
                   android: `google.navigation:q=${site.latitude},${site.longitude}`,
                   default: `https://www.google.com/maps/dir/?api=1&destination=${site.latitude},${site.longitude}`,
                 });
-                Linking.openURL(url);
+                openUrl(url);
               }}
               activeOpacity={0.8}
             >

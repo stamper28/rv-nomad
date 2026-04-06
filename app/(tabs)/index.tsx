@@ -32,6 +32,7 @@ import {
 } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
 import { useUserLocation, getDistanceMiles } from "@/hooks/use-location";
+import { openUrl } from "@/lib/open-url";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -114,9 +115,9 @@ function openInMaps(name: string, latitude: number, longitude: number) {
 
   Linking.canOpenURL(url).then((supported) => {
     if (supported) {
-      Linking.openURL(url);
+      openUrl(url);
     } else {
-      Linking.openURL(
+      openUrl(
         `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
       );
     }

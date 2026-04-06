@@ -18,6 +18,7 @@ import {
   SEVERITY_CONFIG, FREQUENCY_LABELS, DIY_LABELS,
   type RVRecall, type RVProblem, type RVManufacturer,
 } from "@/lib/rv-recalls-data";
+import { openUrl } from "@/lib/open-url";
 
 type TabType = "recalls" | "problems" | "lookup";
 
@@ -120,7 +121,7 @@ export default function RVRecallsScreen() {
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => Linking.openURL(`https://www.nhtsa.gov/recalls`)}
+              onPress={() => openUrl(`https://www.nhtsa.gov/recalls`)}
               style={[styles.nhtsaBtn, { backgroundColor: "#1a365d" }]}
               activeOpacity={0.8}
             >
@@ -248,7 +249,7 @@ export default function RVRecallsScreen() {
         <TouchableOpacity
           onPress={() => {
             if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            Linking.openURL(mfr.nhtsaSearchUrl);
+            openUrl(mfr.nhtsaSearchUrl);
           }}
           style={[styles.mfrBtn, { backgroundColor: "#1a365d" }]}
           activeOpacity={0.8}
@@ -260,7 +261,7 @@ export default function RVRecallsScreen() {
           <TouchableOpacity
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              Linking.openURL(mfr.vinLookupUrl!);
+              openUrl(mfr.vinLookupUrl!);
             }}
             style={[styles.mfrBtn, { backgroundColor: colors.primary }]}
             activeOpacity={0.8}
@@ -282,7 +283,7 @@ export default function RVRecallsScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>RV Problems & Recalls</Text>
         <TouchableOpacity
-          onPress={() => Linking.openURL("https://www.nhtsa.gov/recalls")}
+          onPress={() => openUrl("https://www.nhtsa.gov/recalls")}
           activeOpacity={0.7}
         >
           <MaterialIcons name="open-in-new" size={22} color={colors.primary} />
@@ -357,7 +358,7 @@ export default function RVRecallsScreen() {
 
             {/* NHTSA Banner */}
             <TouchableOpacity
-              onPress={() => Linking.openURL("https://www.nhtsa.gov/recalls")}
+              onPress={() => openUrl("https://www.nhtsa.gov/recalls")}
               style={[styles.nhtsaBanner, { backgroundColor: "#1a365d15", borderColor: "#1a365d30" }]}
               activeOpacity={0.7}
             >
@@ -402,7 +403,7 @@ export default function RVRecallsScreen() {
           <>
             {/* VIN Lookup Banner */}
             <TouchableOpacity
-              onPress={() => Linking.openURL("https://www.nhtsa.gov/recalls")}
+              onPress={() => openUrl("https://www.nhtsa.gov/recalls")}
               style={[styles.nhtsaBanner, { backgroundColor: "#1a365d15", borderColor: "#1a365d30" }]}
               activeOpacity={0.7}
             >

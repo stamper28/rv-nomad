@@ -17,6 +17,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { amazonUrl, AFFILIATE_CONFIG } from "@/lib/affiliate";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { openUrl } from "@/lib/open-url";
 
 // ── Types ──
 interface GearItem {
@@ -384,7 +385,7 @@ export default function RVGearScreen() {
                     style={[styles.shopBtn, { backgroundColor: "#FF9900" }]}
                     activeOpacity={0.8}
                     onPress={() => {
-                      Linking.openURL(amazonUrl(item.asin)).catch(() => {});
+                      openUrl(amazonUrl(item.asin)).catch(() => {});
                     }}
                   >
                     <MaterialIcons name="shopping-cart" size={18} color="#fff" />
@@ -404,7 +405,7 @@ export default function RVGearScreen() {
           <View style={styles.insuranceCards}>
             <TouchableOpacity
               style={[styles.insuranceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              onPress={() => Linking.openURL(AFFILIATE_CONFIG.insurance.progressive.url).catch(() => {})}
+              onPress={() => openUrl(AFFILIATE_CONFIG.insurance.progressive.url)}
               activeOpacity={0.7}
             >
               <MaterialIcons name="verified-user" size={24} color="#0033A0" />
@@ -413,7 +414,7 @@ export default function RVGearScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.insuranceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              onPress={() => Linking.openURL(AFFILIATE_CONFIG.insurance.nationalGeneral.url).catch(() => {})}
+              onPress={() => openUrl(AFFILIATE_CONFIG.insurance.nationalGeneral.url)}
               activeOpacity={0.7}
             >
               <MaterialIcons name="verified-user" size={24} color="#C41230" />
@@ -439,7 +440,7 @@ export default function RVGearScreen() {
               <TouchableOpacity
                 key={key}
                 style={[styles.memberCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                onPress={() => Linking.openURL(info.url).catch(() => {})}
+                onPress={() => openUrl(info.url)}
                 activeOpacity={0.7}
               >
                 <View style={[styles.memberIcon, { backgroundColor: color + "15" }]}>
