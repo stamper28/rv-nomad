@@ -338,6 +338,7 @@ export const appRouter = router({
           interests: z.array(z.string()).optional(),
           travelers: z.number().optional(),
           pets: z.boolean().optional(),
+          excludedCampgrounds: z.array(z.string()).optional(),
         })
       )
       .mutation(async ({ input }) => {
@@ -352,6 +353,7 @@ ${input.budget ? `- Budget: ${input.budget}` : ""}
 ${input.interests?.length ? `- Interests: ${input.interests.join(", ")}` : ""}
 ${input.travelers ? `- Travelers: ${input.travelers}` : ""}
 ${input.pets ? "- Traveling with pets" : ""}
+${input.excludedCampgrounds?.length ? `\nIMPORTANT: Do NOT include any of these campgrounds in the trip plan (the user does not want to stay at them):\n${input.excludedCampgrounds.map(c => `- ${c}`).join("\n")}` : ""}
 
 Return a JSON object with this structure:
 {

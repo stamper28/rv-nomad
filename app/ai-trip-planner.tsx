@@ -10,6 +10,9 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { trpc } from "@/lib/trpc";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ALL_SITES } from "@/lib/all-sites-data";
+import { useEffect } from "react";
 
 const INTERESTS = [
   "National Parks", "Beaches", "Mountains", "Fishing",
@@ -60,6 +63,40 @@ export default function AITripPlannerScreen() {
   const [loading, setLoading] = useState(false);
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [showForm, setShowForm] = useState(true);
+  const [excludedCampgrounds, setExcludedCampgrounds] = useState<string[]>([]);
+  const [excludeSearch, setExcludeSearch] = useState("");
+  const [showExcludeResults, setShowExcludeResults] = useState(false);
+
+  // Load persisted exclusion list
+  useEffect(() => {
+    AsyncStorage.getItem("rv_nomad_excluded_campgrounds").then(val => {
+      if (val) setExcludedCampgrounds(JSON.parse(val));
+    }).catch(() => {});
+  }, []);
+
+  // Save exclusion list when it changes
+  useEffect(() => {
+    AsyncStorage.setItem("rv_nomad_excluded_campgrounds", JSON.stringify(excludedCampgrounds)).catch(() => {});
+  }, [excludedCampgrounds]);
+
+  const excludeSearchResults = excludeSearch.trim().length >= 2
+    ? ALL_SITES.filter(s =>
+        s.name.toLowerCase().includes(excludeSearch.toLowerCase()) &&
+        !excludedCampgrounds.includes(s.name)
+      ).slice(0, 8)
+    : [];
+
+  const addExclusion = (name: string) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setExcludedCampgrounds(prev => [...prev, name]);
+    setExcludeSearch("");
+    setShowExcludeResults(false);
+  };
+
+  const removeExclusion = (name: string) => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setExcludedCampgrounds(prev => prev.filter(n => n !== name));
+  };
 
   const planTripMutation = trpc.ai.planTrip.useMutation();
 
@@ -96,6 +133,7 @@ export default function AITripPlannerScreen() {
         interests: selectedInterests.length > 0 ? selectedInterests : undefined,
         travelers: parseInt(travelers) || 2,
         pets,
+        excludedCampgrounds: excludedCampgrounds.length > 0 ? excludedCampgrounds : undefined,
       });
       setTripPlan(result as TripPlan);
     } catch (e: any) {
@@ -104,7 +142,7 @@ export default function AITripPlannerScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startLocation, endLocation, duration, rvType, rvLength, budget, selectedInterests, travelers, pets]);
+  }, [startLocation, endLocation, duration, rvType, rvLength, budget, selectedInterests, travelers, pets, excludedCampgrounds]);
 
   const getCampTypeIcon = (type: string) => {
     switch (type) {
@@ -258,6 +296,61 @@ export default function AITripPlannerScreen() {
                 </Pressable>
               ))}
             </View>
+
+            {/* Exclude Campgrounds */}
+            <Text style={[styles.label, { color: colors.foreground }]}>🚫 Exclude Campgrounds</Text>
+            <Text style={[styles.excludeHint, { color: colors.muted }]}>
+              Search and add campgrounds you don't want to stay at
+            </Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.surface, color: colors.foreground, borderColor: colors.border }]}
+              placeholder="Search campgrounds to exclude..."
+              placeholderTextColor={colors.muted}
+              value={excludeSearch}
+              onChangeText={(text) => { setExcludeSearch(text); setShowExcludeResults(true); }}
+              returnKeyType="search"
+            />
+            {showExcludeResults && excludeSearchResults.length > 0 && (
+              <View style={[styles.excludeDropdown, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                {excludeSearchResults.map(site => (
+                  <Pressable
+                    key={site.id}
+                    onPress={() => addExclusion(site.name)}
+                    style={({ pressed }) => [
+                      styles.excludeResult,
+                      { borderBottomColor: colors.border },
+                      pressed && { backgroundColor: colors.border },
+                    ]}
+                  >
+                    <Text style={[styles.excludeResultName, { color: colors.foreground }]} numberOfLines={1}>{site.name}</Text>
+                    <Text style={[styles.excludeResultMeta, { color: colors.muted }]}>{site.city}, {site.state} • {site.category}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+            {excludedCampgrounds.length > 0 && (
+              <View style={styles.excludeChipWrap}>
+                {excludedCampgrounds.map(name => (
+                  <Pressable
+                    key={name}
+                    onPress={() => removeExclusion(name)}
+                    style={({ pressed }) => [
+                      styles.excludeChip,
+                      { backgroundColor: colors.error + "18", borderColor: colors.error },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Text style={[styles.excludeChipText, { color: colors.error }]} numberOfLines={1}>✕ {name}</Text>
+                  </Pressable>
+                ))}
+                <Pressable
+                  onPress={() => { setExcludedCampgrounds([]); if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                  style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+                >
+                  <Text style={[styles.clearAllText, { color: colors.muted }]}>Clear all</Text>
+                </Pressable>
+              </View>
+            )}
 
             {/* Pets toggle */}
             <Pressable
@@ -463,4 +556,13 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 14, lineHeight: 20 },
   newPlanBtn: { paddingVertical: 16, borderRadius: 14, alignItems: "center", marginTop: 8 },
   newPlanBtnText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  excludeHint: { fontSize: 12, lineHeight: 16, marginBottom: 6, marginTop: -2 },
+  excludeDropdown: { borderWidth: 1, borderRadius: 12, marginTop: 4, overflow: "hidden" as const },
+  excludeResult: { paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 0.5 },
+  excludeResultName: { fontSize: 14, fontWeight: "600" },
+  excludeResultMeta: { fontSize: 12, marginTop: 2 },
+  excludeChipWrap: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8, marginTop: 8, alignItems: "center" as const },
+  excludeChip: { flexDirection: "row" as const, alignItems: "center" as const, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, maxWidth: "90%" as any },
+  excludeChipText: { fontSize: 13, fontWeight: "500" },
+  clearAllText: { fontSize: 13, fontWeight: "500", textDecorationLine: "underline" as const, paddingVertical: 4 },
 });

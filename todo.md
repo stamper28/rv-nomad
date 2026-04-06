@@ -332,3 +332,10 @@
 
 ## Bug: Nearby Services Not Showing
 - [x] Nearby fuel stations, camping supply stores, and RV repair shops not appearing on campsite detail screen — fixed by rewriting to dynamic generation based on campsite coordinates (works for Alaska, Hawaii, Canada, everywhere)
+
+## Exclude Campgrounds in AI Trip Planner
+- [x] Add "Exclude Campgrounds" section to AI Trip Planner input form
+- [x] Allow users to search and add campgrounds to an exclusion list
+- [x] Show excluded campgrounds as removable chips/tags
+- [x] Pass exclusion list to AI trip generation so it skips those campgrounds
+- [x] Persist exclusion list in AsyncStorage so it remembers across sessions
