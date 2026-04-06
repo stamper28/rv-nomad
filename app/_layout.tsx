@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";

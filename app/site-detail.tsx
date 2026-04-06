@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 import { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
@@ -29,6 +34,7 @@ import { isoToDisplay } from "@/lib/date-utils";
 import { calculateDiscounts, type DiscountResult } from "@/lib/discount-stacker";
 import { findNearbyTrackChairs, type NearbyTrackChair } from "@/lib/nearby-track-chairs";
 import { getBookingOptions, isReservable, getBookingButtonLabel } from "@/lib/affiliate-links";
+import { findNearbyFuelStations, findNearbySupplyStores, findNearbyRepairShops, type NearbyFuelStation, type NearbySupplyStore, type NearbyRepairShop } from "@/lib/nearby-services";
 
 export default function SiteDetailScreen() {
   const colors = useColors();
@@ -646,6 +652,186 @@ export default function SiteDetailScreen() {
             )}
           </View>
 
+          {/* Nearby Services */}
+          <View style={[styles.section, { borderColor: colors.border }]}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Nearby Services</Text>
+
+            {/* Nearest Fuel Stations */}
+            {(() => {
+              const stations = findNearbyFuelStations(site.latitude, site.longitude, 50, 3);
+              if (stations.length === 0) return null;
+              return (
+                <View style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <MaterialIcons name="local-gas-station" size={18} color="#E65100" />
+                    <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "700" }}>Fuel Stations</Text>
+                  </View>
+                  {stations.map((s) => (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{s.name}</Text>
+                          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{s.brand} — {s.city}, {s.state}</Text>
+                        </View>
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={{ color: "#E65100", fontSize: 14, fontWeight: "800" }}>{s.distanceMiles} mi</Text>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+                        <View style={{ backgroundColor: "#E65100" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                          <Text style={{ color: "#E65100", fontSize: 12, fontWeight: "700" }}>Diesel ${s.diesel.toFixed(2)}</Text>
+                        </View>
+                        <View style={{ backgroundColor: colors.primary + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "700" }}>Regular ${s.regular.toFixed(2)}</Text>
+                        </View>
+                        {s.hasRVLanes && (
+                          <View style={{ backgroundColor: colors.success + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: colors.success, fontSize: 11, fontWeight: "700" }}>RV Lanes</Text>
+                          </View>
+                        )}
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                        {s.hasDEF && <Text style={{ color: colors.muted, fontSize: 11 }}>DEF</Text>}
+                        {s.hasShowers && <Text style={{ color: colors.muted, fontSize: 11 }}>Showers</Text>}
+                        {s.hasDumpStation && <Text style={{ color: colors.muted, fontSize: 11 }}>Dump Station</Text>}
+                      </View>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+                        <MaterialIcons name="directions" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Get Directions</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                  <Text style={{ color: colors.muted, fontSize: 10, marginTop: 4, fontStyle: "italic" }}>Fuel prices are estimates. Verify at the station.</Text>
+                </View>
+              );
+            })()}
+
+            {/* Nearest Camping Supply Stores */}
+            {(() => {
+              const stores = findNearbySupplyStores(site.latitude, site.longitude, 50, 3);
+              if (stores.length === 0) return null;
+              return (
+                <View style={{ marginBottom: 16 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <MaterialIcons name="shopping-cart" size={18} color="#1565C0" />
+                    <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "700" }}>Camping Supplies</Text>
+                  </View>
+                  {stores.map((s) => (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{s.name}</Text>
+                          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{s.brand} — {s.city}, {s.state}</Text>
+                        </View>
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={{ color: "#1565C0", fontSize: 14, fontWeight: "800" }}>{s.distanceMiles} mi</Text>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                        {s.hasRVSupplies && (
+                          <View style={{ backgroundColor: "#1565C0" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#1565C0", fontSize: 11, fontWeight: "700" }}>RV Supplies</Text>
+                          </View>
+                        )}
+                        {s.hasPropane && (
+                          <View style={{ backgroundColor: "#E65100" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#E65100", fontSize: 11, fontWeight: "700" }}>Propane</Text>
+                          </View>
+                        )}
+                        {s.hasFirewood && (
+                          <View style={{ backgroundColor: "#33691E" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#33691E", fontSize: 11, fontWeight: "700" }}>Firewood</Text>
+                          </View>
+                        )}
+                        {s.hasBait && (
+                          <View style={{ backgroundColor: "#4527A0" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#4527A0", fontSize: 11, fontWeight: "700" }}>Bait & Tackle</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 6 }}>Hours: {s.hours}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+                        <MaterialIcons name="directions" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Get Directions</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              );
+            })()}
+
+            {/* Nearest RV Repair Shops */}
+            {(() => {
+              const shops = findNearbyRepairShops(site.latitude, site.longitude, 75, 3);
+              if (shops.length === 0) return null;
+              return (
+                <View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <MaterialIcons name="build" size={18} color="#C62828" />
+                    <Text style={{ color: colors.foreground, fontSize: 15, fontWeight: "700" }}>RV Repair & Service</Text>
+                  </View>
+                  {shops.map((s) => (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      onPress={() => Linking.openURL(s.directionsUrl)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{s.name}</Text>
+                          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{s.brand} — {s.city}, {s.state}</Text>
+                        </View>
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={{ color: "#C62828", fontSize: 14, fontWeight: "800" }}>{s.distanceMiles} mi</Text>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: "row", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                        {s.type === "mobile" && (
+                          <View style={{ backgroundColor: colors.success + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: colors.success, fontSize: 11, fontWeight: "700" }}>Mobile Service</Text>
+                          </View>
+                        )}
+                        {s.acceptsEmergency && (
+                          <View style={{ backgroundColor: "#C62828" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#C62828", fontSize: 11, fontWeight: "700" }}>Emergency OK</Text>
+                          </View>
+                        )}
+                        <View style={{ backgroundColor: colors.primary + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                          <Text style={{ color: colors.primary, fontSize: 11, fontWeight: "700" }}>{s.type === "tire" ? "Tires" : s.type === "dealer" ? "Full Service" : s.type === "mobile" ? "Comes to You" : "General"}</Text>
+                        </View>
+                      </View>
+                      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 6 }}>
+                        Services: {s.services.slice(0, 4).join(", ")}{s.services.length > 4 ? " +" + (s.services.length - 4) + " more" : ""}
+                      </Text>
+                      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 2 }}>Hours: {s.hours}</Text>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+                        <TouchableOpacity onPress={() => Linking.openURL(`tel:${s.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                          <MaterialIcons name="phone" size={14} color={colors.primary} />
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{s.phone}</Text>
+                        </TouchableOpacity>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                          <MaterialIcons name="directions" size={14} color={colors.primary} />
+                          <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              );
+            })()}
+          </View>
+
           {/* Cancellation Alert */}
           <View style={[styles.section, { borderColor: colors.border }]}>
             <TouchableOpacity
@@ -990,4 +1176,6 @@ const styles = StyleSheet.create({
   // Discount Stacker
   bestComboCard: { flexDirection: "row" as const, alignItems: "center" as const, gap: 10, padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 10 },
   discountStackCard: { padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 8 },
+  // Nearby services
+  serviceCard: { padding: 12, borderRadius: 10, borderWidth: 1, marginBottom: 8 },
 });

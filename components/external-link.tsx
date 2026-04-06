@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 import { Href, Link } from "expo-router";
 import { openBrowserAsync, WebBrowserPresentationStyle } from "expo-web-browser";
 import { type ComponentProps } from "react";

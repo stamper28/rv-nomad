@@ -315,3 +315,17 @@
 - [x] Remove $2/night booking fee from payment calculations — kept existing flow, added affiliate Reserve Now buttons on site-detail
 - [x] Add "Reserve at Campground" buttons linking to official booking sites
 - [x] Wire placeholder affiliate tags (Impact.com, CJ, ShareASale, Amazon, Harvest Hosts)
+
+## Nearest Fuel Station on Campsite Detail
+- [x] Build nearest fuel station finder utility (calculate distance from campsite to fuel stations)
+- [x] Add "Nearest Fuel" section to site-detail screen showing closest stations with prices
+- [x] Show diesel and gas prices, distance, brand, and directions link
+- [x] Show fuel station distance and directions from campsite
+- [x] Add nearest camping supply stores (Walmart, Camping World, Bass Pro, REI, etc.)
+- [x] Add nearest RV repair shops (mobile repair, dealers, tire shops)
+- [x] Build unified nearby-services utility with haversine distance + directions
+
+## Copyright Protection
+- [x] Add LICENSE file with proprietary copyright for Kieran Woll Creative Works LLC
+- [x] Add copyright headers to all key source files (78 files updated)
+- [x] Add copyright notice in app.config.ts and package.json

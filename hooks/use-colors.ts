@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 import { Colors, type ColorScheme, type ThemeColorPalette } from "@/constants/theme";
 import { useColorScheme } from "./use-color-scheme";
 

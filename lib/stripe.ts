@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * Stripe Integration Module for RV Nomad
  * 
  * This module handles payment processing via Stripe Connect.

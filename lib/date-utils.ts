@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * Date formatting utilities for MM-DD-YYYY format.
  *
  * Users type only digits; dashes are auto-inserted.

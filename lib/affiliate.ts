@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * Affiliate link configuration for RV Nomad
  * Replace placeholder tags with your actual affiliate IDs once you sign up for each program.
  */

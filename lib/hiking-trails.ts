@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * Hiking trail data associated with campgrounds.
  * Each trail has difficulty, distance, elevation gain, and highlights.
  */

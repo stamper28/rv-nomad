@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * Site image mapping using Unsplash free photos.
  * Images are matched by category + region/terrain for relevance.
  * Uses Unsplash Source API for free, high-quality, properly-licensed photos.

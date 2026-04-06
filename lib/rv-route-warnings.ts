@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 // RV-Safe Route Warnings - low bridges, weight limits, tunnel restrictions
 
 export interface RouteWarning {

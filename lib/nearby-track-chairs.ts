@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 // Utility to find track chair locations near a campsite within a given radius
 import { TRACK_CHAIR_LOCATIONS, type TrackChairLocation } from "./track-chair-data";
 

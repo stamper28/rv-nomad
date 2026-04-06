@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 import { useState, useCallback } from "react";
 import { Text, View, TextInput, ScrollView, Pressable, ActivityIndicator, StyleSheet, Platform, Alert } from "react-native";
 import { useRouter } from "expo-router";

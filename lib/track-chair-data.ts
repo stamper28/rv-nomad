@@ -1,3 +1,8 @@
+/**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
 // Track Chair Finder - States and parks offering all-terrain wheelchairs for disabled hikers
 // Data sourced from thetrackchair.com/finder, state park websites, NPS, and Ford Bronco Wild Fund
 

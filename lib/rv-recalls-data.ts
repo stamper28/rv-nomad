@@ -1,4 +1,9 @@
 /**
+ * RV Nomad — Copyright (c) 2026 Kieran Woll Creative Works LLC
+ * All Rights Reserved. Unauthorized copying or distribution is prohibited.
+ * See LICENSE file for details.
+ */
+/**
  * RV Problems & Recalls Data
  *
  * Sourced from NHTSA recall database, camperreport.com, rvtrader.com, and rvsafety.com
