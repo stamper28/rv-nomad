@@ -360,11 +360,12 @@ export function findNearbyFuelStations(
   lat: number,
   lng: number,
   _radiusMiles: number = 50,
-  limit: number = 5
+  limit: number = 5,
+  siteState?: string
 ): NearbyFuelStation[] {
   const count = seededInt(lat, lng, 1, 3, 6);
   const stations: NearbyFuelStation[] = [];
-  const state = stateFromCoords(lat, lng);
+  const state = siteState || stateFromCoords(lat, lng);
   const canadian = isCanadian(state);
   const fuelChains = canadian ? CA_FUEL_CHAINS : US_FUEL_CHAINS;
 
@@ -424,11 +425,12 @@ export function findNearbySupplyStores(
   lat: number,
   lng: number,
   _radiusMiles: number = 50,
-  limit: number = 5
+  limit: number = 5,
+  siteState?: string
 ): NearbySupplyStore[] {
   const count = seededInt(lat, lng, 200, 3, 5);
   const stores: NearbySupplyStore[] = [];
-  const state = stateFromCoords(lat, lng);
+  const state = siteState || stateFromCoords(lat, lng);
   const canadian = isCanadian(state);
   const supplyChains = canadian ? CA_SUPPLY_CHAINS : US_SUPPLY_CHAINS;
 
@@ -477,11 +479,12 @@ export function findNearbyRepairShops(
   lat: number,
   lng: number,
   _radiusMiles: number = 75,
-  limit: number = 5
+  limit: number = 5,
+  siteState?: string
 ): NearbyRepairShop[] {
   const count = seededInt(lat, lng, 400, 2, 4);
   const shops: NearbyRepairShop[] = [];
-  const state = stateFromCoords(lat, lng);
+  const state = siteState || stateFromCoords(lat, lng);
   const canadian = isCanadian(state);
   const repairChains = canadian ? CA_REPAIR_CHAINS : US_REPAIR_CHAINS;
 

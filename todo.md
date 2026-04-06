@@ -476,3 +476,4 @@
 ## Bug: Cannot Add Photos to Campgrounds
 - [x] Fix photo upload not working — users unable to add photos to campground galleries
 - [x] Fix Canadian fuel stops showing US locations instead of Canadian ones
+- [x] Fix Canadian fuel stations still showing US brands — now uses campground's known state instead of coordinate guessing

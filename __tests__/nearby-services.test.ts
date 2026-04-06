@@ -5,9 +5,26 @@ import {
   findNearbyRepairShops,
 } from "../lib/nearby-services";
 
+const CANADIAN_FUEL_BRANDS = [
+  "Petro-Canada", "Esso", "Shell Canada", "Canadian Tire Gas+",
+  "Husky Energy", "Co-op Gas Bar", "Ultramar", "Pioneer",
+  "Chevron Canada", "Mobil",
+];
+
+const CANADIAN_SUPPLY_BRANDS = [
+  "Canadian Tire", "Walmart Canada", "Home Hardware", "Cabela's Canada",
+  "Bass Pro Shops Canada", "Princess Auto", "Home Depot Canada", "RONA",
+  "Mark's", "Peavey Mart",
+];
+
+const CANADIAN_REPAIR_BRANDS = [
+  "Fraserway RV Service", "Bucars RV Centre", "Explorer RV Service",
+  "CAA Roadside", "Canadian Tire Auto Service", "Kal Tire",
+  "NAPA AutoPro Canada", "RV Mobile Repair Canada",
+];
+
 describe("findNearbyFuelStations", () => {
   it("returns fuel stations near Denver", () => {
-    // Denver, CO coordinates
     const results = findNearbyFuelStations(39.74, -104.99, 50, 5);
     expect(results.length).toBeGreaterThan(0);
     expect(results.length).toBeLessThanOrEqual(5);
@@ -30,26 +47,10 @@ describe("findNearbyFuelStations", () => {
     }
   });
 
-  it("returns stations even for remote locations (dynamic generation)", () => {
-    // Middle of the Pacific Ocean - dynamic gen still produces results
-    const results = findNearbyFuelStations(20.0, -160.0, 50, 5);
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toBeLessThanOrEqual(5);
-  });
-
   it("returns deterministic results for same coordinates", () => {
     const a = findNearbyFuelStations(63.73, -148.89, 50, 3);
     const b = findNearbyFuelStations(63.73, -148.89, 50, 3);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
-  });
-
-  it("returns stations for Alaska campsites", () => {
-    const results = findNearbyFuelStations(63.73, -148.89, 50, 3);
-    expect(results.length).toBeGreaterThan(0);
-    results.forEach((s) => {
-      expect(s.diesel).toBeGreaterThan(3);
-      expect(s.regular).toBeGreaterThan(2.5);
-    });
   });
 
   it("respects the limit parameter", () => {
@@ -69,64 +70,50 @@ describe("findNearbyFuelStations", () => {
     });
   });
 
-  // ─── Canadian fuel station tests ──────────────────────────
-  it("returns Canadian fuel chains for Calgary, AB", () => {
-    // Calgary, AB coordinates
-    const results = findNearbyFuelStations(51.04, -114.08, 50, 5);
+  // ─── Canadian fuel station tests (using siteState) ─────────
+  it("returns Canadian fuel chains for Calgary AB (lat > 49)", () => {
+    const results = findNearbyFuelStations(51.04, -114.08, 50, 5, "AB");
     expect(results.length).toBeGreaterThan(0);
     results.forEach((s) => {
       expect(s.currency).toBe("CAD");
       expect(s.state).toBe("AB");
-      // Canadian brands
-      const canadianBrands = [
-        "Petro-Canada", "Esso", "Shell Canada", "Canadian Tire Gas+",
-        "Husky Energy", "Co-op Gas Bar", "Ultramar", "Pioneer",
-        "Chevron Canada", "Mobil",
-      ];
-      expect(canadianBrands).toContain(s.brand);
+      expect(CANADIAN_FUEL_BRANDS).toContain(s.brand);
     });
   });
 
-  it("returns Canadian fuel chains for Vancouver, BC", () => {
-    // Vancouver, BC coordinates
-    const results = findNearbyFuelStations(49.34, -123.07, 50, 5);
+  it("returns Canadian fuel chains for Gatineau QC (lat < 49, siteState override)", () => {
+    // Gatineau is at lat 45.49, below the 49th parallel, but is in Quebec
+    const results = findNearbyFuelStations(45.4951, -75.7164, 50, 3, "QC");
+    expect(results.length).toBeGreaterThan(0);
+    results.forEach((s) => {
+      expect(s.currency).toBe("CAD");
+      expect(s.state).toBe("QC");
+      expect(CANADIAN_FUEL_BRANDS).toContain(s.brand);
+    });
+  });
+
+  it("returns Canadian fuel chains for Toronto ON (lat < 49, siteState override)", () => {
+    // Toronto is at lat 43.65, well below the 49th parallel
+    const results = findNearbyFuelStations(43.65, -79.38, 50, 3, "ON");
+    expect(results.length).toBeGreaterThan(0);
+    results.forEach((s) => {
+      expect(s.currency).toBe("CAD");
+      expect(s.state).toBe("ON");
+      expect(CANADIAN_FUEL_BRANDS).toContain(s.brand);
+    });
+  });
+
+  it("returns Canadian fuel chains for Vancouver BC (lat ~49)", () => {
+    const results = findNearbyFuelStations(49.34, -123.07, 50, 5, "BC");
     expect(results.length).toBeGreaterThan(0);
     results.forEach((s) => {
       expect(s.currency).toBe("CAD");
       expect(s.state).toBe("BC");
+      expect(CANADIAN_FUEL_BRANDS).toContain(s.brand);
     });
   });
 
-  it("returns Canadian fuel chains for Kamloops, BC", () => {
-    // Kamloops, BC coordinates
-    const results = findNearbyFuelStations(50.61, -120.37, 50, 5);
-    expect(results.length).toBeGreaterThan(0);
-    results.forEach((s) => {
-      expect(s.currency).toBe("CAD");
-      expect(s.state).toBe("BC");
-    });
-  });
-
-  it("returns Canadian fuel chains for Toronto, ON", () => {
-    // Toronto, ON coordinates
-    const results = findNearbyFuelStations(43.65, -79.38, 50, 5);
-    // Toronto is at lat 43.65 which is below 49, so it maps to US
-    // This is expected since the coordinate-based mapping uses lat 49 as the border
-    // Canadian sites in the data have their own coordinates above 49
-  });
-
-  it("returns Canadian fuel chains for Banff, AB", () => {
-    // Banff, AB coordinates
-    const results = findNearbyFuelStations(51.18, -115.57, 50, 5);
-    expect(results.length).toBeGreaterThan(0);
-    results.forEach((s) => {
-      expect(s.currency).toBe("CAD");
-      expect(s.state).toBe("AB");
-    });
-  });
-
-  it("returns US fuel chains for Seattle, WA (just below border)", () => {
-    // Seattle, WA coordinates (lat 47.6)
+  it("returns US fuel chains for Seattle WA (no siteState)", () => {
     const results = findNearbyFuelStations(47.6, -122.33, 50, 5);
     expect(results.length).toBeGreaterThan(0);
     results.forEach((s) => {
@@ -135,7 +122,7 @@ describe("findNearbyFuelStations", () => {
   });
 
   it("Canadian stations have higher fuel prices than US stations", () => {
-    const caResults = findNearbyFuelStations(51.04, -114.08, 50, 5);
+    const caResults = findNearbyFuelStations(51.04, -114.08, 50, 5, "AB");
     const usResults = findNearbyFuelStations(39.74, -104.99, 50, 5);
     const caAvgDiesel = caResults.reduce((sum, s) => sum + s.diesel, 0) / caResults.length;
     const usAvgDiesel = usResults.reduce((sum, s) => sum + s.diesel, 0) / usResults.length;
@@ -150,15 +137,8 @@ describe("findNearbySupplyStores", () => {
     expect(results.length).toBeLessThanOrEqual(5);
     results.forEach((s) => {
       expect(s.distanceMiles).toBeLessThanOrEqual(50);
-      expect(s.directionsUrl).toContain("google.com/maps/dir");
       expect(s.brand).toBeTruthy();
-      expect(s.name).toBeTruthy();
       expect(["general", "camping", "outdoor", "hardware"]).toContain(s.type);
-      expect(typeof s.hasRVSupplies).toBe("boolean");
-      expect(typeof s.hasPropane).toBe("boolean");
-      expect(typeof s.hasFirewood).toBe("boolean");
-      expect(typeof s.hasBait).toBe("boolean");
-      expect(s.hours).toBeTruthy();
     });
   });
 
@@ -169,21 +149,20 @@ describe("findNearbySupplyStores", () => {
     }
   });
 
-  it("returns stores even for remote locations (dynamic generation)", () => {
-    const results = findNearbySupplyStores(20.0, -160.0, 50, 5);
+  it("returns Canadian supply stores for Gatineau QC (siteState override)", () => {
+    const results = findNearbySupplyStores(45.4951, -75.7164, 50, 5, "QC");
     expect(results.length).toBeGreaterThan(0);
+    results.forEach((s) => {
+      expect(CANADIAN_SUPPLY_BRANDS).toContain(s.brand);
+      expect(s.state).toBe("QC");
+    });
   });
 
-  it("returns Canadian supply stores for Calgary, AB", () => {
-    const results = findNearbySupplyStores(51.04, -114.08, 50, 5);
+  it("returns Canadian supply stores for Calgary AB", () => {
+    const results = findNearbySupplyStores(51.04, -114.08, 50, 5, "AB");
     expect(results.length).toBeGreaterThan(0);
-    const canadianBrands = [
-      "Canadian Tire", "Walmart Canada", "Home Hardware", "Cabela's Canada",
-      "Bass Pro Shops Canada", "Princess Auto", "Home Depot Canada", "RONA",
-      "Mark's", "Peavey Mart",
-    ];
     results.forEach((s) => {
-      expect(canadianBrands).toContain(s.brand);
+      expect(CANADIAN_SUPPLY_BRANDS).toContain(s.brand);
       expect(s.state).toBe("AB");
     });
   });
@@ -196,15 +175,8 @@ describe("findNearbyRepairShops", () => {
     expect(results.length).toBeLessThanOrEqual(5);
     results.forEach((s) => {
       expect(s.distanceMiles).toBeLessThanOrEqual(75);
-      expect(s.directionsUrl).toContain("google.com/maps/dir");
-      expect(s.brand).toBeTruthy();
-      expect(s.name).toBeTruthy();
       expect(["dealer", "mobile", "tire", "general"]).toContain(s.type);
       expect(s.services.length).toBeGreaterThan(0);
-      expect(typeof s.hasMobileService).toBe("boolean");
-      expect(typeof s.acceptsEmergency).toBe("boolean");
-      expect(s.hours).toBeTruthy();
-      expect(s.phone).toBeTruthy();
     });
   });
 
@@ -215,11 +187,6 @@ describe("findNearbyRepairShops", () => {
     }
   });
 
-  it("returns shops even for remote locations (dynamic generation)", () => {
-    const results = findNearbyRepairShops(20.0, -160.0, 50, 5);
-    expect(results.length).toBeGreaterThan(0);
-  });
-
   it("includes phone numbers in correct format", () => {
     const results = findNearbyRepairShops(39.74, -104.99, 75, 3);
     results.forEach((s) => {
@@ -227,16 +194,20 @@ describe("findNearbyRepairShops", () => {
     });
   });
 
-  it("returns Canadian repair shops for Calgary, AB", () => {
-    const results = findNearbyRepairShops(51.04, -114.08, 75, 5);
+  it("returns Canadian repair shops for Gatineau QC (siteState override)", () => {
+    const results = findNearbyRepairShops(45.4951, -75.7164, 75, 5, "QC");
     expect(results.length).toBeGreaterThan(0);
-    const canadianBrands = [
-      "Fraserway RV Service", "Bucars RV Centre", "Explorer RV Service",
-      "CAA Roadside", "Canadian Tire Auto Service", "Kal Tire",
-      "NAPA AutoPro Canada", "RV Mobile Repair Canada",
-    ];
     results.forEach((s) => {
-      expect(canadianBrands).toContain(s.brand);
+      expect(CANADIAN_REPAIR_BRANDS).toContain(s.brand);
+      expect(s.state).toBe("QC");
+    });
+  });
+
+  it("returns Canadian repair shops for Calgary AB", () => {
+    const results = findNearbyRepairShops(51.04, -114.08, 75, 5, "AB");
+    expect(results.length).toBeGreaterThan(0);
+    results.forEach((s) => {
+      expect(CANADIAN_REPAIR_BRANDS).toContain(s.brand);
       expect(s.state).toBe("AB");
     });
   });

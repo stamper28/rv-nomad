@@ -691,7 +691,7 @@ export default function SiteDetailScreen() {
 
             {/* Nearest Fuel Stations */}
             {(() => {
-              const stations = findNearbyFuelStations(site.latitude, site.longitude, 50, 3);
+              const stations = findNearbyFuelStations(site.latitude, site.longitude, 50, 3, site.state);
               if (stations.length === 0) return null;
               return (
                 <View style={{ marginBottom: 16 }}>
@@ -746,7 +746,7 @@ export default function SiteDetailScreen() {
 
             {/* Nearest Camping Supply Stores */}
             {(() => {
-              const stores = findNearbySupplyStores(site.latitude, site.longitude, 50, 3);
+              const stores = findNearbySupplyStores(site.latitude, site.longitude, 50, 3, site.state);
               if (stores.length === 0) return null;
               return (
                 <View style={{ marginBottom: 16 }}>
@@ -805,7 +805,7 @@ export default function SiteDetailScreen() {
 
             {/* Nearest RV Repair Shops */}
             {(() => {
-              const shops = findNearbyRepairShops(site.latitude, site.longitude, 75, 3);
+              const shops = findNearbyRepairShops(site.latitude, site.longitude, 75, 3, site.state);
               if (shops.length === 0) return null;
               return (
                 <View>
