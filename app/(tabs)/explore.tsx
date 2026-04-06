@@ -362,6 +362,38 @@ export default function ExploreScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
+          {/* Hiking Trails */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/hiking-trails" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#1B5E2020" }]}>
+              <MaterialIcons name="terrain" size={24} color="#1B5E20" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Hiking Trails</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Best trails near campgrounds with difficulty ratings</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Fuel Prices */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/fuel-prices" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#E6510020" }]}>
+              <MaterialIcons name="local-gas-station" size={24} color="#E65100" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Fuel Prices</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Real-time diesel & gas prices at truck stops</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
           {/* Compare Campgrounds */}
           <TouchableOpacity
             style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -374,6 +406,54 @@ export default function ExploreScreen() {
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>Compare Campgrounds</Text>
               <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Side-by-side comparison of up to 3 campgrounds</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Insider Boondocking Spots */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/insider-spots" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#F9A82520" }]}>
+              <MaterialIcons name="workspace-premium" size={24} color="#F9A825" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Insider Spots</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Secret boondocking spots from the community</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Personalized Recommendations */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/recommendations" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#6A1B9A20" }]}>
+              <MaterialIcons name="auto-awesome" size={24} color="#6A1B9A" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>For You</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>AI-powered campground recommendations</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Cancellation Scanner */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/cancellation-scanner" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#C6282820" }]}>
+              <MaterialIcons name="notifications-active" size={24} color="#C62828" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Cancellation Scanner</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Get notified when booked-up sites have openings</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>

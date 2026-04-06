@@ -226,11 +226,11 @@
 - [x] Low clearance database with crowdsourced user reports
 - [ ] Cancellation Scanner with real Push Notifications
 - [x] Share a Campsite — text/email/social sharing
-- [ ] Who's Here Check-in — see other RV Nomad users at same campground
-- [ ] RVer Meetup Coordination — see how many members at a campground this weekend
+- [x] Who's Here Check-in — see other RV Nomad users at same campground
+- [x] RVer Meetup Coordination — see how many members at a campground this weekend
 - [ ] User Photo Uploads on reviews
-- [ ] Insider Boondocking Spots — user-submitted secret free camping spots (premium only)
-- [ ] Personalized Recommendations — AI-based "campgrounds you'd love" based on RV size, budget, past stays
+- [x] Insider Boondocking Spots — user-submitted secret free camping spots (premium only)
+- [x] Personalized Recommendations — AI-based "campgrounds you'd love" based on RV size, budget, past stays
 - [x] Campground Comparison — side-by-side compare 2-3 campgrounds
 - [x] Dark Mode Toggle in settings/profile
 - [x] Search History / Recent Searches
@@ -271,3 +271,19 @@
 - [x] Bug: Discount selector (military, senior, etc.) not visible on payment screen — rebuilt as always-visible section with Military/Veteran and Senior Citizen prominently displayed at top
 - [x] Add ID verification warning on discount selection — shows warning banner when military/senior/membership discounts selected, specifying what ID is required at check-in
 - [x] Bug: Spot picker not showing available spots to pick from — verified code generates 15-80 spots per campground, step transition works correctly
+
+## Make It The Best RV App Ever
+- [x] Fuel Price Tracker — real-time diesel/gas prices along route with cheapest station finder
+- [x] Insider Boondocking Spots — user-submitted secret free camping spots (premium only)
+- [x] Who's Here Check-in — see other RV Nomad users at same campground
+- [x] RVer Meetup Coordination — see how many members at a campground this weekend
+- [x] User Photo Uploads on reviews — let campers share real photos
+- [x] Personalized Recommendations — AI-based "campgrounds you'd love" based on RV size, budget, past stays
+- [x] Cancellation Scanner with Push Notifications — alert when booked-up campground has opening
+- [ ] UX Polish: First-time onboarding flow
+- [ ] UX Polish: Enhanced haptic feedback patterns
+- [ ] UX Polish: Better empty states with illustrations
+- [x] Best Campsites with Hiking Trails — add trail data (name, difficulty, distance, highlights) to campgrounds and build Hiking Trails finder screen
+- [x] Show hiking trail info on site-detail screen
+- [x] Add "Hiking" filter on Home screen
+- [x] Generate 3D-style app logo for RV Nomad that grabs attention

@@ -731,6 +731,26 @@ export default function SiteDetailScreen() {
             </TouchableOpacity>
           )}
 
+          {/* Who's Here & Cancellation Watch */}
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
+            <TouchableOpacity
+              style={[styles.secondaryBtn, { borderColor: colors.primary, flex: 1 }]}
+              onPress={() => router.push({ pathname: "/whos-here" as any, params: { name: site.name } })}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="group" size={18} color={colors.primary} />
+              <Text style={[styles.secondaryBtnText, { color: colors.primary }]}>Who's Here</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.secondaryBtn, { borderColor: "#C62828", flex: 1 }]}
+              onPress={() => router.push("/cancellation-scanner" as any)}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="notifications-active" size={18} color="#C62828" />
+              <Text style={[styles.secondaryBtnText, { color: "#C62828" }]}>Watch</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Action Buttons */}
           <View style={styles.actionRow}>
             <TouchableOpacity
