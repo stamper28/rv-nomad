@@ -490,3 +490,14 @@
 - [x] Fix interactive map crashing app when tapped in Expo Go — downgraded react-native-maps to 1.20.1 (Expo SDK 54 compatible) and added error boundary
 - [x] Fix map STILL crashing — replaced react-native-maps with WebView-based Leaflet/OpenStreetMap (no API key needed, works everywhere)
 - [x] Fix OSM tiles blocked (403 Access blocked) — switched to CartoDB Voyager/Dark Matter tiles (no Referer required)
+
+## Live Fuel Price Integration
+- [x] Research live fuel price APIs (GasBuddy, NREL, Google Places, CollectAPI, HERE, EIA)
+- [ ] Integrate CollectAPI ($29/month America plan) for live city-level fuel prices
+- [ ] Wire live prices into nearby services and campground detail screens
+
+## Play Store Readiness
+- [ ] Full Play Store readiness audit
+- [ ] Ensure all API calls work in production (server-side, not client-side)
+- [ ] Verify app config, permissions, and build settings
+- [ ] Fix any issues found during audit

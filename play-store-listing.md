@@ -4,70 +4,78 @@
 RV Nomad
 
 ## Short Description (80 characters max)
-Find campgrounds, plan RV trips, and hit the road with 3,500+ sites nationwide.
+```
+Find campgrounds, plan RV trips, get fuel prices & nearby services. All-in-one.
+```
 
 ## Full Description (4,000 characters max)
 
+```
 RV Nomad is the all-in-one camping and RV travel companion built by RVers, for RVers. Whether you're a weekend warrior, a full-time nomad, or planning your first road trip, RV Nomad has everything you need to find the perfect campsite, plan your route, and make the most of life on the road.
 
-🏕️ 3,500+ CAMPGROUNDS & CAMPING SITES
-Browse the most comprehensive campground database available — including National Parks, State Parks, RV Parks & Resorts, Military FamCamps, BLM land, National Forests, Army Corps of Engineers, Harvest Hosts, Boondocking spots, and even free overnight parking at Walmart, Cracker Barrel, Cabela's, and truck stops. Every listing includes detailed amenities, pricing, ratings, hookup info, and real user reviews.
+CAMPGROUND DISCOVERY — 7,900+ SITES
+Browse campgrounds across all 50 US states and 13 Canadian provinces — including National Parks, State Parks, RV Parks & Resorts, Military FamCamps, BLM land, National Forests, Army Corps of Engineers, Boondocking spots, and more. Every listing includes detailed amenities, pricing, ratings, hookup info, elevation, cell signal, and real user reviews.
 
-🗺️ AI-POWERED TRIP PLANNER
-Tell our AI where you want to go, how long you have, and what kind of camping you prefer — and it builds a complete itinerary with campground stops, driving distances, and daily plans. Exclude campground types you don't want. It's like having a personal travel agent who actually understands RV life.
+INTERACTIVE MAP
+Explore campgrounds visually on a full interactive map with color-coded pins by category. Tap any pin to see details. Switch between map and list view anytime.
 
-🛣️ THEMED ROAD TRIP ROUTES
-Explore 9 curated iconic road trips: Pacific Coast Highway, Route 66, Utah's Mighty Five, Blue Ridge Parkway, Florida Keys, Yellowstone & Grand Teton Loop, Million Dollar Highway, Southwest Grand Circle, and the Great American BBQ Trail. Each route includes stops, RV-specific notes, and recommended overnight stays.
+AI-POWERED TRIP PLANNER
+Tell our AI where you want to go, how long you have, and what kind of camping you prefer — it builds a complete itinerary with campground stops, driving distances, fuel costs, and daily plans. Exclude campground types you don't want.
 
-📡 CELL SIGNAL REPORTS
-Crowdsourced cell signal data for every campground. See which carrier works best, whether you can stream or make video calls, and if a signal booster helps. Report your own signal to help fellow RVers.
+REAL FUEL PRICES
+Live fuel prices updated regularly for every US state and Canadian province. See diesel, regular, mid-grade, and premium prices near every campground. Fuel cost calculator estimates your trip expenses based on your RV's MPG.
 
-📸 CAMPGROUND PHOTO GALLERY
-Upload and browse real photos from fellow campers at every campground. See what sites actually look like before you book.
+NEARBY SERVICES
+Every campground shows the nearest fuel stations with real prices, camping supply stores (Walmart, Camping World, Bass Pro, Canadian Tire), and RV repair shops — with one-tap Google Maps directions.
 
-⛽ NEARBY SERVICES
-Every campground shows the nearest fuel stations with prices, supply stores, repair shops, and restaurants — so you always know what's nearby.
+THEMED ROAD TRIP ROUTES
+Explore 9 curated iconic road trips: Pacific Coast Highway, Route 66, Utah's Mighty Five, Blue Ridge Parkway, Florida Keys, Yellowstone Loop, Million Dollar Highway, Southwest Grand Circle, and the Great American BBQ Trail.
 
-🔧 RV TOOLS & CALCULATORS
-Fuel log, maintenance tracker, packing checklists, trip cost calculator, RV route warnings for low clearances and steep grades, and a weight/load calculator. Everything you need to keep your rig running smoothly.
+CELL SIGNAL REPORTS
+See which carrier works best at every campground — AT&T, Verizon, T-Mobile — and whether you can stream or make video calls.
 
-💰 DISCOUNT STACKER
-See every discount you qualify for at each campground — Good Sam, Passport America, military, senior, AAA, and more — stacked together so you never overpay.
+CAMPGROUND PHOTO GALLERY
+Upload and browse real photos from fellow campers. See what sites actually look like before you book.
 
-🔍 MORE FEATURES:
-• Interstate Exit Guide — gas, food, and services at upcoming highway exits
-• RV Storage Finder — secure storage facilities with pricing and amenities
-• RV Gear Guide — curated gear recommendations
-• RV Problems & Recalls — NHTSA recall lookup by VIN
-• Track Chair Finder — accessible trail equipment for disabled hikers
-• Hiking Trails near campgrounds
-• Weather forecasts for every campsite
+RV TOOLS & CALCULATORS
+Maintenance tracker with service reminders, RV buying guide with specs and comparisons, weight scale finder for CAT scales, packing checklists, and fuel cost calculator.
+
+CANADA COVERAGE
+Full Canadian campground listings with Canadian fuel chains (Petro-Canada, Esso, Husky, Co-op), supply stores (Canadian Tire, Home Hardware), and prices in CAD.
+
+MORE FEATURES
 • State-by-state RV laws and boondocking regulations
-• Fuel price tracker
-• Campground comparison tool
-• Insider spots and hidden gems
-• Community "Don't Buy" RV warnings
-• RV Experiences — share stories, tips, and mods
+• ADA accessibility filter and track chair finder
+• Caravan mode for group travel
+• Live availability reporting from fellow RVers
+• Community forums for tips and recommendations
+• Discount stacker for Good Sam, Passport America, military, senior, AAA
+• Dark mode support
+• Interstate exit guide
+• RV storage finder
 
-Download RV Nomad today and start exploring America the way it was meant to be seen — from the driver's seat of your RV.
+Download RV Nomad today and start exploring.
 
 © 2026 Kieran Woll Creative Works LLC. All Rights Reserved.
+```
 
 ## What's New (Release Notes)
-
+```
 Version 1.0 — Launch Edition
-• 3,500+ campgrounds across 50 states and Canada
+• 7,900+ campgrounds across 50 states and Canada
+• Interactive map with color-coded pins
 • AI Trip Planner with smart exclusion lists
+• Real fuel prices updated by state and province
+• Nearby fuel stations, supply stores, and repair shops
 • 9 themed road trip routes
-• Cell signal reports (crowdsourced)
-• Photo gallery on every campground
-• Interstate Exit Guide
-• Restaurant Finder
-• RV Storage Finder
-• Discount Stacker
-• RV Problems & Recalls with VIN lookup
-• Track Chair Finder for accessible trails
-• Full RV toolbox: fuel log, maintenance, packing lists
+• Cell signal reports for every campground
+• Photo gallery — share your camping experiences
+• Maintenance tracker with service reminders
+• RV buying guide and weight scale finder
+• State-by-state RV laws and boondocking info
+• ADA accessibility filter and track chair finder
+• Full Canada support with CAD pricing
+```
 
 ## Category
 Travel & Local
@@ -82,4 +90,65 @@ Everyone
 (Your support email here)
 
 ## Privacy Policy URL
-(Required — you'll need to host a privacy policy page)
+(Required — see privacy-policy.md for the full text to host)
+
+---
+
+# Privacy Policy
+
+**PRIVACY POLICY FOR RV NOMAD**
+
+Last updated: April 6, 2026
+
+Kieran Woll Creative Works LLC ("we", "our", or "us") operates the RV Nomad mobile application (the "App"). This Privacy Policy explains how we collect, use, and protect your information.
+
+**INFORMATION WE COLLECT**
+
+Personal Information: When you create an account, we may collect your name and email address. Account creation is optional — the App can be used without an account for browsing campgrounds, viewing fuel prices, and using RV tools.
+
+Location Data: When you use the "Near Me" feature, we request access to your device's location to show campgrounds near you. Location access is optional and can be denied without affecting other App features. We do not store or transmit your precise location data to third parties.
+
+User-Generated Content: If you submit reviews, forum posts, photos, or availability reports, that content is stored on our servers and visible to other users. You may include a display name of your choosing.
+
+Usage Data: We may collect anonymous usage statistics such as which screens are viewed and which features are used, to improve the App experience. This data is not linked to your identity.
+
+**HOW WE USE YOUR INFORMATION**
+
+- To provide campground search, trip planning, and nearby services
+- To display fuel prices relevant to your selected state or province
+- To enable community features (reviews, forums, photo sharing)
+- To improve App performance and fix bugs
+
+**THIRD-PARTY SERVICES**
+
+The App uses the following third-party services:
+- CollectAPI: For live fuel price data (no personal data is shared)
+- Google Maps: For directions links (governed by Google's Privacy Policy)
+- OpenStreetMap/CartoDB: For map tiles (no personal data is shared)
+
+We do not sell, trade, or rent your personal information to third parties.
+
+**DATA STORAGE AND SECURITY**
+
+Your data is stored on secure servers with industry-standard encryption. Local data (saved campgrounds, maintenance logs, trip history) is stored on your device and is not transmitted to our servers unless you explicitly choose to sync.
+
+**CHILDREN'S PRIVACY**
+
+The App is not directed at children under 13. We do not knowingly collect personal information from children under 13.
+
+**YOUR RIGHTS**
+
+You may:
+- Access, update, or delete your account information at any time
+- Delete your reviews, photos, and forum posts
+- Request deletion of your account and all associated data by contacting us
+- Opt out of location services through your device settings
+
+**CHANGES TO THIS POLICY**
+
+We may update this Privacy Policy from time to time. Changes will be posted within the App and on our website.
+
+**CONTACT US**
+
+Kieran Woll Creative Works LLC
+Email: (your email address)

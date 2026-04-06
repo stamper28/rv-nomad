@@ -324,6 +324,113 @@ export const appRouter = router({
     }),
   }),
 
+  // ── Fuel Prices (CollectAPI) ──
+  fuel: router({
+    // Get USA fuel prices for a state (returns state average + city prices)
+    usaState: publicProcedure
+      .input(z.object({ state: z.string().min(2).max(30) }))
+      .query(async ({ input }) => {
+        const apiKey = process.env.COLLECTAPI_KEY;
+        if (!apiKey) {
+          return { success: false, error: "Fuel price API not configured" };
+        }
+        try {
+          const response = await fetch(
+            `https://api.collectapi.com/gasPrice/allUsaPrice`,
+            {
+              headers: {
+                authorization: apiKey,
+                "content-type": "application/json",
+              },
+            }
+          );
+          if (!response.ok) {
+            return { success: false, error: `API returned ${response.status}` };
+          }
+          const data = await response.json();
+          if (!data.success || !data.result) {
+            return { success: false, error: "No data returned" };
+          }
+          // Find the matching state
+          const stateData = data.result.find(
+            (s: any) => s.name.toLowerCase() === input.state.toLowerCase()
+          );
+          if (!stateData) {
+            return { success: false, error: `State not found: ${input.state}` };
+          }
+          return {
+            success: true,
+            state: input.state,
+            regular: stateData.regular,
+            midGrade: stateData.midGrade,
+            premium: stateData.premium,
+            diesel: stateData.diesel,
+            currency: stateData.currency || "usd",
+          };
+        } catch (err: any) {
+          return { success: false, error: err.message || "Failed to fetch fuel prices" };
+        }
+      }),
+
+    // Get all USA state prices at once (for fuel price screen)
+    allUsa: publicProcedure.query(async () => {
+      const apiKey = process.env.COLLECTAPI_KEY;
+      if (!apiKey) {
+        return { success: false, error: "Fuel price API not configured", states: [] };
+      }
+      try {
+        const response = await fetch(
+          "https://api.collectapi.com/gasPrice/allUsaPrice",
+          {
+            headers: {
+              authorization: apiKey,
+              "content-type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          return { success: false, error: `API returned ${response.status}`, states: [] };
+        }
+        const data = await response.json();
+        return {
+          success: data.success,
+          states: data.result || [],
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message, states: [] };
+      }
+    }),
+
+    // Get Canada fuel prices
+    canada: publicProcedure.query(async () => {
+      const apiKey = process.env.COLLECTAPI_KEY;
+      if (!apiKey) {
+        return { success: false, error: "Fuel price API not configured", provinces: [] };
+      }
+      try {
+        const response = await fetch(
+          "https://api.collectapi.com/gasPrice/canada",
+          {
+            headers: {
+              authorization: apiKey,
+              "content-type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          return { success: false, error: `API returned ${response.status}`, provinces: [] };
+        }
+        const data = await response.json();
+        return {
+          success: data.success,
+          provinces: data.result || [],
+        };
+      } catch (err: any) {
+        return { success: false, error: err.message, provinces: [] };
+      }
+    }),
+  }),
+
   // ── AI Trip Planner ──
   ai: router({
     planTrip: publicProcedure
