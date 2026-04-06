@@ -33,6 +33,7 @@ import {
 import { getSiteImageUrl } from "@/lib/site-images";
 import { useUserLocation, getDistanceMiles } from "@/hooks/use-location";
 import { openUrl } from "@/lib/open-url";
+import { CampgroundMap } from "@/components/campground-map";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -140,6 +141,9 @@ export default function HomeScreen() {
 
   // ADA filter
   const [adaOnly, setAdaOnly] = useState(false);
+
+  // Map/List view toggle
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   // Search history
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -843,20 +847,46 @@ export default function HomeScreen() {
         </ScrollView>
       )}
 
-      {/* Results count */}
+      {/* Results count + View Toggle */}
       <View style={[styles.resultsBar, { backgroundColor: colors.background }]}>
         <Text style={[styles.resultsText, { color: colors.muted }]}>
           {listData.length} {listData.length === 1 ? "result" : "results"}
           {selectedState ? ` in ${STATE_NAMES[selectedState]}` : ""}
           {searchQuery ? ` for "${searchQuery}"` : ""}
         </Text>
+        <Pressable
+          onPress={() => {
+            if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setViewMode(viewMode === "list" ? "map" : "list");
+          }}
+          style={({ pressed }) => [
+            styles.viewToggle,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <MaterialIcons
+            name={viewMode === "list" ? "map" : "view-list"}
+            size={18}
+            color={colors.primary}
+          />
+          <Text style={[styles.viewToggleText, { color: colors.primary }]}>
+            {viewMode === "list" ? "Map" : "List"}
+          </Text>
+        </Pressable>
       </View>
 
-      {/* Site List */}
+      {/* Map or List View */}
       {!dataLoaded ? (
         <View style={styles.loadingState}>
           <Text style={[styles.loadingText, { color: colors.muted }]}>Loading campgrounds...</Text>
         </View>
+      ) : viewMode === "map" ? (
+        <CampgroundMap
+          sites={filteredSites}
+          onSelectSite={handleOpenSite}
+          userLocation={userLocation}
+        />
       ) : (
         <FlatList
           data={listData}
@@ -994,8 +1024,18 @@ const styles = StyleSheet.create({
   },
   lawNotesText: { fontSize: 12, fontStyle: "italic", lineHeight: 18, flex: 1 },
   // Results bar
-  resultsBar: { paddingHorizontal: 16, paddingVertical: 8 },
+  resultsBar: { paddingHorizontal: 16, paddingVertical: 8, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   resultsText: { fontSize: 13, fontWeight: "500" },
+  viewToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  viewToggleText: { fontSize: 12, fontWeight: "700" },
   // List
   listContent: { paddingHorizontal: 16, gap: 12 },
   // Card

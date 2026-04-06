@@ -478,3 +478,10 @@
 - [x] Fix Canadian fuel stops showing US locations instead of Canadian ones
 - [x] Fix Canadian fuel stations still showing US brands — now uses campground's known state instead of coordinate guessing
 - [x] Fix live availability reporting screen — added tap-outside dismiss, close button, cancel button, Android back button support, and keyboard handling
+
+## Major Competitive Gap Fixes
+- [x] Expand campground database from 3,568 to ~8,000 entries (NPS real data + generated)
+- [x] Add interactive map with browsable pins and Map/List toggle on Home screen
+- [x] Integrate real EIA/NRCan fuel prices by PADD region instead of random generation
+- [x] Update STATE_LIST with actual counts for all 64 states/provinces
+- [x] Add vitest config with @ path alias resolution

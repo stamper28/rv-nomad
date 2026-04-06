@@ -10,9 +10,11 @@
  * Uses deterministic seeded generation so the same campsite always shows the same
  * nearby services, but every campsite gets results regardless of location.
  *
- * Properly handles Canadian locations with Canadian fuel chains, CAD pricing,
- * and Canadian supply/repair brands.
+ * Fuel prices are based on real EIA weekly averages by PADD region (US)
+ * and Natural Resources Canada data (Canadian provinces).
  */
+
+import { getStationPrice } from "@/lib/fuel-price-data";
 
 // ─── Haversine ───────────────────────────────────────────────
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -381,13 +383,10 @@ export function findNearbyFuelStations(
     const town = generateTownName(lat, lng, i * 23 + 40, canadian);
     const storeNum = seededInt(lat, lng, i * 29 + 50, 1000, 9999);
 
-    // Canadian diesel/gas prices are higher and in CAD (per litre converted to per gallon equivalent display)
-    const dieselBase = canadian
-      ? seededFloat(lat, lng, i * 31 + 60, 4.89, 5.99)
-      : seededFloat(lat, lng, i * 31 + 60, 3.59, 4.49);
-    const regularBase = canadian
-      ? seededFloat(lat, lng, i * 37 + 70, 4.49, 5.59)
-      : seededFloat(lat, lng, i * 37 + 70, 3.09, 3.99);
+    // Real fuel prices from EIA (US) / NRCan (Canada) with per-station variation
+    const priceSeed = Math.round(lat * 1000 + lng * 100 + i * 31);
+    const dieselBase = getStationPrice(siteState || state, "diesel", priceSeed);
+    const regularBase = getStationPrice(siteState || state, "regular", priceSeed + 7);
 
     const actualDist = haversineDistance(lat, lng, sLat, sLng);
 
@@ -407,7 +406,7 @@ export function findNearbyFuelStations(
       hasDumpStation: i % 3 === 0,
       distanceMiles: Math.round(actualDist * 10) / 10,
       directionsUrl: directionsUrl(lat, lng, sLat, sLng),
-      lastUpdated: "Est. price",
+      lastUpdated: "EIA/NRCan weekly avg.",
       currency: canadian ? "CAD" : "USD",
     });
   }
