@@ -287,3 +287,10 @@
 - [x] Show hiking trail info on site-detail screen
 - [x] Add "Hiking" filter on Home screen
 - [x] Generate 3D-style app logo for RV Nomad that grabs attention
+
+## Track Chair Finder for Disabled Hikers
+- [x] Research which states and parks offer track chairs (Action Trackchair, all-terrain wheelchairs)
+- [x] Build Track Chair Finder data module with park name, state, chair type, reservation info, trails, contact
+- [x] Build Track Chair Finder screen with state filter and park cards
+- [x] Add track chair availability info to hiking trails screen
+- [x] Add track chair info to site-detail ADA section for nearby parks

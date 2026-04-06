@@ -378,6 +378,22 @@ export default function ExploreScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
+          {/* Track Chair Finder */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/track-chairs")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#3B82F620" }]}>
+              <MaterialIcons name="accessible" size={24} color="#3B82F6" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Track Chair Finder</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>All-terrain wheelchairs for disabled hikers by state</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
           {/* Fuel Prices */}
           <TouchableOpacity
             style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}

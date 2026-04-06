@@ -429,6 +429,24 @@ export default function SiteDetailScreen() {
                       <MaterialIcons name="open-in-new" size={16} color="#0288D1" />
                     </TouchableOpacity>
                   )}
+                  {/* Track Chair Finder Link */}
+                  {site.adaAccessible && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push("/track-chairs");
+                      }}
+                      style={[styles.adaBanner, { backgroundColor: "#7C3AED10", borderColor: "#7C3AED30" }]}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons name="accessible" size={18} color="#7C3AED" />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#7C3AED", fontSize: 13, fontWeight: "700" }}>Find Track Chairs Nearby</Text>
+                        <Text style={{ color: colors.muted, fontSize: 11, marginTop: 1 }}>All-terrain wheelchairs for hiking — free at 150+ parks</Text>
+                      </View>
+                      <MaterialIcons name="chevron-right" size={16} color="#7C3AED" />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
             </View>

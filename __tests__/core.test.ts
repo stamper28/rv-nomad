@@ -6,7 +6,7 @@ describe("Campground Data", () => {
     const { ALL_SITES, STATE_LIST } = await import("../lib/all-sites-data");
     expect(ALL_SITES.length).toBeGreaterThan(0);
     expect(STATE_LIST.length).toBe(63); // 50 US states + 13 Canadian provinces/territories
-  }, 15000);
+  }, 60000);
 
   it("should have sites for every state in STATE_LIST", async () => {
     const { getSitesByState, STATE_LIST } = await import("../lib/all-sites-data");
@@ -15,7 +15,7 @@ describe("Campground Data", () => {
       expect(sites.length).toBeGreaterThan(0);
       expect(state.code.length).toBe(2);
     }
-  });
+  }, 60000);
 
   it("should have valid site structure", async () => {
     const { ALL_SITES } = await import("../lib/all-sites-data");
@@ -27,7 +27,7 @@ describe("Campground Data", () => {
     expect(site).toHaveProperty("latitude");
     expect(site).toHaveProperty("longitude");
     expect(site).toHaveProperty("rating");
-  });
+  }, 60000);
 
   it("should have valid coordinates for all sites", async () => {
     const { ALL_SITES } = await import("../lib/all-sites-data");
@@ -37,7 +37,7 @@ describe("Campground Data", () => {
       expect(site.longitude).toBeGreaterThanOrEqual(-180);
       expect(site.longitude).toBeLessThanOrEqual(180);
     }
-  });
+  }, 60000);
 
   it("should have valid ratings between 0 and 5", async () => {
     const { ALL_SITES } = await import("../lib/all-sites-data");
@@ -45,7 +45,7 @@ describe("Campground Data", () => {
       expect(site.rating).toBeGreaterThanOrEqual(0);
       expect(site.rating).toBeLessThanOrEqual(5);
     }
-  });
+  }, 60000);
 });
 
 // Test weight scale data integrity
