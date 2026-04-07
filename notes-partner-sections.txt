@@ -1,0 +1,7 @@
+Partner sections added to explore.tsx:
+- Hipcamp, Campspot, Harvest Hosts cards with affiliate links
+- Imports: openUrl from lib/open-url, AFFILIATE_CONFIG from lib/affiliate
+- Styles: partnerSectionHeader, partnerCard, partnerLogoBox, partnerContent, partnerNameRow, partnerName, partnerBadge, partnerBadgeText, partnerDesc, partnerCta, partnerCtaText
+- affiliate.ts updated with hipcamp and campspot entries
+- App compiles with no TypeScript errors
+- Partner cards appear in Categories view on Explore tab, below Fuel Calculator

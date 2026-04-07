@@ -501,3 +501,17 @@
 - [ ] Ensure all API calls work in production (server-side, not client-side)
 - [ ] Verify app config, permissions, and build settings
 - [ ] Fix any issues found during audit
+
+## Website Landing Page
+- [x] Create RV Nomad promotional landing page website
+- [x] Include app features showcase with screenshots
+- [x] Include privacy policy page
+- [x] Include download/Play Store link
+- [x] Deploy website permanently (thriving-hotteok-5a5950.netlify.app)
+
+## Affiliate Partner Sections
+- [x] Add Hipcamp section to Explore screen with affiliate link
+- [x] Add Campspot section to Explore screen with affiliate link
+- [x] Update affiliate-links.ts with Hipcamp and Campspot placeholder URLs
+- [x] Add Harvest Hosts partner card to Explore screen
+- [ ] Replace placeholder affiliate URLs with real Awin links once approved

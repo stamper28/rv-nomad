@@ -19,6 +19,8 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
+import { openUrl } from "@/lib/open-url";
+import { AFFILIATE_CONFIG } from "@/lib/affiliate";
 
 type SimpleStateInfo = { code: string; name: string; siteCount: number };
 
@@ -649,6 +651,90 @@ export default function ExploreScreen() {
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
+
+          {/* ─── Partner Booking Platforms ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Book Unique Stays</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Explore camping on partner platforms</Text>
+          </View>
+
+          {/* Hipcamp */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.hipcamp.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#00A86B15" }]}>
+              <MaterialIcons name="nature-people" size={32} color="#00A86B" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Hipcamp</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#00A86B20" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#00A86B" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Unique outdoor stays — farms, vineyards, ranches, treehouses & glamping
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#00A86B" }]}>
+                <Text style={styles.partnerCtaText}>Browse Hipcamp</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Campspot */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.campspot.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#FF6B3515" }]}>
+              <MaterialIcons name="terrain" size={32} color="#FF6B35" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Campspot</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#FF6B3520" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#FF6B35" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Book top-rated private RV parks — real-time availability & instant confirmation
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#FF6B35" }]}>
+                <Text style={styles.partnerCtaText}>Browse Campspot</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Harvest Hosts */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.harvestHosts.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#722F3715" }]}>
+              <MaterialIcons name="wine-bar" size={32} color="#722F37" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Harvest Hosts</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#722F3720" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#722F37" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Free overnight stays at 5,600+ wineries, farms, breweries & unique locations
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#722F37" }]}>
+                <Text style={styles.partnerCtaText}>Join Harvest Hosts</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
         </ScrollView>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -773,4 +859,45 @@ const styles = StyleSheet.create({
   countrySectionFlag: { fontSize: 22 },
   countrySectionText: { fontSize: 16, fontWeight: "700", flex: 1 },
   countrySectionCount: { fontSize: 13 },
+  partnerSectionHeader: {
+    paddingHorizontal: 16, marginTop: 8, marginBottom: 12,
+  },
+  partnerSectionTitle: {
+    fontSize: 20, fontWeight: "800",
+  },
+  partnerSectionSubtitle: {
+    fontSize: 13, marginTop: 2,
+  },
+  partnerCard: {
+    marginHorizontal: 16, marginBottom: 12, borderRadius: 16, borderWidth: 1,
+    padding: 16, flexDirection: "row", alignItems: "flex-start",
+  },
+  partnerLogoBox: {
+    width: 56, height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center", marginRight: 14,
+  },
+  partnerContent: {
+    flex: 1,
+  },
+  partnerNameRow: {
+    flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4,
+  },
+  partnerName: {
+    fontSize: 17, fontWeight: "700",
+  },
+  partnerBadge: {
+    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4,
+  },
+  partnerBadgeText: {
+    fontSize: 9, fontWeight: "800", letterSpacing: 0.5,
+  },
+  partnerDesc: {
+    fontSize: 13, lineHeight: 18, marginBottom: 10,
+  },
+  partnerCta: {
+    alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+  },
+  partnerCtaText: {
+    color: "#fff", fontSize: 13, fontWeight: "700",
+  },
 });

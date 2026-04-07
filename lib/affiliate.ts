@@ -56,6 +56,20 @@ export const AFFILIATE_CONFIG = {
     cost: "From $575/year (Zone Pass)",
     description: "Unlimited camping at 80+ campgrounds in your zone. Great value for frequent campers.",
   },
+  // Hipcamp — sign up at hipcamp.com/en-US/affiliates
+  hipcamp: {
+    url: "https://www.hipcamp.com/?ref=rvnomad", // Replace with your Hipcamp affiliate link
+    name: "Hipcamp",
+    cost: "Free to browse, pay per booking",
+    description: "Discover unique outdoor stays on private land — farms, vineyards, ranches, treehouses, glamping, and more. Book directly through Hipcamp.",
+  },
+  // Campspot — apply via Awin affiliate network
+  campspot: {
+    url: "https://www.campspot.com/?ref=rvnomad", // Replace with your Awin/Campspot affiliate link
+    name: "Campspot",
+    cost: "Free to browse, pay per booking",
+    description: "Book top-rated private RV parks and campgrounds. Real-time availability, instant confirmation, and exclusive deals.",
+  },
   // RV Insurance
   insurance: {
     progressive: {
@@ -94,6 +108,8 @@ interface MembershipInfo {
 export function getMembershipInfo(program: string): MembershipInfo | null {
   const map: Record<string, MembershipInfo> = {
     harvest_host: AFFILIATE_CONFIG.harvestHosts,
+    hipcamp: AFFILIATE_CONFIG.hipcamp,
+    campspot: AFFILIATE_CONFIG.campspot,
     good_sam: AFFILIATE_CONFIG.goodSam,
     passport_america: AFFILIATE_CONFIG.passportAmerica,
     boondockers_welcome: AFFILIATE_CONFIG.boondockersWelcome,
