@@ -46,6 +46,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
+  owner: "stamper28",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -135,6 +136,11 @@ const config: ExpoConfig = {
     ],
     "./plugins/with-min-sdk",
   ],
+  extra: {
+    eas: {
+      projectId: "9e9f29aa-c90d-4fff-bcf5-31ef788a6b8b",
+    },
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
