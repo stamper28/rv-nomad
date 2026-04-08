@@ -21,7 +21,8 @@
     "production": {
       "ios": {
         "appleId": "hawaiiataglance@gmail.com",
-        "appleTeamId": "NJ2KDB7M7Y"
+        "appleTeamId": "NJ2KDB7M7Y",
+        "ascAppId": "6761806967"
       }
     }
   }
