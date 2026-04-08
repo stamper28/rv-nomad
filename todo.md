@@ -515,3 +515,9 @@
 - [x] Update affiliate-links.ts with Hipcamp and Campspot placeholder URLs
 - [x] Add Harvest Hosts partner card to Explore screen
 - [ ] Replace placeholder affiliate URLs with real Awin links once approved
+
+## Travel Medical Insurance
+- [x] Add Travel Medical Insurance section to Explore screen
+- [x] Include top providers (Good Sam Travel Assist, World Nomads, SafetyWing, Medjet, Allianz)
+- [x] Add helpful descriptions for each provider
+- [x] Add travel insurance config to affiliate.ts with provider URLs, costs, and descriptions

@@ -81,6 +81,39 @@ export const AFFILIATE_CONFIG = {
       name: "National General RV Insurance",
     },
   },
+  // Travel Medical Insurance
+  travelInsurance: {
+    goodSamTravelAssist: {
+      url: "https://www.goodsamtravelassist.com/",
+      name: "Good Sam Travel Assist",
+      cost: "From $79.99/year",
+      description: "Emergency medical evacuation, RV/vehicle return, and travel assistance designed specifically for RVers. Covers you and your family anywhere in the US, Canada, Mexico, and the Bahamas.",
+    },
+    worldNomads: {
+      url: "https://www.worldnomads.com/",
+      name: "World Nomads",
+      cost: "Varies by trip",
+      description: "Flexible travel insurance with emergency medical coverage, trip cancellation, and 24/7 emergency assistance. Great for RVers crossing state lines or traveling to Canada.",
+    },
+    safetyWing: {
+      url: "https://safetywing.com/nomad-insurance/",
+      name: "SafetyWing Nomad Insurance",
+      cost: "From $45/month",
+      description: "Subscription-based travel medical insurance ideal for full-time RVers. Covers hospital visits, emergency medical evacuation, and travel delays. No fixed end date.",
+    },
+    medjet: {
+      url: "https://medjetassist.com/",
+      name: "Medjet",
+      cost: "From $99/year",
+      description: "Medical transport membership — if you're hospitalized 150+ miles from home, Medjet arranges air medical transfer to the hospital of your choice at no extra cost.",
+    },
+    allianz: {
+      url: "https://www.allianztravelinsurance.com/",
+      name: "Allianz Travel Insurance",
+      cost: "Varies by trip",
+      description: "Comprehensive travel protection including emergency medical, trip cancellation, baggage loss, and 24-hour hotline assistance. Trusted by millions of travelers.",
+    },
+  },
 } as const;
 
 /** Build an Amazon product URL with affiliate tag.

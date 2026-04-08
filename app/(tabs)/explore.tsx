@@ -652,6 +652,142 @@ export default function ExploreScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
+          {/* ─── Travel Medical Insurance ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Travel Medical Insurance</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Stay protected on the road — coverage for RVers</Text>
+          </View>
+
+          {/* Good Sam Travel Assist */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.travelInsurance.goodSamTravelAssist.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#D3222215" }]}>
+              <MaterialIcons name="health-and-safety" size={32} color="#D32222" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Good Sam Travel Assist</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#D3222220" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#D32222" }]}>RV FOCUSED</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Emergency medical evacuation & RV/vehicle return — made for RVers. From $79.99/yr
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#D32222" }]}>
+                <Text style={styles.partnerCtaText}>Learn More</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* SafetyWing */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.travelInsurance.safetyWing.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#6C5CE715" }]}>
+              <MaterialIcons name="shield" size={32} color="#6C5CE7" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>SafetyWing</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#6C5CE720" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#6C5CE7" }]}>FULL-TIMERS</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Subscription travel medical insurance — no fixed end date. From $45/month
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#6C5CE7" }]}>
+                <Text style={styles.partnerCtaText}>Learn More</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Medjet */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.travelInsurance.medjet.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#0077B615" }]}>
+              <MaterialIcons name="flight" size={32} color="#0077B6" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Medjet</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#0077B620" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#0077B6" }]}>EVACUATION</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Air medical transport to your hospital of choice if hospitalized 150+ mi from home. From $99/yr
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#0077B6" }]}>
+                <Text style={styles.partnerCtaText}>Learn More</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* World Nomads */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.travelInsurance.worldNomads.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#2D9CDB15" }]}>
+              <MaterialIcons name="public" size={32} color="#2D9CDB" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>World Nomads</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#2D9CDB20" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#2D9CDB" }]}>TRAVEL</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Flexible travel insurance with emergency medical, trip cancellation & 24/7 assistance
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#2D9CDB" }]}>
+                <Text style={styles.partnerCtaText}>Get a Quote</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Allianz */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.travelInsurance.allianz.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#003A8C15" }]}>
+              <MaterialIcons name="verified-user" size={32} color="#003A8C" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Allianz Travel</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#003A8C20" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#003A8C" }]}>COMPREHENSIVE</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Full travel protection — medical, trip cancellation, baggage & 24-hour hotline
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#003A8C" }]}>
+                <Text style={styles.partnerCtaText}>Get a Quote</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* ─── Partner Booking Platforms ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Book Unique Stays</Text>
