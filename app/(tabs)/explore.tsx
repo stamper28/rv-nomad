@@ -652,6 +652,22 @@ export default function ExploreScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
+          {/* Border Crossings */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/border-crossings" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#1D4ED820" }]}>
+              <MaterialIcons name="swap-horiz" size={24} color="#1D4ED8" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>🇨🇦 Border Crossings 🇺🇸</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>US/Canada crossings, agent phone numbers & laws</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
           {/* ─── Travel Medical Insurance ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Travel Medical Insurance</Text>

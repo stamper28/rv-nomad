@@ -521,3 +521,16 @@
 - [x] Include top providers (Good Sam Travel Assist, World Nomads, SafetyWing, Medjet, Allianz)
 - [x] Add helpful descriptions for each provider
 - [x] Add travel insurance config to affiliate.ts with provider URLs, costs, and descriptions
+
+## US/Canada Border Crossings
+- [x] Research major US/Canada border crossings used by RVers (28 crossings across 6 regions)
+- [x] Add border agent phone numbers (CBSA and CBP) for every crossing
+- [x] Add top 10 enforceable laws RVers commonly break at the border (ranked by severity)
+- [x] Build border crossings data file with all crossing details
+- [x] Create border crossings detail screen with 3 tabs (Crossings, Laws & Rules, Contacts)
+- [x] Add border crossings section to Explore screen
+- [x] Add region filtering (Atlantic, Quebec, Ontario, Prairies, BC, Alaska)
+- [x] Add RV-friendliness ratings and RV Lane badges
+- [x] Add Get Directions button for each crossing
+- [x] Add Contacts tab with CBSA/CBP main numbers, wait times links
+- [x] Unit tests passing (18 tests)
