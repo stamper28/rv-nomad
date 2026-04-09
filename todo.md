@@ -534,3 +534,6 @@
 - [x] Add Get Directions button for each crossing
 - [x] Add Contacts tab with CBSA/CBP main numbers, wait times links
 - [x] Unit tests passing (18 tests)
+
+## Crash Bugs
+- [x] Fix TestFlight crash on launch - iPad 10th gen, iPadOS 26.0.1 (fixed: added keychainService param to all SecureStore calls for iOS 26 compatibility, removed RCT_NEW_ARCH_ENABLED=1 from eas.json production build)

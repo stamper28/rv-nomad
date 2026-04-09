@@ -15,9 +15,6 @@
       "autoIncrement": true,
       "distribution": "store",
       "credentialsSource": "remote",
-      "env": {
-        "RCT_NEW_ARCH_ENABLED": "1"
-      }
     }
   },
   "submit": {
