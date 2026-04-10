@@ -538,3 +538,10 @@
 ## Crash Bugs
 - [x] Fix TestFlight crash on launch - iPad 10th gen, iPadOS 26.0.1 (fixed: added keychainService param to all SecureStore calls for iOS 26 compatibility, removed RCT_NEW_ARCH_ENABLED=1 from eas.json production build)
 - [x] Fix EAS iOS build error - pod install failed when newArchEnabled was false, reverted to true while keeping SecureStore keychainService fix for iPadOS 26
+
+## Promo Code System
+- [x] Add promo code validation logic (BOOKTOUR50, VETERAN50, RVNOMAD50, LAUNCH50, HANDICAP50 = 50% off)
+- [x] Add "Have a promo code?" UI field on subscription/premium screen
+- [x] Integrate promo code with Stripe coupon for payment discount (local validation, ready for Stripe coupon when IAP goes live)
+- [x] Store applied promo code in user state / AsyncStorage
+- [x] Show discounted price when valid code is entered (strikethrough original price, green discounted price, savings amount)

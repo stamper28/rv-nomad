@@ -3,12 +3,19 @@
  * All Rights Reserved. Unauthorized copying or distribution is prohibited.
  * See LICENSE file for details.
  */
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, TextInput, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import {
+  validatePromoCode,
+  getDiscountedPrice,
+  saveRedeemedPromo,
+  type PromoValidationResult,
+} from "@/lib/promo-store";
+import * as Haptics from "expo-haptics";
 
 type PlanType = "monthly" | "yearly";
 
@@ -36,14 +43,69 @@ export default function PremiumScreen() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("yearly");
 
+  // Promo code state
+  const [showPromoInput, setShowPromoInput] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [promoResult, setPromoResult] = useState<PromoValidationResult | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidationResult | null>(null);
+
   const yearlyPrice = 49.99;
   const monthlyPrice = 5.99;
   const yearlySavings = Math.round((1 - yearlyPrice / (monthlyPrice * 12)) * 100);
 
+  // Calculate discounted prices
+  const yearlyDiscounted = appliedPromo?.valid
+    ? getDiscountedPrice(yearlyPrice, appliedPromo.discountPercent!)
+    : null;
+  const monthlyDiscounted = appliedPromo?.valid
+    ? getDiscountedPrice(monthlyPrice, appliedPromo.discountPercent!)
+    : null;
+
+  const effectiveYearlyPrice = yearlyDiscounted ? yearlyDiscounted.discountedPrice : yearlyPrice;
+  const effectiveMonthlyPrice = monthlyDiscounted ? monthlyDiscounted.discountedPrice : monthlyPrice;
+
+  const handleApplyPromo = useCallback(() => {
+    const result = validatePromoCode(promoInput, selectedPlan);
+    setPromoResult(result);
+
+    if (result.valid) {
+      setAppliedPromo(result);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      // Save to local storage
+      saveRedeemedPromo({
+        code: result.code!,
+        discountPercent: result.discountPercent!,
+        redeemedAt: new Date().toISOString(),
+        appliesTo: result.appliesTo!,
+      });
+    } else {
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    }
+  }, [promoInput, selectedPlan]);
+
+  const handleRemovePromo = useCallback(() => {
+    setAppliedPromo(null);
+    setPromoResult(null);
+    setPromoInput("");
+    setShowPromoInput(false);
+  }, []);
+
   function handleSubscribe() {
+    const priceLabel = selectedPlan === "yearly"
+      ? `$${effectiveYearlyPrice}/year`
+      : `$${effectiveMonthlyPrice}/month`;
+
+    const promoNote = appliedPromo?.valid
+      ? `\n\nPromo code "${appliedPromo.code}" applied — ${appliedPromo.discountPercent}% off!`
+      : "";
+
     Alert.alert(
       "Subscription",
-      `Subscribe to RV Nomad Premium for ${selectedPlan === "yearly" ? `$${yearlyPrice}/year` : `$${monthlyPrice}/month`}?\n\nThis will be processed through the App Store / Google Play when the app is published.`,
+      `Subscribe to RV Nomad Premium for ${priceLabel}?${promoNote}\n\nThis will be processed through the App Store / Google Play when the app is published.`,
       [
         { text: "Cancel", style: "cancel" },
         { text: "Subscribe", onPress: () => Alert.alert("Coming Soon", "In-app purchases will be available when the app is published. All features are unlocked for testing.") },
@@ -88,10 +150,21 @@ export default function PremiumScreen() {
               </View>
             )}
             <Text style={[styles.planName, { color: colors.foreground, marginTop: 14 }]}>Yearly</Text>
-            <Text style={[styles.planPrice, { color: colors.primary }]}>${yearlyPrice}</Text>
+            {yearlyDiscounted ? (
+              <>
+                <Text style={[styles.planPriceStrike, { color: colors.muted }]}>${yearlyPrice}</Text>
+                <Text style={[styles.planPrice, { color: colors.success }]}>${yearlyDiscounted.discountedPrice}</Text>
+              </>
+            ) : (
+              <Text style={[styles.planPrice, { color: colors.primary }]}>${yearlyPrice}</Text>
+            )}
             <Text style={[styles.planPeriod, { color: colors.muted }]}>per year</Text>
-            <Text style={[styles.planSave, { color: colors.success }]}>Save {yearlySavings}%</Text>
-            <Text style={[styles.planMonthly, { color: colors.muted }]}>${(yearlyPrice / 12).toFixed(2)}/mo</Text>
+            {yearlyDiscounted ? (
+              <Text style={[styles.planSave, { color: colors.success }]}>You save ${yearlyDiscounted.savings.toFixed(2)}!</Text>
+            ) : (
+              <Text style={[styles.planSave, { color: colors.success }]}>Save {yearlySavings}%</Text>
+            )}
+            <Text style={[styles.planMonthly, { color: colors.muted }]}>${(effectiveYearlyPrice / 12).toFixed(2)}/mo</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -100,18 +173,99 @@ export default function PremiumScreen() {
             activeOpacity={0.7}
           >
             <Text style={[styles.planName, { color: colors.foreground, marginTop: 14 }]}>Monthly</Text>
-            <Text style={[styles.planPrice, { color: colors.primary }]}>${monthlyPrice}</Text>
+            {monthlyDiscounted ? (
+              <>
+                <Text style={[styles.planPriceStrike, { color: colors.muted }]}>${monthlyPrice}</Text>
+                <Text style={[styles.planPrice, { color: colors.success }]}>${monthlyDiscounted.discountedPrice}</Text>
+              </>
+            ) : (
+              <Text style={[styles.planPrice, { color: colors.primary }]}>${monthlyPrice}</Text>
+            )}
             <Text style={[styles.planPeriod, { color: colors.muted }]}>per month</Text>
-            <Text style={[styles.planSave, { color: colors.muted }]}>No commitment</Text>
+            {monthlyDiscounted ? (
+              <Text style={[styles.planSave, { color: colors.success }]}>You save ${monthlyDiscounted.savings.toFixed(2)}!</Text>
+            ) : (
+              <Text style={[styles.planSave, { color: colors.muted }]}>No commitment</Text>
+            )}
             <Text style={[styles.planMonthly, { color: colors.muted }]}>Cancel anytime</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Promo Code Section */}
+        {appliedPromo?.valid ? (
+          <View style={[styles.promoApplied, { backgroundColor: colors.success + "12", borderColor: colors.success + "40" }]}>
+            <View style={styles.promoAppliedRow}>
+              <MaterialIcons name="check-circle" size={20} color={colors.success} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.promoAppliedCode, { color: colors.success }]}>
+                  {appliedPromo.code} — {appliedPromo.discountPercent}% OFF
+                </Text>
+                <Text style={[styles.promoAppliedDesc, { color: colors.muted }]}>
+                  {appliedPromo.description}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleRemovePromo} style={styles.promoRemoveBtn}>
+                <MaterialIcons name="close" size={18} color={colors.muted} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : showPromoInput ? (
+          <View style={[styles.promoSection, { borderColor: colors.border }]}>
+            <Text style={[styles.promoLabel, { color: colors.foreground }]}>Enter Promo Code</Text>
+            <View style={styles.promoInputRow}>
+              <TextInput
+                style={[styles.promoTextInput, {
+                  color: colors.foreground,
+                  backgroundColor: colors.surface,
+                  borderColor: promoResult && !promoResult.valid ? colors.error : colors.border,
+                }]}
+                placeholder="e.g. BOOKTOUR50"
+                placeholderTextColor={colors.muted + "80"}
+                value={promoInput}
+                onChangeText={(text) => {
+                  setPromoInput(text.toUpperCase());
+                  if (promoResult) setPromoResult(null);
+                }}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleApplyPromo}
+              />
+              <TouchableOpacity
+                style={[styles.promoApplyBtn, { backgroundColor: colors.primary, opacity: promoInput.trim() ? 1 : 0.5 }]}
+                onPress={handleApplyPromo}
+                disabled={!promoInput.trim()}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.promoApplyText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+            {promoResult && !promoResult.valid && (
+              <View style={styles.promoErrorRow}>
+                <MaterialIcons name="error-outline" size={14} color={colors.error} />
+                <Text style={[styles.promoErrorText, { color: colors.error }]}>{promoResult.error}</Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={() => { setShowPromoInput(false); setPromoInput(""); setPromoResult(null); }}>
+              <Text style={[styles.promoCancelText, { color: colors.muted }]}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.promoToggleBtn}
+            onPress={() => setShowPromoInput(true)}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="local-offer" size={16} color={colors.primary} />
+            <Text style={[styles.promoToggleText, { color: colors.primary }]}>Have a promo code?</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Subscribe Button */}
         <TouchableOpacity style={[styles.subBtn, { backgroundColor: colors.primary }]} onPress={handleSubscribe} activeOpacity={0.8}>
           <MaterialIcons name="workspace-premium" size={20} color="#fff" />
           <Text style={styles.subBtnText}>
-            Start Premium — {selectedPlan === "yearly" ? `$${yearlyPrice}/year` : `$${monthlyPrice}/month`}
+            Start Premium — {selectedPlan === "yearly" ? `$${effectiveYearlyPrice}/year` : `$${effectiveMonthlyPrice}/month`}
           </Text>
         </TouchableOpacity>
 
@@ -177,9 +331,28 @@ const styles = StyleSheet.create({
   bestBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800", letterSpacing: 1 },
   planName: { fontSize: 16, fontWeight: "700" },
   planPrice: { fontSize: 32, fontWeight: "800", marginTop: 4 },
+  planPriceStrike: { fontSize: 18, fontWeight: "600", marginTop: 4, textDecorationLine: "line-through" },
   planPeriod: { fontSize: 13, marginTop: 2 },
   planSave: { fontSize: 13, fontWeight: "700", marginTop: 6 },
   planMonthly: { fontSize: 12, marginTop: 2 },
+  // Promo code styles
+  promoToggleBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 8, marginBottom: 8 },
+  promoToggleText: { fontSize: 14, fontWeight: "600" },
+  promoSection: { marginHorizontal: 16, marginBottom: 12, padding: 14, borderRadius: 12, borderWidth: 1 },
+  promoLabel: { fontSize: 14, fontWeight: "700", marginBottom: 8 },
+  promoInputRow: { flexDirection: "row", gap: 8 },
+  promoTextInput: { flex: 1, height: 44, borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, fontSize: 16, fontWeight: "700", letterSpacing: 1 },
+  promoApplyBtn: { height: 44, paddingHorizontal: 20, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  promoApplyText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+  promoErrorRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 },
+  promoErrorText: { fontSize: 12, fontWeight: "600" },
+  promoCancelText: { fontSize: 13, textAlign: "center", marginTop: 8 },
+  promoApplied: { marginHorizontal: 16, marginBottom: 12, padding: 12, borderRadius: 12, borderWidth: 1 },
+  promoAppliedRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  promoAppliedCode: { fontSize: 14, fontWeight: "800" },
+  promoAppliedDesc: { fontSize: 12, marginTop: 1 },
+  promoRemoveBtn: { padding: 4 },
+  // Subscribe button
   subBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginHorizontal: 16, paddingVertical: 16, borderRadius: 14 },
   subBtnText: { color: "#fff", fontSize: 17, fontWeight: "800" },
   restoreBtn: { alignItems: "center", paddingVertical: 10 },
