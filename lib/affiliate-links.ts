@@ -81,10 +81,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   recreation_gov: {
     name: "Recreation.gov",
     baseUrl: "https://www.recreation.gov",
-    buildUrl: (name, _state, _city) => {
-      // Use simplified campground name for better search results
+    buildUrl: (name, state, city) => {
+      // Include city + state for accurate results (e.g. "Double Lake Coldspring TX")
       const searchName = simplifyName(name);
-      const query = encodeURIComponent(searchName);
+      const query = encodeURIComponent(`${searchName} ${city} ${state}`);
       return `https://www.recreation.gov/search?q=${query}`;
     },
     icon: "park",
@@ -94,10 +94,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   reserve_america: {
     name: "ReserveAmerica",
     baseUrl: "https://www.reserveamerica.com",
-    buildUrl: (name, _state, _city) => {
-      // ReserveAmerica search — use just the campground name
+    buildUrl: (name, state, city) => {
+      // Include city + state for accurate results
       const searchName = simplifyName(name);
-      const query = encodeURIComponent(searchName);
+      const query = encodeURIComponent(`${searchName} ${city} ${state}`);
       return `https://www.reserveamerica.com/explore/search-results?q=${query}`;
     },
     icon: "calendar-today",
@@ -144,9 +144,8 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
     name: "Harvest Hosts",
     baseUrl: "https://www.harvesthosts.com",
     buildUrl: (_name, state, city) => {
-      // Harvest Hosts — link to their explore page with location
-      const query = encodeURIComponent(`${city}, ${state}`);
-      return `https://www.harvesthosts.com/search?q=${query}`;
+      // Harvest Hosts — use Awin affiliate tracking link
+      return `https://www.awin1.com/cread.php?awinmid=111454&awinaffid=2844436&ued=${encodeURIComponent(`https://www.harvesthosts.com/search?q=${encodeURIComponent(`${city}, ${state}`)}`)}`;
     },
     icon: "wine-bar",
     color: "#722F37",

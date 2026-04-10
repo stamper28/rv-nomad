@@ -547,3 +547,4 @@
 - [x] Update Age Rating - set Parental Controls and Age Assurance to None (Guideline 2.3.6)
 - [x] Update App Privacy Info - change tracking to No (Guideline 5.1.2)
 - [x] Replace Harvest Hosts links with Awin affiliate tracking link
+- [x] Bug: AI Trip Planner "Book Site" button opens generic Camp America page instead of the specific campsite detail/booking screen
