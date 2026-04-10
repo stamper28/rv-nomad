@@ -875,6 +875,32 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* Harvest Hosts */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.harvestHosts.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#722F3715" }]}>
+              <MaterialIcons name="wine-bar" size={32} color="#722F37" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Harvest Hosts</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#722F3720" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#722F37" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Free overnight stays at 5,600+ wineries, farms, breweries & unique locations
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#722F37" }]}>
+                <Text style={styles.partnerCtaText}>Join Harvest Hosts</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* ─── Cruise Ship Ports for RVers ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Cruise Ship Ports</Text>
@@ -915,32 +941,6 @@ export default function ExploreScreen() {
               ))}
             </View>
           ))}
-
-          {/* Harvest Hosts */}
-          <TouchableOpacity
-            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            onPress={() => openUrl(AFFILIATE_CONFIG.harvestHosts.url)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.partnerLogoBox, { backgroundColor: "#722F3715" }]}>
-              <MaterialIcons name="wine-bar" size={32} color="#722F37" />
-            </View>
-            <View style={styles.partnerContent}>
-              <View style={styles.partnerNameRow}>
-                <Text style={[styles.partnerName, { color: colors.foreground }]}>Harvest Hosts</Text>
-                <View style={[styles.partnerBadge, { backgroundColor: "#722F3720" }]}>
-                  <Text style={[styles.partnerBadgeText, { color: "#722F37" }]}>PARTNER</Text>
-                </View>
-              </View>
-              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
-                Free overnight stays at 5,600+ wineries, farms, breweries & unique locations
-              </Text>
-              <View style={[styles.partnerCta, { backgroundColor: "#722F37" }]}>
-                <Text style={styles.partnerCtaText}>Join Harvest Hosts</Text>
-                <MaterialIcons name="open-in-new" size={14} color="#fff" />
-              </View>
-            </View>
-          </TouchableOpacity>
         </ScrollView>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>

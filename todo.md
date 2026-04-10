@@ -560,3 +560,8 @@
 - [x] Add cruise line booking links to cruise line websites
 - [x] Add Cruise Ports section to Explore screen
 - [x] Add Cruise Port detail screen with port info, RV parking, and booking links
+
+## Cruise Line Interactivity Bug
+- [ ] Fix: tapping individual cruise lines on cruise port detail screen doesn't show their info
+- [ ] Add expandable cruise line cards with details (destinations, ship info, booking link)
+- [x] Fix: Harvest Hosts got pushed down below Cruise Ports — move Cruise Ports section below Harvest Hosts
