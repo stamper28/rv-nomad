@@ -537,3 +537,4 @@
 
 ## Crash Bugs
 - [x] Fix TestFlight crash on launch - iPad 10th gen, iPadOS 26.0.1 (fixed: added keychainService param to all SecureStore calls for iOS 26 compatibility, removed RCT_NEW_ARCH_ENABLED=1 from eas.json production build)
+- [x] Fix EAS iOS build error - pod install failed when newArchEnabled was false, reverted to true while keeping SecureStore keychainService fix for iPadOS 26
