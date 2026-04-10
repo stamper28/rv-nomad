@@ -542,7 +542,8 @@
 ## Apple Review Rejection Fix (2nd rejection - Apr 10)
 - [x] Remove Google Play references from iOS build (Guideline 2.3.10)
 - [x] Remove background audio UIBackgroundModes permission (Guideline 2.5.4)
-- [ ] Set up In-App Purchase products in App Store Connect (Guideline 2.1(b))
-- [ ] Fix subscription error when Apple tries to purchase (Guideline 2.1(b))
-- [ ] Update Age Rating - set Parental Controls and Age Assurance to None (Guideline 2.3.6)
-- [ ] Update App Privacy Info - change tracking to No (Guideline 5.1.2)
+- [x] Set up In-App Purchase products in App Store Connect (Guideline 2.1(b))
+- [x] Fix subscription error when Apple tries to purchase (Guideline 2.1(b))
+- [x] Update Age Rating - set Parental Controls and Age Assurance to None (Guideline 2.3.6)
+- [x] Update App Privacy Info - change tracking to No (Guideline 5.1.2)
+- [x] Replace Harvest Hosts links with Awin affiliate tracking link

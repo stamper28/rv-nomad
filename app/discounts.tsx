@@ -97,7 +97,7 @@ const DISCOUNT_PROGRAMS: DiscountProgram[] = [
       "Support small businesses and local communities",
     ],
     bestFor: "Adventurous RVers who love unique experiences and are self-contained",
-    website: "https://www.harvesthosts.com",
+    website: "https://www.awin1.com/cread.php?awinmid=111454&awinaffid=2844436&ued=https%3A%2F%2Fwww.harvesthosts.com",
     color: "#2E7D32",
   },
   {

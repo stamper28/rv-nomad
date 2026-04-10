@@ -16,7 +16,7 @@ export const AFFILIATE_CONFIG = {
   },
   // Harvest Hosts — sign up at harvesthosts.com/affiliate-program
   harvestHosts: {
-    url: "https://www.harvesthosts.com/?ref=rvnomad", // Replace with your referral link
+    url: "https://www.awin1.com/cread.php?awinmid=111454&awinaffid=2844436&ued=https%3A%2F%2Fwww.harvesthosts.com", // Awin affiliate tracking link
     name: "Harvest Hosts",
     cost: "$99/year (Standard) or $149/year (Harvest Hosts+)",
     description: "Free overnight stays at 5,600+ wineries, farms, breweries, and unique locations. No nightly fee — just support the host by purchasing their products.",
