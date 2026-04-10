@@ -1086,6 +1086,16 @@ export default function SiteDetailScreen() {
             const reservable = isReservable(site.category);
             return (
               <View style={{ gap: 8 }}>
+                {/* Harvest Hosts membership notice */}
+                {site.category === "harvest_host" && (
+                  <View style={{ backgroundColor: "#FDF2F8", borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "#722F37", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <MaterialIcons name="card-membership" size={20} color="#722F37" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#722F37", fontSize: 13, fontWeight: "700" }}>Harvest Hosts Subscription Required</Text>
+                      <Text style={{ color: "#722F37", fontSize: 11, lineHeight: 16, marginTop: 2, opacity: 0.8 }}>A Harvest Hosts membership is required to stay at this location. Tap below to sign up or log in.</Text>
+                    </View>
+                  </View>
+                )}
                 {/* Primary booking button */}
                 <TouchableOpacity
                   style={[styles.bookBtn, { backgroundColor: bookingOptions.primary.color }]}

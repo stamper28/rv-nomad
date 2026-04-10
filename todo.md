@@ -548,3 +548,4 @@
 - [x] Update App Privacy Info - change tracking to No (Guideline 5.1.2)
 - [x] Replace Harvest Hosts links with Awin affiliate tracking link
 - [x] Bug: AI Trip Planner "Book Site" button opens generic Camp America page instead of the specific campsite detail/booking screen
+- [x] Add "Harvest Hosts subscription required" notice on Harvest Host campground listings
