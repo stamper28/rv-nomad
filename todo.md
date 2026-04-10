@@ -549,3 +549,14 @@
 - [x] Replace Harvest Hosts links with Awin affiliate tracking link
 - [x] Bug: AI Trip Planner "Book Site" button opens generic Camp America page instead of the specific campsite detail/booking screen
 - [x] Add "Harvest Hosts subscription required" notice on Harvest Host campground listings
+- [x] Integrate RIDB API to fetch real campground photos for federal campgrounds
+- [x] Add membership notice for Passport America campgrounds on site-detail
+- [x] Add membership notice for Thousand Trails campgrounds on site-detail
+- [x] Add Passport America campsite data and filter category (40 sites)
+- [x] Add Thousand Trails campsite data and filter category (25 sites)
+
+## Cruise Ship Ports for RVers
+- [x] Add cruise ship ports data (Florida to California) with RV parking info (13 ports, 4 regions)
+- [x] Add cruise line booking links to cruise line websites
+- [x] Add Cruise Ports section to Explore screen
+- [x] Add Cruise Port detail screen with port info, RV parking, and booking links

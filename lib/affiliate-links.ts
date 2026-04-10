@@ -151,6 +151,28 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
     color: "#722F37",
     description: "Wineries, farms & unique stays",
   },
+  passport_america: {
+    name: "Passport America",
+    baseUrl: "https://www.passportamerica.com",
+    buildUrl: (_name, state, city) => {
+      const query = encodeURIComponent(`${city}, ${state}`);
+      return `https://www.passportamerica.com/campground-search/?q=${query}`;
+    },
+    icon: "loyalty",
+    color: "#D84315",
+    description: "50% off campground fees",
+  },
+  thousand_trails: {
+    name: "Thousand Trails",
+    baseUrl: "https://www.thousandtrails.com",
+    buildUrl: (_name, state, _city) => {
+      const stateSlug = state.toLowerCase();
+      return `https://www.thousandtrails.com/find-a-campground?state=${stateSlug}`;
+    },
+    icon: "forest",
+    color: "#1A237E",
+    description: "Membership campground network",
+  },
   google_maps: {
     name: "Google Maps",
     baseUrl: "https://www.google.com/maps",
@@ -198,6 +220,14 @@ export function getBookingOptions(
       break;
     case "harvest_host":
       primaryKey = "harvest_hosts";
+      secondaryKeys = ["google_maps"];
+      break;
+    case "passport_america":
+      primaryKey = "passport_america";
+      secondaryKeys = ["campspot", "google_maps"];
+      break;
+    case "thousand_trails":
+      primaryKey = "thousand_trails";
       secondaryKeys = ["google_maps"];
       break;
     case "military":
@@ -279,6 +309,8 @@ export function isReservable(category: SiteCategory): boolean {
     "state_park",
     "rv_park",
     "harvest_host",
+    "passport_america",
+    "thousand_trails",
     "military",
     "army_corps",
     "county_park",

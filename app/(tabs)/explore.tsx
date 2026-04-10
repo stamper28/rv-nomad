@@ -21,6 +21,14 @@ import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
 import { openUrl } from "@/lib/open-url";
 import { AFFILIATE_CONFIG } from "@/lib/affiliate";
+import { CRUISE_PORTS, type CruisePort } from "@/lib/cruise-ports";
+
+const CRUISE_PORT_REGIONS: { name: CruisePort["region"]; color: string }[] = [
+  { name: "Florida", color: "#FF6B35" },
+  { name: "Gulf Coast", color: "#0077B6" },
+  { name: "East Coast", color: "#2E7D32" },
+  { name: "California", color: "#E91E63" },
+];
 
 type SimpleStateInfo = { code: string; name: string; siteCount: number };
 
@@ -33,6 +41,8 @@ const EXPLORE_SECTIONS: { category: SiteCategory; title: string; subtitle: strin
   { category: "boondocking", title: "Free Camping", subtitle: "Boondocking, BLM, Walmart & more", includeExtra: ["blm", "national_forest", "walmart", "cracker_barrel", "rest_area"] },
   { category: "military", title: "Military FamCamps", subtitle: "Base campgrounds for military families" },
   { category: "harvest_host", title: "Harvest Hosts", subtitle: "Wineries, farms & unique stays" },
+  { category: "passport_america", title: "Passport America", subtitle: "50% off campground fees" },
+  { category: "thousand_trails", title: "Thousand Trails", subtitle: "Membership campground network" },
   { category: "dump_station", title: "Dump Stations", subtitle: "Find dump stations near you" },
 ];
 
@@ -46,6 +56,8 @@ const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
   national_forest: "tree.fill",
   military: "shield.fill",
   harvest_host: "wineglass.fill",
+  passport_america: "tag.fill",
+  thousand_trails: "tent.fill",
   walmart: "cart.fill",
   cracker_barrel: "building.2.fill",
   rest_area: "mappin",
@@ -95,6 +107,7 @@ export default function ExploreScreen() {
   const [allSites, setAllSites] = useState<CampSite[]>([]);
   const [stateList, setStateList] = useState<SimpleStateInfo[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const cruisePorts = CRUISE_PORTS;
 
   useEffect(() => {
     // Lazy load the large data file
@@ -861,6 +874,47 @@ export default function ExploreScreen() {
               </View>
             </View>
           </TouchableOpacity>
+
+          {/* ─── Cruise Ship Ports for RVers ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Cruise Ship Ports</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Park your RV & board a cruise — Florida to California</Text>
+          </View>
+
+          {CRUISE_PORT_REGIONS.map((region) => (
+            <View key={region.name}>
+              <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 }}>
+                <Text style={{ color: region.color, fontSize: 13, fontWeight: "700" }}>{region.name}</Text>
+              </View>
+              {cruisePorts.filter((p) => p.region === region.name).map((port) => (
+                <TouchableOpacity
+                  key={port.id}
+                  style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  onPress={() => router.push({ pathname: "/cruise-port-detail" as any, params: { portId: port.id } })}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.partnerLogoBox, { backgroundColor: region.color + "15" }]}>
+                    <MaterialIcons name="directions-boat" size={32} color={region.color} />
+                  </View>
+                  <View style={styles.partnerContent}>
+                    <View style={styles.partnerNameRow}>
+                      <Text style={[styles.partnerName, { color: colors.foreground }]}>{port.name}</Text>
+                      <View style={[styles.partnerBadge, { backgroundColor: region.color + "20" }]}>
+                        <Text style={[styles.partnerBadgeText, { color: region.color }]}>{port.cruiseLines.length} LINES</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                      {port.city}, {port.state} — {port.rvParking.length} RV parking option{port.rvParking.length !== 1 ? "s" : ""}
+                    </Text>
+                    <View style={[styles.partnerCta, { backgroundColor: region.color }]}>
+                      <Text style={styles.partnerCtaText}>View Port & Book</Text>
+                      <MaterialIcons name="chevron-right" size={14} color="#fff" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
 
           {/* Harvest Hosts */}
           <TouchableOpacity

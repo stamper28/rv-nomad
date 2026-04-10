@@ -268,6 +268,20 @@ const CATEGORY_IMAGES: Record<string, Record<string, string[]>> = {
       "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=400&fit=crop", // visitor center
     ],
   },
+  passport_america: {
+    default: [
+      "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=600&h=400&fit=crop", // RV park
+      "https://images.unsplash.com/photo-1537905569824-f89f14cceb68?w=600&h=400&fit=crop", // RV camping
+      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=400&fit=crop", // campsite
+    ],
+  },
+  thousand_trails: {
+    default: [
+      "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=600&h=400&fit=crop", // resort camping
+      "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=600&h=400&fit=crop", // beach resort
+      "https://images.unsplash.com/photo-1537905569824-f89f14cceb68?w=600&h=400&fit=crop", // RV resort
+    ],
+  },
   army_corps: {
     default: [
       "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=400&fit=crop", // lake campground

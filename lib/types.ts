@@ -14,6 +14,8 @@ export type SiteCategory =
   | "national_forest"
   | "military"
   | "harvest_host"
+  | "passport_america"
+  | "thousand_trails"
   | "walmart"
   | "cracker_barrel"
   | "rest_area"
@@ -188,6 +190,8 @@ export const CATEGORY_LABELS: Record<SiteCategory, string> = {
   national_forest: "National Forest",
   military: "Military FamCamp",
   harvest_host: "Harvest Host",
+  passport_america: "Passport America",
+  thousand_trails: "Thousand Trails",
   walmart: "Walmart",
   cracker_barrel: "Cracker Barrel",
   rest_area: "Rest Area",
@@ -239,6 +243,8 @@ export const CATEGORY_COLORS: Record<SiteCategory, string> = {
   national_forest: "#1B5E20",
   military: "#4A148C",
   harvest_host: "#F9A825",
+  passport_america: "#D84315",
+  thousand_trails: "#1A237E",
   walmart: "#0071CE",
   cracker_barrel: "#8D6E63",
   rest_area: "#6A1B9A",

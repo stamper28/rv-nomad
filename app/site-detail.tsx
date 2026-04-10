@@ -27,6 +27,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteReview } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
+import { getRIDBPhotos, supportsRIDBPhotos, type RIDBPhoto } from "@/lib/ridb-photos";
 import { Store } from "@/lib/store";
 import { trpc } from "@/lib/trpc";
 import { getMembershipInfo } from "@/lib/affiliate";
@@ -56,6 +57,8 @@ export default function SiteDetailScreen() {
   const [reviewRigType, setReviewRigType] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [wantsCancellationAlert, setWantsCancellationAlert] = useState(false);
+  const [ridbPhotos, setRidbPhotos] = useState<RIDBPhoto[]>([]);
+  const [ridbPhotoIndex, setRidbPhotoIndex] = useState(0);
 
   // Fetch backend reviews
   const backendReviews = trpc.reviews.forSite.useQuery(
@@ -71,6 +74,17 @@ export default function SiteDetailScreen() {
       setSite(found);
     });
   }, [params.siteId]);
+
+  // Fetch RIDB photos for federal campgrounds
+  useEffect(() => {
+    if (site && supportsRIDBPhotos(site.category)) {
+      getRIDBPhotos(site.id, site.name, site.category, site.latitude, site.longitude)
+        .then((photos) => {
+          if (photos.length > 0) setRidbPhotos(photos);
+        })
+        .catch(() => {});
+    }
+  }, [site?.id]);
 
   useEffect(() => {
     if (site) {
@@ -180,8 +194,36 @@ export default function SiteDetailScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Hero Image */}
-        <Image source={{ uri: getSiteImageUrl(site.id, site.category, site.state) }} style={styles.heroImage} contentFit="cover" transition={300} />
+        {/* Hero Image — RIDB carousel for federal campgrounds, fallback to Unsplash */}
+        {ridbPhotos.length > 0 ? (
+          <View>
+            <Image source={{ uri: ridbPhotos[ridbPhotoIndex].url }} style={styles.heroImage} contentFit="cover" transition={300} />
+            {ridbPhotos.length > 1 && (
+              <View style={{ position: "absolute", bottom: 8, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 4, alignItems: "center" }}>
+                {ridbPhotoIndex > 0 && (
+                  <TouchableOpacity onPress={() => setRidbPhotoIndex((i) => Math.max(0, i - 1))} style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 14, width: 28, height: 28, alignItems: "center", justifyContent: "center" }}>
+                    <MaterialIcons name="chevron-left" size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                <View style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ color: "#fff", fontSize: 11, fontWeight: "600" }}>{ridbPhotoIndex + 1} / {ridbPhotos.length}</Text>
+                </View>
+                {ridbPhotoIndex < ridbPhotos.length - 1 && (
+                  <TouchableOpacity onPress={() => setRidbPhotoIndex((i) => Math.min(ridbPhotos.length - 1, i + 1))} style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 14, width: 28, height: 28, alignItems: "center", justifyContent: "center" }}>
+                    <MaterialIcons name="chevron-right" size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+            {ridbPhotos[ridbPhotoIndex].credits ? (
+              <View style={{ position: "absolute", top: 8, right: 8, backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ color: "#fff", fontSize: 9 }}>{ridbPhotos[ridbPhotoIndex].credits}</Text>
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <Image source={{ uri: getSiteImageUrl(site.id, site.category, site.state) }} style={styles.heroImage} contentFit="cover" transition={300} />
+        )}
 
         {/* Hero Info */}
         <View style={[styles.hero, { backgroundColor: catColor + "15" }]}>
@@ -1093,6 +1135,26 @@ export default function SiteDetailScreen() {
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: "#722F37", fontSize: 13, fontWeight: "700" }}>Harvest Hosts Subscription Required</Text>
                       <Text style={{ color: "#722F37", fontSize: 11, lineHeight: 16, marginTop: 2, opacity: 0.8 }}>A Harvest Hosts membership is required to stay at this location. Tap below to sign up or log in.</Text>
+                    </View>
+                  </View>
+                )}
+                {/* Passport America membership notice */}
+                {site.category === "passport_america" && (
+                  <View style={{ backgroundColor: "#FBE9E7", borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "#D84315", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <MaterialIcons name="card-membership" size={20} color="#D84315" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#D84315", fontSize: 13, fontWeight: "700" }}>Passport America Membership Required</Text>
+                      <Text style={{ color: "#D84315", fontSize: 11, lineHeight: 16, marginTop: 2, opacity: 0.8 }}>A Passport America membership is required for the 50% campground discount. Tap below to sign up or log in.</Text>
+                    </View>
+                  </View>
+                )}
+                {/* Thousand Trails membership notice */}
+                {site.category === "thousand_trails" && (
+                  <View style={{ backgroundColor: "#E8EAF6", borderRadius: 10, padding: 12, borderWidth: 1, borderColor: "#1A237E", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <MaterialIcons name="card-membership" size={20} color="#1A237E" />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: "#1A237E", fontSize: 13, fontWeight: "700" }}>Thousand Trails Membership Required</Text>
+                      <Text style={{ color: "#1A237E", fontSize: 11, lineHeight: 16, marginTop: 2, opacity: 0.8 }}>A Thousand Trails membership is required to camp at this location. Tap below to learn about membership options.</Text>
                     </View>
                   </View>
                 )}
