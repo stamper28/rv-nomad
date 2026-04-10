@@ -467,7 +467,7 @@ export default function ProfileScreen() {
             <Text className="text-sm text-muted">
               Version 1.0.0 — $49.99/yr or $5.99/mo
             </Text>
-            <Text className="text-xs text-muted">Available on the App Store and Google Play</Text>
+            <Text className="text-xs text-muted">Available on the App Store</Text>
           </View>
         </View>
       </ScrollView>

@@ -4,7 +4,7 @@
  * See LICENSE file for details.
  */
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -43,7 +43,7 @@ export default function PremiumScreen() {
   function handleSubscribe() {
     Alert.alert(
       "Subscription",
-      `Subscribe to RV Nomad Premium for ${selectedPlan === "yearly" ? `$${yearlyPrice}/year` : `$${monthlyPrice}/month`}?\n\nThis will be processed through the App Store / Google Play when the app is published.`,
+      `Subscribe to RV Nomad Premium for ${selectedPlan === "yearly" ? `$${yearlyPrice}/year` : `$${monthlyPrice}/month`}?\n\nThis will be processed through your device's app store when the app is published.`,
       [
         { text: "Cancel", style: "cancel" },
         { text: "Subscribe", onPress: () => Alert.alert("Coming Soon", "In-app purchases will be available when the app is published. All features are unlocked for testing.") },
@@ -156,7 +156,7 @@ export default function PremiumScreen() {
 
         {/* Legal */}
         <Text style={[styles.legal, { color: colors.muted }]}>
-          Payment will be charged to your App Store or Google Play account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device settings.
+          Payment will be charged to your iTunes account. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage subscriptions in your device settings.
         </Text>
       </ScrollView>
     </ScreenContainer>

@@ -538,3 +538,11 @@
 ## Crash Bugs
 - [x] Fix TestFlight crash on launch - iPad 10th gen, iPadOS 26.0.1 (fixed: added keychainService param to all SecureStore calls for iOS 26 compatibility, removed RCT_NEW_ARCH_ENABLED=1 from eas.json production build)
 - [x] Fix EAS iOS build error - pod install failed when newArchEnabled was false, reverted to true while keeping SecureStore keychainService fix for iPadOS 26
+
+## Apple Review Rejection Fix (2nd rejection - Apr 10)
+- [x] Remove Google Play references from iOS build (Guideline 2.3.10)
+- [x] Remove background audio UIBackgroundModes permission (Guideline 2.5.4)
+- [ ] Set up In-App Purchase products in App Store Connect (Guideline 2.1(b))
+- [ ] Fix subscription error when Apple tries to purchase (Guideline 2.1(b))
+- [ ] Update Age Rating - set Parental Controls and Age Assurance to None (Guideline 2.3.6)
+- [ ] Update App Privacy Info - change tracking to No (Guideline 5.1.2)
