@@ -580,3 +580,6 @@
 - [x] Add restore purchases functionality
 - [x] Persist subscription status with AsyncStorage
 - [x] Write unit tests for IAP service
+
+## Amazon Affiliate Tag Update
+- [x] Update Amazon Associates tag from rvnomad-20 to kieranwoll20-20

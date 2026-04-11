@@ -11,7 +11,7 @@
 export const AFFILIATE_CONFIG = {
   // Amazon Associates — sign up at affiliate-program.amazon.com
   amazon: {
-    tag: "rvnomad-20", // Replace with your Amazon Associates tag
+    tag: "kieranwoll20-20", // Replace with your Amazon Associates tag
     baseUrl: "https://www.amazon.com/dp/",
   },
   // Harvest Hosts — sign up at harvesthosts.com/affiliate-program

@@ -26,7 +26,7 @@ export const AFFILIATE_TAGS = {
   /** ShareASale affiliate ID */
   shareasale: "RVNOMAD_SHAREASALE_ID",
   /** Amazon Associates tag */
-  amazon: "rvnomad-20",
+  amazon: "kieranwoll20-20",
   /** Harvest Hosts affiliate ID */
   harvestHosts: "RVNOMAD_HH_ID",
   /** Passport America affiliate ID */

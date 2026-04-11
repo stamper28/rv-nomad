@@ -53,7 +53,7 @@ describe("openUrl utility", () => {
     const recGov = "https://www.recreation.gov/search?q=Denali%20National%20Park&affiliate=RVNOMAD_IMPACT_ID";
     expect(classifyUrl(recGov)).toBe("web");
 
-    const amazon = "https://www.amazon.com/dp/B08N5WRWNW?tag=rvnomad-20";
+    const amazon = "https://www.amazon.com/dp/B08N5WRWNW?tag=kieranwoll20-20";
     expect(classifyUrl(amazon)).toBe("web");
   });
 
