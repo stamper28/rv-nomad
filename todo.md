@@ -571,3 +571,12 @@
 - [x] Create Google Places photo service (search place, fetch photos)
 - [x] Integrate real photos into site-detail screen
 - [x] Integrate real photos into campsite cards on home screen (uses site-detail carousel)
+
+## Apple In-App Purchases (IAP) Integration
+- [x] Install expo-iap package
+- [x] Create IAP service layer (connection, fetch products, purchase, restore)
+- [x] Create subscription context/provider for app-wide premium state
+- [x] Update premium screen to use real Apple IAP purchase flow
+- [x] Add restore purchases functionality
+- [x] Persist subscription status with AsyncStorage
+- [x] Write unit tests for IAP service

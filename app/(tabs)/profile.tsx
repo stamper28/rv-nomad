@@ -32,6 +32,7 @@ import {
   DEFAULT_MEMBERSHIPS,
 } from "@/lib/store";
 import { openUrl } from "@/lib/open-url";
+import { loadPremiumStatus } from "@/lib/iap-service";
 
 const RV_TYPES = [
   "Class A Motorhome",
@@ -359,8 +360,8 @@ export default function ProfileScreen() {
               <IconSymbol name="crown.fill" size={22} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text className="text-base font-bold text-foreground">Upgrade to Premium</Text>
-              <Text className="text-xs text-muted">All 50 states, offline maps, trip planner & more</Text>
+              <Text className="text-base font-bold text-foreground">{settings.isPremium ? 'Premium Active' : 'Upgrade to Premium'}</Text>
+              <Text className="text-xs text-muted">{settings.isPremium ? 'Manage your subscription' : 'All 50 states, offline maps, trip planner & more'}</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>

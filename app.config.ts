@@ -135,6 +135,7 @@ const config: ExpoConfig = {
       },
     ],
     "./plugins/with-min-sdk",
+    "expo-iap",
   ],
   extra: {
     GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY ?? "",
