@@ -583,3 +583,6 @@
 
 ## Amazon Affiliate Tag Update
 - [x] Update Amazon Associates tag from rvnomad-20 to kieranwoll20-20
+
+## ReserveAmerica Affiliate Update
+- [x] Update ReserveAmerica affiliate ID to hqqfudcmtqeakkdkvkuepxq4

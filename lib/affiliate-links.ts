@@ -98,7 +98,7 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
       // Include city + state for accurate results
       const searchName = simplifyName(name);
       const query = encodeURIComponent(`${searchName} ${city} ${state}`);
-      return `https://www.reserveamerica.com/explore/search-results?q=${query}`;
+      return `https://www.reserveamerica.com/explore/search-results?q=${query}&affiliateID=hqqfudcmtqeakkdkvkuepxq4`;
     },
     icon: "calendar-today",
     color: "#2E7D32",
