@@ -38,6 +38,7 @@ import { getBookingOptions, isReservable, getBookingButtonLabel } from "@/lib/af
 import { findNearbyFuelStations, findNearbySupplyStores, findNearbyRepairShops, type NearbyFuelStation, type NearbySupplyStore, type NearbyRepairShop } from "@/lib/nearby-services";
 import { openUrl } from "@/lib/open-url";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { fetchPlacePhotos, buildPlaceQuery } from "@/lib/google-places-photos";
 import { findNearbyRestaurants, getRestaurantCategoryInfo } from "@/lib/nearby-restaurants";
 import { CellSignalSection } from "@/components/cell-signal-section";
 import { AvailabilitySection } from "@/components/availability-section";
@@ -59,6 +60,9 @@ export default function SiteDetailScreen() {
   const [wantsCancellationAlert, setWantsCancellationAlert] = useState(false);
   const [ridbPhotos, setRidbPhotos] = useState<RIDBPhoto[]>([]);
   const [ridbPhotoIndex, setRidbPhotoIndex] = useState(0);
+  const [googlePhotos, setGooglePhotos] = useState<string[]>([]);
+  const [googlePhotoIndex, setGooglePhotoIndex] = useState(0);
+  const [googlePhotoAttributions, setGooglePhotoAttributions] = useState<string[]>([]);
 
   // Fetch backend reviews
   const backendReviews = trpc.reviews.forSite.useQuery(
@@ -85,6 +89,21 @@ export default function SiteDetailScreen() {
         .catch(() => {});
     }
   }, [site?.id]);
+
+  // Fetch Google Places photos for all sites (fallback when no RIDB photos)
+  useEffect(() => {
+    if (site && ridbPhotos.length === 0) {
+      const query = buildPlaceQuery(site.name, site.city, site.state, site.category);
+      fetchPlacePhotos(query, site.latitude, site.longitude, 5)
+        .then(({ urls, attributions }) => {
+          if (urls.length > 0) {
+            setGooglePhotos(urls);
+            setGooglePhotoAttributions(attributions);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [site?.id, ridbPhotos.length]);
 
   useEffect(() => {
     if (site) {
@@ -220,6 +239,32 @@ export default function SiteDetailScreen() {
                 <Text style={{ color: "#fff", fontSize: 9 }}>{ridbPhotos[ridbPhotoIndex].credits}</Text>
               </View>
             ) : null}
+          </View>
+        ) : googlePhotos.length > 0 ? (
+          <View>
+            <Image source={{ uri: googlePhotos[googlePhotoIndex] }} style={styles.heroImage} contentFit="cover" transition={300} />
+            {googlePhotos.length > 1 && (
+              <View style={{ position: "absolute", bottom: 8, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 4, alignItems: "center" }}>
+                {googlePhotoIndex > 0 && (
+                  <TouchableOpacity onPress={() => setGooglePhotoIndex((i) => Math.max(0, i - 1))} style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 14, width: 28, height: 28, alignItems: "center", justifyContent: "center" }}>
+                    <MaterialIcons name="chevron-left" size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                <View style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ color: "#fff", fontSize: 11, fontWeight: "600" }}>{googlePhotoIndex + 1} / {googlePhotos.length}</Text>
+                </View>
+                {googlePhotoIndex < googlePhotos.length - 1 && (
+                  <TouchableOpacity onPress={() => setGooglePhotoIndex((i) => Math.min(googlePhotos.length - 1, i + 1))} style={{ backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 14, width: 28, height: 28, alignItems: "center", justifyContent: "center" }}>
+                    <MaterialIcons name="chevron-right" size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+            {googlePhotoAttributions.length > 0 && (
+              <View style={{ position: "absolute", top: 8, right: 8, backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ color: "#fff", fontSize: 9 }}>Photo: {googlePhotoAttributions[0]}</Text>
+              </View>
+            )}
           </View>
         ) : (
           <Image source={{ uri: getSiteImageUrl(site.id, site.category, site.state) }} style={styles.heroImage} contentFit="cover" transition={300} />

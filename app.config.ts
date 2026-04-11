@@ -137,6 +137,7 @@ const config: ExpoConfig = {
     "./plugins/with-min-sdk",
   ],
   extra: {
+    GOOGLE_PLACES_API_KEY: process.env.GOOGLE_PLACES_API_KEY ?? "",
     eas: {
       projectId: "9e9f29aa-c90d-4fff-bcf5-31ef788a6b8b",
     },

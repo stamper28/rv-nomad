@@ -565,3 +565,9 @@
 - [ ] Fix: tapping individual cruise lines on cruise port detail screen doesn't show their info
 - [ ] Add expandable cruise line cards with details (destinations, ship info, booking link)
 - [x] Fix: Harvest Hosts got pushed down below Cruise Ports — move Cruise Ports section below Harvest Hosts
+
+## Google Places Photos Integration
+- [x] Store Google Places API key as environment variable
+- [x] Create Google Places photo service (search place, fetch photos)
+- [x] Integrate real photos into site-detail screen
+- [x] Integrate real photos into campsite cards on home screen (uses site-detail carousel)
