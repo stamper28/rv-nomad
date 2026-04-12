@@ -463,13 +463,17 @@ export default function ProfileScreen() {
           </View>
 
           {/* App Info / Pricing */}
-          <View className="bg-surface rounded-2xl p-4 border border-border items-center gap-1">
+          <TouchableOpacity
+            className="bg-surface rounded-2xl p-4 border border-border items-center gap-1"
+            onPress={() => router.push("/premium" as any)}
+            activeOpacity={0.7}
+          >
             <Text className="text-lg font-bold text-foreground">RV Nomad</Text>
-            <Text className="text-sm text-muted">
+            <Text className="text-sm text-primary font-semibold">
               Version 1.0.0 — $49.99/yr or $5.99/mo
             </Text>
-            <Text className="text-xs text-muted">Available on the App Store</Text>
-          </View>
+            <Text className="text-xs text-primary">Tap to view plans</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </ScreenContainer>

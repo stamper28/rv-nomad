@@ -593,3 +593,4 @@
 - [x] Add KOA to the membership/club section alongside Harvest Hosts, Hipcamp, etc.
 - [x] Add "Go to Explore to see what this app has to offer" text on home screen below subtitle
 - [x] Make "Go to Explore" text tappable to navigate to Explore tab
+- [x] Fix payment plan section not clickable — made pricing footer tappable, navigates to Premium screen
