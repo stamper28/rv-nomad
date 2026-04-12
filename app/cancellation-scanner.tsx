@@ -12,6 +12,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
+import { openUrl } from "@/lib/open-url";
 
 interface WatchedCampground {
   id: string;
@@ -83,7 +84,15 @@ export default function CancellationScannerScreen() {
       `${opening.campgroundName}\n${opening.siteNumber}\n${opening.dates}\nEst. $${opening.pricePerNight}/night`,
       [
         { text: "Cancel", style: "cancel" },
-        { text: "Book Now", onPress: () => Alert.alert("Redirecting...", "Taking you to the booking page to secure this spot before someone else does!") },
+        {
+          text: "Book Now",
+          onPress: () => {
+            // Build a Recreation.gov search URL for the campground
+            const query = encodeURIComponent(`${opening.campgroundName} ${opening.state}`);
+            const bookingUrl = `https://www.recreation.gov/search?q=${query}`;
+            openUrl(bookingUrl);
+          },
+        },
       ]
     );
   };

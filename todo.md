@@ -586,3 +586,6 @@
 
 ## ReserveAmerica Affiliate Update
 - [x] Update ReserveAmerica affiliate ID to hqqfudcmtqeakkdkvkuepxq4
+
+## Bug Fixes
+- [x] Fix cancellation watch booking redirect — shows "taking you to booking" message but doesn't actually redirect
