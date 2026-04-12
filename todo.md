@@ -624,3 +624,8 @@
 - [x] Add Hydaway section to Explore tab
 - [x] Add Hydaway section to website landing page
 - [x] Remove Hydaway from app and website — domain is for sale, company shut down
+
+## RV Rental Partners
+- [x] Add Outdoorsy, RVshare, Cruise America, El Monte RV to affiliate config
+- [x] Add RV Rentals section to Explore tab
+- [x] Add RV Rentals section to website landing page

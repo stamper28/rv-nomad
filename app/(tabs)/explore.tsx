@@ -940,6 +940,116 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* ─── RV Rentals ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>RV Rentals</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Don't own an RV? Rent one for your next adventure</Text>
+          </View>
+
+          {/* Outdoorsy */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.rvRentals.outdoorsy.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#2E7D3215" }]}>
+              <MaterialIcons name="rv-hookup" size={32} color="#2E7D32" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Outdoorsy</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#2E7D3220" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#2E7D32" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Rent RVs, camper vans & trailers from trusted owners — insurance included
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#2E7D32" }]}>
+                <Text style={styles.partnerCtaText}>Browse Outdoorsy</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* RVshare */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.rvRentals.rvshare.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#1565C015" }]}>
+              <MaterialIcons name="directions-car" size={32} color="#1565C0" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>RVshare</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#1565C020" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#1565C0" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Rent RVs from private owners — roadside assistance, 24/7 support & flexible cancellation
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#1565C0" }]}>
+                <Text style={styles.partnerCtaText}>Browse RVshare</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Cruise America */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.rvRentals.cruiseAmerica.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#E6511515" }]}>
+              <MaterialIcons name="airport-shuttle" size={32} color="#E65115" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Cruise America</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#E6511520" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#E65115" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Affordable RV rentals from 130+ locations — no RV experience needed
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#E65115" }]}>
+                <Text style={styles.partnerCtaText}>Browse Cruise America</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* El Monte RV */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.rvRentals.elMonteRV.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#7B1FA215" }]}>
+              <MaterialIcons name="local-shipping" size={32} color="#7B1FA2" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>El Monte RV</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#7B1FA220" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#7B1FA2" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Premium RV rentals — Class A, Class C & travel trailers with full amenities
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#7B1FA2" }]}>
+                <Text style={styles.partnerCtaText}>Browse El Monte RV</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* ─── Preserve Your Memories ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Preserve Your Memories</Text>

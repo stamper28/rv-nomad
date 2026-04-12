@@ -84,6 +84,33 @@ export const AFFILIATE_CONFIG = {
     cost: "Varies by product",
     description: "Turn your RV trip photos into beautiful photobooks, canvas prints, metal prints, calendars, mugs, and more. Ships to 100+ countries with a 100% quality guarantee.",
   },
+  // RV Rentals
+  rvRentals: {
+    outdoorsy: {
+      url: "https://www.outdoorsy.com/?ref=rvnomad", // Replace with affiliate link once approved
+      name: "Outdoorsy",
+      cost: "Varies by vehicle",
+      description: "Rent RVs, camper vans & trailers from trusted owners. The largest peer-to-peer RV rental marketplace with insurance included.",
+    },
+    rvshare: {
+      url: "https://rvshare.com/?ref=rvnomad", // Replace with affiliate link once approved
+      name: "RVshare",
+      cost: "Varies by vehicle",
+      description: "Rent RVs from private owners across the US. Roadside assistance, 24/7 support, and flexible cancellation.",
+    },
+    cruiseAmerica: {
+      url: "https://www.cruiseamerica.com/?ref=rvnomad", // Replace with affiliate link once approved
+      name: "Cruise America",
+      cost: "From ~$100/night",
+      description: "Affordable RV rentals from 130+ locations nationwide. Fleet of well-maintained motorhomes — no RV experience needed.",
+    },
+    elMonteRV: {
+      url: "https://www.elmonterv.com/?ref=rvnomad", // Replace with affiliate link once approved
+      name: "El Monte RV",
+      cost: "Varies by vehicle",
+      description: "Premium RV rentals with locations across the US. Class A, Class C & travel trailers with full kitchen and bathroom.",
+    },
+  },
   // RV Insurance
   insurance: {
     progressive: {
