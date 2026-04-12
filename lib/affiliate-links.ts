@@ -121,10 +121,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
     name: "Campspot",
     baseUrl: "https://www.campspot.com",
     buildUrl: (name, state, city) => {
-      // Include campground name for specific results
+      // Campspot's SPA ignores the ?q= parameter, so use Google to find the park page
       const searchName = simplifyName(name);
-      const query = encodeURIComponent(`${searchName} ${city}, ${state}`);
-      return `https://www.campspot.com/search?q=${query}`;
+      const query = encodeURIComponent(`site:campspot.com ${searchName} ${city} ${state}`);
+      return `https://www.google.com/search?q=${query}`;
     },
     icon: "terrain",
     color: "#FF6B35",

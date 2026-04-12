@@ -5,7 +5,7 @@ describe("Campground Data", () => {
   it("should export ALL_SITES and STATE_LIST", async () => {
     const { ALL_SITES, STATE_LIST } = await import("../lib/all-sites-data");
     expect(ALL_SITES.length).toBeGreaterThan(0);
-    expect(STATE_LIST.length).toBe(63); // 50 US states + 13 Canadian provinces/territories
+    expect(STATE_LIST.length).toBe(64); // 50 US states + DC + 13 Canadian provinces/territories
   }, 60000);
 
   it("should have sites for every state in STATE_LIST", async () => {
