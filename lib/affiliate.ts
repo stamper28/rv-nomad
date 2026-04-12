@@ -56,6 +56,13 @@ export const AFFILIATE_CONFIG = {
     cost: "From $575/year (Zone Pass)",
     description: "Unlimited camping at 80+ campgrounds in your zone. Great value for frequent campers.",
   },
+  // KOA — Kampgrounds of America
+  koa: {
+    url: "https://koa.com/campgrounds/",
+    name: "KOA Kampgrounds",
+    cost: "KOA Value Card $33/year",
+    description: "1,500+ campgrounds across North America with cabins, RV sites, and tent camping. KOA Value Card saves 10% on registration fees at all KOA locations.",
+  },
   // Hipcamp — sign up at hipcamp.com/en-US/affiliates
   hipcamp: {
     url: "https://www.hipcamp.com/?ref=rvnomad", // Replace with your Hipcamp affiliate link
@@ -140,6 +147,7 @@ interface MembershipInfo {
 /** Get membership info for a given program */
 export function getMembershipInfo(program: string): MembershipInfo | null {
   const map: Record<string, MembershipInfo> = {
+    koa: AFFILIATE_CONFIG.koa,
     harvest_host: AFFILIATE_CONFIG.harvestHosts,
     hipcamp: AFFILIATE_CONFIG.hipcamp,
     campspot: AFFILIATE_CONFIG.campspot,

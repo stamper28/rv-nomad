@@ -875,6 +875,32 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* KOA Kampgrounds */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.koa.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#FFD70015" }]}>
+              <MaterialIcons name="cabin" size={32} color="#DAA520" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>KOA Kampgrounds</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#FFD70020" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#DAA520" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                1,500+ campgrounds across North America — cabins, RV sites & tent camping
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#DAA520" }]}>
+                <Text style={styles.partnerCtaText}>Browse KOA</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* Harvest Hosts */}
           <TouchableOpacity
             style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
