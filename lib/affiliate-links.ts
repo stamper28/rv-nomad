@@ -107,9 +107,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   koa: {
     name: "KOA.com",
     baseUrl: "https://koa.com",
-    buildUrl: (_name, state, city) => {
-      // KOA search by location works best
-      const query = encodeURIComponent(`${city} ${state}`);
+    buildUrl: (name, state, city) => {
+      // Include campground name for more specific results
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(`${searchName} ${city} ${state}`);
       return `https://koa.com/campgrounds/search/?query=${query}`;
     },
     icon: "cabin",
@@ -119,9 +120,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   campspot: {
     name: "Campspot",
     baseUrl: "https://www.campspot.com",
-    buildUrl: (_name, state, city) => {
-      // Campspot search by location
-      const query = encodeURIComponent(`${city}, ${state}`);
+    buildUrl: (name, state, city) => {
+      // Include campground name for specific results
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(`${searchName} ${city}, ${state}`);
       return `https://www.campspot.com/search?q=${query}`;
     },
     icon: "terrain",
@@ -131,9 +133,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   hipcamp: {
     name: "Hipcamp",
     baseUrl: "https://www.hipcamp.com",
-    buildUrl: (_name, state, city) => {
-      // Hipcamp search by location
-      const query = encodeURIComponent(`${city}, ${state}`);
+    buildUrl: (name, state, city) => {
+      // Include campground name for specific results
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(`${searchName} ${city}, ${state}`);
       return `https://www.hipcamp.com/en-US/search?q=${query}`;
     },
     icon: "nature-people",
@@ -143,9 +146,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   harvest_hosts: {
     name: "Harvest Hosts",
     baseUrl: "https://www.harvesthosts.com",
-    buildUrl: (_name, state, city) => {
-      // Harvest Hosts — use Awin affiliate tracking link
-      return `https://www.awin1.com/cread.php?awinmid=111454&awinaffid=2844436&ued=${encodeURIComponent(`https://www.harvesthosts.com/search?q=${encodeURIComponent(`${city}, ${state}`)}`)}`;
+    buildUrl: (name, state, city) => {
+      // Harvest Hosts — use Awin affiliate tracking link with campground name
+      const searchName = simplifyName(name);
+      return `https://www.awin1.com/cread.php?awinmid=111454&awinaffid=2844436&ued=${encodeURIComponent(`https://www.harvesthosts.com/search?q=${encodeURIComponent(`${searchName} ${city}, ${state}`)}`)}`;
     },
     icon: "wine-bar",
     color: "#722F37",
@@ -154,8 +158,9 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   passport_america: {
     name: "Passport America",
     baseUrl: "https://www.passportamerica.com",
-    buildUrl: (_name, state, city) => {
-      const query = encodeURIComponent(`${city}, ${state}`);
+    buildUrl: (name, state, city) => {
+      const searchName = simplifyName(name);
+      const query = encodeURIComponent(`${searchName} ${city}, ${state}`);
       return `https://www.passportamerica.com/campground-search/?q=${query}`;
     },
     icon: "loyalty",
@@ -165,9 +170,10 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   thousand_trails: {
     name: "Thousand Trails",
     baseUrl: "https://www.thousandtrails.com",
-    buildUrl: (_name, state, _city) => {
+    buildUrl: (name, state, _city) => {
       const stateSlug = state.toLowerCase();
-      return `https://www.thousandtrails.com/find-a-campground?state=${stateSlug}`;
+      const searchName = simplifyName(name);
+      return `https://www.thousandtrails.com/find-a-campground?state=${stateSlug}&q=${encodeURIComponent(searchName)}`;
     },
     icon: "forest",
     color: "#1A237E",
