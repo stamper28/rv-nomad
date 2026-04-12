@@ -604,9 +604,11 @@ export default function HomeScreen() {
         <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
           Find campgrounds, RV parks & more
         </Text>
-        <Text style={[styles.headerSubtitle, { color: colors.primary, fontSize: 13, marginTop: 2 }]}>
-          Go to Explore to see what this app has to offer
-        </Text>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/explore" as any)} activeOpacity={0.7}>
+          <Text style={[styles.headerSubtitle, { color: colors.primary, fontSize: 13, marginTop: 2, textDecorationLine: "underline" }]}>
+            Go to Explore to see what this app has to offer
+          </Text>
+        </TouchableOpacity>
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
