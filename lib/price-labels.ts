@@ -127,6 +127,21 @@ export function getPriceDisclaimer(category: SiteCategory): string {
 }
 
 /**
+ * Get the price text for list/card views (e.g., "Est. $25/night", "~$6/wash", "~$15 admission")
+ * Used on state-detail cards and similar listing views.
+ */
+export function getCardPriceText(category: SiteCategory, price: number | null): string {
+  if (price === null || price === 0) return "Free";
+  if (isCampsiteCategory(category)) {
+    return `Est. $${price}/night`;
+  }
+  const info = SERVICE_PRICE_LABELS[category];
+  if (!info) return `Est. $${price}/night`;
+  if (!info.unit) return "Free";
+  return `${info.prefix}${price}${info.unit.startsWith("/") ? info.unit : "/" + info.unit.replace("per ", "")}`;
+}
+
+/**
  * Whether this category should show the discount stacker
  * (only makes sense for campsite categories with nightly rates)
  */

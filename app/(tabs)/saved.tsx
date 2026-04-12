@@ -11,6 +11,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { Store } from "@/lib/store";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
+import { getCardPriceText } from "@/lib/price-labels";
 
 type FilterMode = "all" | "campgrounds" | "boondocking" | "free";
 
@@ -87,7 +88,7 @@ export default function SavedScreen() {
               className="text-sm font-semibold"
               style={{ color: item.pricePerNight === null ? colors.success : colors.primary }}
             >
-              {item.pricePerNight === null ? "Free" : `Est. $${item.pricePerNight}/night`}
+              {getCardPriceText(item.category, item.pricePerNight)}
             </Text>
           </View>
         </View>

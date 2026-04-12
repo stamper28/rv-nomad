@@ -31,6 +31,7 @@ import {
   type StateLaws,
 } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
+import { getCardPriceText } from "@/lib/price-labels";
 import { useUserLocation, getDistanceMiles } from "@/hooks/use-location";
 import { openUrl } from "@/lib/open-url";
 import { CampgroundMap } from "@/components/campground-map";
@@ -397,7 +398,7 @@ export default function HomeScreen() {
                   { color: site.pricePerNight === null ? colors.success : colors.primary },
                 ]}
               >
-                {site.pricePerNight ? `Est. $${site.pricePerNight}/night` : "Free"}
+                {getCardPriceText(site.category, site.pricePerNight)}
               </Text>
               <View style={styles.amenitiesRow}>
                 {site.amenities.slice(0, 3).map((a, i) => (

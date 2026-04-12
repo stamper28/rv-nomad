@@ -19,6 +19,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory } from "@/lib/types";
+import { getCardPriceText } from "@/lib/price-labels";
 import { openUrl } from "@/lib/open-url";
 import { AFFILIATE_CONFIG } from "@/lib/affiliate";
 import { CRUISE_PORTS, type CruisePort } from "@/lib/cruise-ports";
@@ -44,6 +45,18 @@ const EXPLORE_SECTIONS: { category: SiteCategory; title: string; subtitle: strin
   { category: "passport_america", title: "Passport America", subtitle: "50% off campground fees" },
   { category: "thousand_trails", title: "Thousand Trails", subtitle: "Membership campground network" },
   { category: "dump_station", title: "Dump Stations", subtitle: "Find dump stations near you" },
+  { category: "fuel_station", title: "Fuel Stations", subtitle: "Truck stops & diesel with RV lanes" },
+  { category: "attraction", title: "Attractions", subtitle: "Must-see stops along your route" },
+  { category: "scenic_view", title: "Scenic Views", subtitle: "Stunning overlooks & photo spots" },
+  { category: "restaurant", title: "Restaurants", subtitle: "RV-friendly dining near campgrounds" },
+  { category: "laundromat", title: "Laundromats", subtitle: "Coin laundry near RV parks" },
+  { category: "rv_wash", title: "RV Wash Stations", subtitle: "Keep your rig clean on the road" },
+  { category: "rv_repair", title: "RV Repair & Service", subtitle: "Mechanics, dealers & mobile repair" },
+  { category: "propane", title: "Propane Refill", subtitle: "Propane stations near you" },
+  { category: "water_fill", title: "Water Fill Stations", subtitle: "Potable water for your tanks" },
+  { category: "rv_tires", title: "RV Tire Shops", subtitle: "Tire sales & service for RVs" },
+  { category: "historic_site", title: "Historic Sites", subtitle: "History & heritage along the way" },
+  { category: "roadside_oddity", title: "Roadside Oddities", subtitle: "Quirky stops & fun photo ops" },
 ];
 
 const CATEGORY_ICON_MAP: Record<SiteCategory, string> = {
@@ -183,7 +196,7 @@ export default function ExploreScreen() {
                 { color: site.pricePerNight === null ? colors.success : colors.primary },
               ]}
             >
-              {site.pricePerNight === null ? "Free" : `Est. $${site.pricePerNight}/night`}
+              {getCardPriceText(site.category, site.pricePerNight)}
             </Text>
           </View>
         </View>

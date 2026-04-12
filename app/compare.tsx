@@ -21,6 +21,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite } from "@/lib/types";
+import { getCardPriceText } from "@/lib/price-labels";
 import { getSiteImageUrl } from "@/lib/site-images";
 
 const MAX_COMPARE = 3;
@@ -232,7 +233,7 @@ export default function CompareScreen() {
                         {item.name}
                       </Text>
                       <Text style={[styles.resultLocation, { color: colors.muted }]}>
-                        {item.city}, {item.state} - {item.pricePerNight ? `Est. $${item.pricePerNight}/night` : "Free"}
+                        {item.city}, {item.state} - {getCardPriceText(item.category, item.pricePerNight)}
                       </Text>
                     </View>
                     <MaterialIcons name="add-circle-outline" size={22} color={colors.primary} />

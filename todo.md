@@ -609,3 +609,5 @@
 - [x] Add "Find Nearby Hotels" button inside each RV repair shop card (instead of separate section)
 - [x] Add "Find Hotels" button inside each nearby RV repair shop card on campsite detail pages
 - [x] Add "Find Hotels" button inside each nearby RV repair shop card on campsite detail pages
+- [x] Fix pricing labels on state listing page cards — laundromats, RV washes, etc. still show "per night" instead of correct unit labels
+- [x] Add missing categories to Explore tab: Attractions, Laundromats, RV Wash, Restaurants, Scenic Views, RV Repair, Propane, Water Fill, Fuel Stations, RV Tires, Historic Sites, Roadside Oddities

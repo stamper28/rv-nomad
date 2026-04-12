@@ -17,6 +17,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteCategory, type StateLaws } from "@/lib/types";
+import { getCardPriceText } from "@/lib/price-labels";
 
 type FilterKey = "all" | SiteCategory;
 
@@ -225,7 +226,7 @@ function SiteRow({ site, colors, router }: { site: CampSite; colors: any; router
               { color: site.pricePerNight === null ? colors.success : colors.primary },
             ]}
           >
-            {site.pricePerNight === null ? "Free" : `Est. $${site.pricePerNight}/night`}
+            {getCardPriceText(site.category, site.pricePerNight)}
           </Text>
         </View>
         <Text style={[styles.siteCity, { color: colors.muted }]}>{site.city}, {site.state}</Text>
