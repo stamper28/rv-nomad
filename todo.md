@@ -613,3 +613,8 @@
 - [x] Add missing categories to Explore tab: Attractions, Laundromats, RV Wash, Restaurants, Scenic Views, RV Repair, Propane, Water Fill, Fuel Stations, RV Tires, Historic Sites, Roadside Oddities
 - [x] Fix Campspot booking link not passing campground name — now uses Google site:campspot.com search to find the exact park page
 - [x] Switch Campspot link from Google redirect to Awin affiliate tracking redirect to preserve commission
+
+## Photobook America Partner
+- [x] Add Photobook America to affiliate config (affiliate.ts)
+- [x] Add Photobook America "Preserve Your Memories" section to Explore tab
+- [x] Add Photobook America section to website landing page

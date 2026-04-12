@@ -940,6 +940,38 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* ─── Preserve Your Memories ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Preserve Your Memories</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Turn your RV trip photos into keepsakes</Text>
+          </View>
+
+          {/* Photobook America */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.photobookAmerica.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#E8364815" }]}>
+              <MaterialIcons name="photo-album" size={32} color="#E83648" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Photobook America</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#E8364820" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#E83648" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Create photobooks, canvas prints, metal prints, calendars, mugs & more from your trip photos
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#E83648" }]}>
+                <Text style={styles.partnerCtaText}>Create Photobook</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* ─── Cruise Ship Ports for RVers ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Cruise Ship Ports</Text>

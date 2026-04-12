@@ -77,6 +77,13 @@ export const AFFILIATE_CONFIG = {
     cost: "Free to browse, pay per booking",
     description: "Book top-rated private RV parks and campgrounds. Real-time availability, instant confirmation, and exclusive deals.",
   },
+  // Photobook America — personalized photo products for RV trip memories
+  photobookAmerica: {
+    url: "https://www.photobookamerica.com/?ref=rvnomad", // Replace with Awin/affiliate link once approved
+    name: "Photobook America",
+    cost: "Varies by product",
+    description: "Turn your RV trip photos into beautiful photobooks, canvas prints, metal prints, calendars, mugs, and more. Ships to 100+ countries with a 100% quality guarantee.",
+  },
   // RV Insurance
   insurance: {
     progressive: {
