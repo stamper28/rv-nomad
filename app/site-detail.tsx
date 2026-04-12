@@ -958,6 +958,41 @@ export default function SiteDetailScreen() {
                           <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
                         </View>
                       </View>
+                      {/* Find Nearby Hotels button inside repair card */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          const hotels = findNearbyHotels(s.lat, s.lng, 30, 3, s.state);
+                          if (hotels.length > 0) {
+                            const hotelList = hotels.map((h) => `${h.name} — $${h.pricePerNight}/night — ${h.distanceMiles} mi\n${h.rating.toFixed(1)}★ ${h.petFriendly ? "🐾 Pet Friendly" : ""} ${h.hasBreakfast ? "🥞 Breakfast" : ""}\nCall: ${h.phone}`).join("\n\n");
+                            Alert.alert(
+                              "Nearby Hotels",
+                              `If your RV needs overnight repairs at ${s.name}:\n\n${hotelList}`,
+                              [
+                                { text: "Close", style: "cancel" },
+                                { text: "Book First Hotel", onPress: () => openUrl(hotels[0].bookingUrl) },
+                              ]
+                            );
+                          } else {
+                            Alert.alert("No Hotels Found", "No nearby hotels found within 30 miles of this repair shop.");
+                          }
+                        }}
+                        activeOpacity={0.7}
+                        style={{
+                          backgroundColor: "#6A1B9A",
+                          borderRadius: 8,
+                          paddingVertical: 10,
+                          paddingHorizontal: 14,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                          marginTop: 10,
+                        }}
+                      >
+                        <MaterialIcons name="hotel" size={18} color="#FFFFFF" />
+                        <Text style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "700" }}>Find Nearby Hotels</Text>
+                      </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
                 </View>

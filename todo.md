@@ -607,3 +607,5 @@
 - [x] Verify all service categories have realistic prices in data generation (already correct)
 - [x] Add nearby hotel suggestions with prices to RV repair detail pages
 - [x] Add "Find Nearby Hotels" button inside each RV repair shop card (instead of separate section)
+- [x] Add "Find Hotels" button inside each nearby RV repair shop card on campsite detail pages
+- [x] Add "Find Hotels" button inside each nearby RV repair shop card on campsite detail pages
