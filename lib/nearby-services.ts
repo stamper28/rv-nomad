@@ -79,6 +79,7 @@ export interface NearbySupplyStore {
   hasPropane: boolean;
   hasFirewood: boolean;
   hasBait: boolean;
+  rvParking: boolean;
   hours: string;
   distanceMiles: number;
   directionsUrl: string;
@@ -157,32 +158,33 @@ interface SupplyChain {
   hasPropane: boolean;
   hasFirewood: boolean;
   hasBait: boolean;
+  rvParking: boolean;
 }
 
 const US_SUPPLY_CHAINS: SupplyChain[] = [
-  { brand: "Walmart Supercenter", prefix: "Walmart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "Camping World", prefix: "Camping World", type: "camping", hasRVSupplies: true, hasPropane: true, hasFirewood: false, hasBait: false },
-  { brand: "Bass Pro Shops", prefix: "Bass Pro", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "Cabela's", prefix: "Cabela's", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "REI Co-op", prefix: "REI", type: "outdoor", hasRVSupplies: false, hasPropane: false, hasFirewood: false, hasBait: false },
-  { brand: "Tractor Supply Co", prefix: "Tractor Supply", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Ace Hardware", prefix: "Ace Hardware", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Home Depot", prefix: "Home Depot", type: "hardware", hasRVSupplies: false, hasPropane: true, hasFirewood: false, hasBait: false },
-  { brand: "True Value", prefix: "True Value", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Fred Meyer", prefix: "Fred Meyer", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
+  { brand: "Walmart Supercenter", prefix: "Walmart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "Camping World", prefix: "Camping World", type: "camping", hasRVSupplies: true, hasPropane: true, hasFirewood: false, hasBait: false, rvParking: true },
+  { brand: "Bass Pro Shops", prefix: "Bass Pro", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "Cabela's", prefix: "Cabela's", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "REI Co-op", prefix: "REI", type: "outdoor", hasRVSupplies: false, hasPropane: false, hasFirewood: false, hasBait: false, rvParking: false },
+  { brand: "Tractor Supply Co", prefix: "Tractor Supply", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: true },
+  { brand: "Ace Hardware", prefix: "Ace Hardware", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: false },
+  { brand: "Home Depot", prefix: "Home Depot", type: "hardware", hasRVSupplies: false, hasPropane: true, hasFirewood: false, hasBait: false, rvParking: true },
+  { brand: "True Value", prefix: "True Value", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: false },
+  { brand: "Fred Meyer", prefix: "Fred Meyer", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
 ];
 
 const CA_SUPPLY_CHAINS: SupplyChain[] = [
-  { brand: "Canadian Tire", prefix: "Canadian Tire", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "Walmart Canada", prefix: "Walmart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Home Hardware", prefix: "Home Hardware", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Cabela's Canada", prefix: "Cabela's", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "Bass Pro Shops Canada", prefix: "Bass Pro", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
-  { brand: "Princess Auto", prefix: "Princess Auto", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: false, hasBait: false },
-  { brand: "Home Depot Canada", prefix: "Home Depot", type: "hardware", hasRVSupplies: false, hasPropane: true, hasFirewood: false, hasBait: false },
-  { brand: "RONA", prefix: "RONA", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false },
-  { brand: "Mark's", prefix: "Mark's", type: "outdoor", hasRVSupplies: false, hasPropane: false, hasFirewood: false, hasBait: false },
-  { brand: "Peavey Mart", prefix: "Peavey Mart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true },
+  { brand: "Canadian Tire", prefix: "Canadian Tire", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "Walmart Canada", prefix: "Walmart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: true },
+  { brand: "Home Hardware", prefix: "Home Hardware", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: false },
+  { brand: "Cabela's Canada", prefix: "Cabela's", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "Bass Pro Shops Canada", prefix: "Bass Pro", type: "outdoor", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
+  { brand: "Princess Auto", prefix: "Princess Auto", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: false, hasBait: false, rvParking: true },
+  { brand: "Home Depot Canada", prefix: "Home Depot", type: "hardware", hasRVSupplies: false, hasPropane: true, hasFirewood: false, hasBait: false, rvParking: true },
+  { brand: "RONA", prefix: "RONA", type: "hardware", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: false, rvParking: false },
+  { brand: "Mark's", prefix: "Mark's", type: "outdoor", hasRVSupplies: false, hasPropane: false, hasFirewood: false, hasBait: false, rvParking: false },
+  { brand: "Peavey Mart", prefix: "Peavey Mart", type: "general", hasRVSupplies: true, hasPropane: true, hasFirewood: true, hasBait: true, rvParking: true },
 ];
 
 // ─── Repair Shop Chains ─────────────────────────────────────
@@ -459,6 +461,7 @@ export function findNearbySupplyStores(
       hasPropane: chain.hasPropane,
       hasFirewood: chain.hasFirewood,
       hasBait: chain.hasBait,
+      rvParking: chain.rvParking,
       hours,
       distanceMiles: Math.round(actualDist * 10) / 10,
       directionsUrl: directionsUrl(lat, lng, sLat, sLng),

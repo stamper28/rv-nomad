@@ -594,3 +594,15 @@
 - [x] Add "Go to Explore to see what this app has to offer" text on home screen below subtitle
 - [x] Make "Go to Explore" text tappable to navigate to Explore tab
 - [x] Fix payment plan section not clickable — made pricing footer tappable, navigates to Premium screen
+- [x] Remove "price per night" from attractions and show admission/ticket price instead
+- [x] Add "Closest RV Park or Parking" section to scenic view detail pages
+- [x] Add RV/large vehicle parking rating to restaurant listings
+- [x] Add RV/large vehicle parking rating to grocery store listings
+- [x] Remove "price per night" from RV Wash and show wash cost instead
+- [x] Fix laundry showing "$X/night" — should show wash cost instead
+- [x] Fix water fill showing "$X/night" — should show fill cost instead
+- [x] Fix RV repair showing "$X/night" — should show hourly rate instead
+- [x] Create comprehensive price label helper for ALL non-campsite categories
+- [x] Fix propane showing "$X/night" — should show per gallon cost
+- [x] Verify all service categories have realistic prices in data generation (already correct)
+- [x] Add nearby hotel suggestions with prices to RV repair detail pages

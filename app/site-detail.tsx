@@ -27,6 +27,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/hooks/use-auth";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type CampSite, type SiteReview } from "@/lib/types";
 import { getSiteImageUrl } from "@/lib/site-images";
+import { getPriceValue, getPriceLabel, getSharePriceText, getBookingPriceText, getPriceDisclaimer, showsDiscountStacker } from "@/lib/price-labels";
 import { getRIDBPhotos, supportsRIDBPhotos, type RIDBPhoto } from "@/lib/ridb-photos";
 import { Store } from "@/lib/store";
 import { trpc } from "@/lib/trpc";
@@ -40,6 +41,8 @@ import { openUrl } from "@/lib/open-url";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { fetchPlacePhotos, buildPlaceQuery } from "@/lib/google-places-photos";
 import { findNearbyRestaurants, getRestaurantCategoryInfo } from "@/lib/nearby-restaurants";
+import { findNearbyHotels, type NearbyHotel } from "@/lib/nearby-hotels";
+import { findNearbyRVParks, type NearbyRVPark } from "@/lib/nearby-rv-parks";
 import { CellSignalSection } from "@/components/cell-signal-section";
 import { AvailabilitySection } from "@/components/availability-section";
 import { CampgroundChat } from "@/components/campground-chat";
@@ -194,7 +197,7 @@ export default function SiteDetailScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtnH} onPress={async () => {
             if (!site) return;
-            const price = (site.pricePerNight ?? 0) > 0 ? `Est. $${site.pricePerNight}/night` : "Free";
+            const price = getSharePriceText(site.category, site.pricePerNight);
             const rating = site.rating ? `${site.rating}/5` : "";
             const amenities = site.amenities?.slice(0, 4).join(", ") || "";
             const message = `Check out ${site.name} in ${site.city}, ${site.state}!\n\n${CATEGORY_LABELS[site.category]} - ${price}${rating ? ` - ${rating} stars` : ""}${amenities ? `\nAmenities: ${amenities}` : ""}\n\nFound on RV Nomad - the best app for RV camping!`;
@@ -317,9 +320,9 @@ export default function SiteDetailScreen() {
             <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <IconSymbol name="dollarsign.circle.fill" size={18} color={colors.success} />
               <Text style={[styles.statValue, { color: colors.foreground }]}>
-                {site.pricePerNight === null ? "Free" : `~$${site.pricePerNight}`}
+                {getPriceValue(site.category, site.pricePerNight)}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>{site.pricePerNight === null ? "No cost" : "est./night"}</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>{getPriceLabel(site.category, site.pricePerNight)}</Text>
             </View>
             {site.elevation != null && (
               <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -689,7 +692,7 @@ export default function SiteDetailScreen() {
           )}
 
           {/* Discount Stacker */}
-          {site.pricePerNight != null && site.pricePerNight > 0 && (() => {
+          {site.pricePerNight != null && site.pricePerNight > 0 && showsDiscountStacker(site.category) && (() => {
             const discountResult = calculateDiscounts(site.pricePerNight!, 3, site.category, site.name);
             if (discountResult.discounts.length === 0) return null;
             return (
@@ -878,6 +881,15 @@ export default function SiteDetailScreen() {
                             <Text style={{ color: "#4527A0", fontSize: 11, fontWeight: "700" }}>Bait & Tackle</Text>
                           </View>
                         )}
+                        {s.rvParking ? (
+                          <View style={{ backgroundColor: "#2E7D32" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#2E7D32", fontSize: 11, fontWeight: "700" }}>RV Parking</Text>
+                          </View>
+                        ) : (
+                          <View style={{ backgroundColor: "#C62828" + "15", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                            <Text style={{ color: "#C62828", fontSize: 11, fontWeight: "700" }}>Limited Parking</Text>
+                          </View>
+                        )}
                       </View>
                       <Text style={{ color: colors.muted, fontSize: 11, marginTop: 6 }}>Hours: {s.hours}</Text>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
@@ -952,6 +964,140 @@ export default function SiteDetailScreen() {
             })()}
           </View>
 
+          {/* Nearest RV Parks (for scenic views, attractions, roadside oddities) */}
+          {(site.category === "scenic_view" || site.category === "attraction" || site.category === "roadside_oddity") && (() => {
+            const nearbyParks = findNearbyRVParks(site.latitude, site.longitude, 3, 50);
+            if (nearbyParks.length === 0) return null;
+            return (
+              <View style={[styles.section, { borderColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <MaterialIcons name="rv-hookup" size={20} color="#2E7D32" />
+                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "800" }}>Nearest RV Parks</Text>
+                </View>
+                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 10 }}>Closest places to park your RV while visiting</Text>
+                {nearbyParks.map((np) => (
+                  <TouchableOpacity
+                    key={np.site.id}
+                    style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    onPress={() => router.push({ pathname: "/site-detail", params: { siteId: np.site.id } })}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{np.site.name}</Text>
+                        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{CATEGORY_LABELS[np.site.category]} — {np.site.city}, {np.site.state}</Text>
+                      </View>
+                      <View style={{ alignItems: "flex-end" }}>
+                        <Text style={{ color: "#2E7D32", fontSize: 14, fontWeight: "800" }}>{np.distanceMiles} mi</Text>
+                        {np.site.pricePerNight != null && (
+                          <Text style={{ color: colors.muted, fontSize: 11 }}>${np.site.pricePerNight}/night</Text>
+                        )}
+                        {np.site.pricePerNight == null && (
+                          <Text style={{ color: colors.success, fontSize: 11, fontWeight: "700" }}>Free</Text>
+                        )}
+                      </View>
+                    </View>
+                    {np.site.rating != null && (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+                        <MaterialIcons name="star" size={14} color="#F59E0B" />
+                        <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600" }}>{np.site.rating.toFixed(1)}</Text>
+                        {np.site.reviewCount != null && np.site.reviewCount > 0 && (
+                          <Text style={{ color: colors.muted, fontSize: 12 }}>({np.site.reviewCount} reviews)</Text>
+                        )}
+                      </View>
+                    )}
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <MaterialIcons name="info-outline" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>View Details</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => openUrl(np.directionsUrl)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <MaterialIcons name="directions" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            );
+          })()}
+
+          {/* Nearby Hotels (for RV Repair shops) */}
+          {site.category === "rv_repair" && (() => {
+            const hotels = findNearbyHotels(site.latitude, site.longitude, 30, 3, site.state);
+            if (hotels.length === 0) return null;
+            return (
+              <View style={[styles.section, { borderColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                  <MaterialIcons name="hotel" size={20} color="#6A1B9A" />
+                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "800" }}>Nearby Hotels</Text>
+                </View>
+                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 10 }}>If your RV needs overnight repairs, here are nearby places to stay</Text>
+                {hotels.map((h) => (
+                  <TouchableOpacity
+                    key={h.id}
+                    style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    onPress={() => openUrl(h.bookingUrl)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{h.name}</Text>
+                        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{h.brand} — {h.city}, {h.state}</Text>
+                      </View>
+                      <View style={{ alignItems: "flex-end" }}>
+                        <Text style={{ color: "#6A1B9A", fontSize: 16, fontWeight: "800" }}>${h.pricePerNight}</Text>
+                        <Text style={{ color: colors.muted, fontSize: 10 }}>per night</Text>
+                      </View>
+                    </View>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+                      <MaterialIcons name="star" size={14} color="#F59E0B" />
+                      <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600" }}>{h.rating.toFixed(1)}</Text>
+                      <Text style={{ color: colors.muted, fontSize: 12 }}>· {h.distanceMiles} mi away</Text>
+                    </View>
+                    <View style={{ flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                      {h.petFriendly && (
+                        <View style={{ backgroundColor: "#2E7D3215", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: "#2E7D32", fontSize: 10, fontWeight: "700" }}>Pet Friendly</Text>
+                        </View>
+                      )}
+                      {h.hasBreakfast && (
+                        <View style={{ backgroundColor: "#E6510015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: "#E65100", fontSize: 10, fontWeight: "700" }}>Free Breakfast</Text>
+                        </View>
+                      )}
+                      {h.hasPool && (
+                        <View style={{ backgroundColor: "#1565C015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: "#1565C0", fontSize: 10, fontWeight: "700" }}>Pool</Text>
+                        </View>
+                      )}
+                      {h.hasShuttle && (
+                        <View style={{ backgroundColor: "#6A1B9A15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: "#6A1B9A", fontSize: 10, fontWeight: "700" }}>Shuttle</Text>
+                        </View>
+                      )}
+                      {h.hasLaundry && (
+                        <View style={{ backgroundColor: colors.muted + "15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                          <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "700" }}>Laundry</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                      <TouchableOpacity onPress={() => openUrl(`tel:${h.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <MaterialIcons name="phone" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{h.phone}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => openUrl(h.directionsUrl)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                        <MaterialIcons name="directions" size={14} color={colors.primary} />
+                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            );
+          })()}
+
           {/* Nearby Restaurants */}
           {(() => {
             const restaurants = findNearbyRestaurants(site.latitude, site.longitude, 15, 6);
@@ -984,9 +1130,13 @@ export default function SiteDetailScreen() {
                         <Text style={{ color: "#1565C0", fontSize: 14, fontWeight: "800" }}>{r.distanceMiles} mi</Text>
                       </View>
                       <View style={{ flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                        {r.rvParking && (
+                        {r.rvParking ? (
                           <View style={{ backgroundColor: "#2E7D3215", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
                             <Text style={{ color: "#2E7D32", fontSize: 10, fontWeight: "700" }}>RV Parking</Text>
+                          </View>
+                        ) : (
+                          <View style={{ backgroundColor: "#C6282815", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                            <Text style={{ color: "#C62828", fontSize: 10, fontWeight: "700" }}>Limited Parking</Text>
                           </View>
                         )}
                         {r.open24Hours && (
@@ -1219,7 +1369,7 @@ export default function SiteDetailScreen() {
                     </Text>
                     {site.pricePerNight != null && site.pricePerNight > 0 && (
                       <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 2 }}>
-                        Est. ${site.pricePerNight}/night — verify price on {bookingOptions.primary.name}
+                        {getBookingPriceText(site.category, site.pricePerNight, bookingOptions.primary.name)}
                       </Text>
                     )}
                   </View>
@@ -1247,7 +1397,7 @@ export default function SiteDetailScreen() {
                 {site.pricePerNight != null && site.pricePerNight > 0 && (
                   <View style={{ backgroundColor: colors.surface, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: colors.border }}>
                     <Text style={{ color: colors.muted, fontSize: 11, lineHeight: 16, textAlign: "center" }}>
-                      Prices shown are estimates. Actual rates may vary by season, site type, and availability. Always verify current rates on the booking platform before completing your reservation.
+                      {getPriceDisclaimer(site.category)}
                     </Text>
                   </View>
                 )}
