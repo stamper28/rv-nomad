@@ -3,8 +3,8 @@
  * All Rights Reserved. Unauthorized copying or distribution is prohibited.
  * See LICENSE file for details.
  */
-import { useState, useCallback } from "react";
-import { Text, View, TextInput, ScrollView, Pressable, ActivityIndicator, StyleSheet, Platform, Alert } from "react-native";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Text, View, TextInput, ScrollView, Pressable, ActivityIndicator, StyleSheet, Platform, Alert, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -12,13 +12,58 @@ import { trpc } from "@/lib/trpc";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ALL_SITES } from "@/lib/all-sites-data";
-import { useEffect } from "react";
+import { findNearbyRVParks } from "@/lib/nearby-rv-parks";
+import type { CampSite } from "@/lib/types";
+
+const TRUCK_STOP_CATS = new Set(["truck_stop", "fuel_station"]);
+
+function findNearbyTruckStops(lat: number, lng: number, limit = 2, maxMiles = 50) {
+  const R = 3959;
+  const results: { site: CampSite; distanceMiles: number; directionsUrl: string }[] = [];
+  for (const site of ALL_SITES) {
+    if (!TRUCK_STOP_CATS.has(site.category)) continue;
+    const dLat = ((site.latitude - lat) * Math.PI) / 180;
+    const dLng = ((site.longitude - lng) * Math.PI) / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat * Math.PI) / 180) * Math.cos((site.latitude * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+    const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    if (dist <= maxMiles) {
+      results.push({ site, distanceMiles: Math.round(dist * 10) / 10, directionsUrl: `https://www.google.com/maps/dir/${lat},${lng}/${site.latitude},${site.longitude}` });
+    }
+  }
+  return results.sort((a, b) => a.distanceMiles - b.distanceMiles).slice(0, limit);
+}
 
 const INTERESTS = [
   "National Parks", "Beaches", "Mountains", "Fishing",
   "Hiking", "Photography", "Wine Country", "History",
   "Wildlife", "Hot Springs", "Stargazing", "Waterfalls",
 ];
+
+const FORM_STORAGE_KEY = "rv_nomad_trip_planner_form";
+
+type FormState = {
+  startLocation: string;
+  endLocation: string;
+  duration: string;
+  rvType: string;
+  rvLength: string;
+  budget: string;
+  travelers: string;
+  pets: boolean;
+  selectedInterests: string[];
+};
+
+const DEFAULT_FORM: FormState = {
+  startLocation: "",
+  endLocation: "",
+  duration: "7",
+  rvType: "",
+  rvLength: "",
+  budget: "",
+  travelers: "2",
+  pets: false,
+  selectedInterests: [],
+};
 
 const RV_TYPES = ["Class A", "Class B", "Class C", "Travel Trailer", "Fifth Wheel", "Truck Camper", "Pop-Up", "Van"];
 const BUDGETS = ["Budget ($50/day)", "Moderate ($100/day)", "Comfortable ($150/day)", "Premium ($200+/day)"];
@@ -67,6 +112,57 @@ export default function AITripPlannerScreen() {
   const [excludedKeywords, setExcludedKeywords] = useState<string[]>([]);
   const [excludeSearch, setExcludeSearch] = useState("");
   const [showExcludeResults, setShowExcludeResults] = useState(false);
+  const [formLoaded, setFormLoaded] = useState(false);
+
+  // Load persisted form state on mount
+  useEffect(() => {
+    AsyncStorage.getItem(FORM_STORAGE_KEY).then(val => {
+      if (val) {
+        try {
+          const saved: FormState = JSON.parse(val);
+          if (saved.startLocation) setStartLocation(saved.startLocation);
+          if (saved.endLocation) setEndLocation(saved.endLocation);
+          if (saved.duration) setDuration(saved.duration);
+          if (saved.rvType) setRvType(saved.rvType);
+          if (saved.rvLength) setRvLength(saved.rvLength);
+          if (saved.budget) setBudget(saved.budget);
+          if (saved.travelers) setTravelers(saved.travelers);
+          if (saved.pets !== undefined) setPets(saved.pets);
+          if (saved.selectedInterests?.length) setSelectedInterests(saved.selectedInterests);
+        } catch {}
+      }
+      setFormLoaded(true);
+    }).catch(() => setFormLoaded(true));
+  }, []);
+
+  // Persist form state whenever any field changes (after initial load)
+  useEffect(() => {
+    if (!formLoaded) return;
+    const formState: FormState = {
+      startLocation, endLocation, duration, rvType, rvLength, budget, travelers, pets, selectedInterests,
+    };
+    AsyncStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formState)).catch(() => {});
+  }, [formLoaded, startLocation, endLocation, duration, rvType, rvLength, budget, travelers, pets, selectedInterests]);
+
+  // Clear all form fields
+  const clearAllFields = useCallback(() => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setStartLocation("");
+    setEndLocation("");
+    setDuration("7");
+    setRvType("");
+    setRvLength("");
+    setBudget("");
+    setTravelers("2");
+    setPets(false);
+    setSelectedInterests([]);
+    setExcludedCampgrounds([]);
+    setExcludedKeywords([]);
+    setExcludeSearch("");
+    AsyncStorage.removeItem(FORM_STORAGE_KEY).catch(() => {});
+    AsyncStorage.removeItem("rv_nomad_excluded_campgrounds").catch(() => {});
+    AsyncStorage.removeItem("rv_nomad_excluded_keywords").catch(() => {});
+  }, []);
 
   const COMMON_BRANDS = [
     "KOA", "Jellystone", "Thousand Trails", "Good Sam", "Harvest Hosts",
@@ -234,7 +330,7 @@ export default function AITripPlannerScreen() {
     const site = findMatchingSite(campgroundName);
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (site) {
-      router.push({ pathname: "/site-detail", params: { siteId: site.id } });
+      router.push({ pathname: "/site-detail", params: { siteId: site.id, fromPlanner: "1" } });
     } else {
       // No match found — search for it
       Alert.alert(
@@ -255,7 +351,13 @@ export default function AITripPlannerScreen() {
           <Text style={[styles.backText, { color: colors.primary }]}>← Back</Text>
         </Pressable>
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>🤖 AI Trip Planner</Text>
-        <View style={styles.backBtn} />
+        {showForm ? (
+          <Pressable onPress={clearAllFields} style={({ pressed }) => [styles.backBtn, pressed && { opacity: 0.6 }]}>
+            <Text style={[styles.clearAllBtnText, { color: colors.error }]}>Clear All</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.backBtn} />
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -627,6 +729,58 @@ export default function AITripPlannerScreen() {
                   {stop.notes && (
                     <Text style={[styles.stopNotes, { color: colors.muted }]}>💡 {stop.notes}</Text>
                   )}
+
+                  {/* Nearby Campsites */}
+                  {matchedSite && (() => {
+                    const nearbyCamps = findNearbyRVParks(matchedSite.latitude, matchedSite.longitude, 3, 30)
+                      .filter(n => n.site.id !== matchedSite.id);
+                    if (nearbyCamps.length === 0) return null;
+                    return (
+                      <View style={styles.nearbySection}>
+                        <Text style={[styles.nearbySectionTitle, { color: colors.foreground }]}>🏕️ Nearby Campsites</Text>
+                        {nearbyCamps.map((n, idx) => (
+                          <Pressable
+                            key={idx}
+                            onPress={() => router.push({ pathname: "/site-detail", params: { siteId: n.site.id, fromPlanner: "1" } })}
+                            style={({ pressed }) => [
+                              styles.nearbyCard,
+                              { backgroundColor: colors.background, borderColor: colors.border },
+                              pressed && { opacity: 0.7 },
+                            ]}
+                          >
+                            <Text style={[styles.nearbyName, { color: colors.primary }]}>{n.site.name}</Text>
+                            <Text style={[styles.nearbyDist, { color: colors.muted }]}>{n.distanceMiles} mi</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    );
+                  })()}
+
+                  {/* Nearby Truck Stops */}
+                  {matchedSite && (() => {
+                    const nearbyTrucks = findNearbyTruckStops(matchedSite.latitude, matchedSite.longitude, 2, 30);
+                    if (nearbyTrucks.length === 0) return null;
+                    return (
+                      <View style={styles.nearbySection}>
+                        <Text style={[styles.nearbySectionTitle, { color: colors.foreground }]}>⛽ Nearby Truck Stops</Text>
+                        {nearbyTrucks.map((n, idx) => (
+                          <Pressable
+                            key={idx}
+                            onPress={() => Linking.openURL(n.directionsUrl)}
+                            style={({ pressed }) => [
+                              styles.nearbyCard,
+                              { backgroundColor: colors.background, borderColor: colors.border },
+                              pressed && { opacity: 0.7 },
+                            ]}
+                          >
+                            <Text style={[styles.nearbyName, { color: colors.foreground }]}>{n.site.name}</Text>
+                            <Text style={[styles.nearbyDist, { color: colors.muted }]}>{n.distanceMiles} mi</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    );
+                  })()}
+
                   {/* View & Book button */}
                   <View style={[styles.viewBookBtn, { backgroundColor: matchedSite ? colors.primary : colors.muted }]}>
                     <Text style={styles.viewBookBtnText}>
@@ -648,9 +802,19 @@ export default function AITripPlannerScreen() {
               </View>
             )}
 
-            {/* New Plan Button */}
+            {/* Back to Form / New Plan Buttons */}
             <Pressable
-              onPress={() => { setTripPlan(null); setShowForm(true); }}
+              onPress={() => { setShowForm(true); }}
+              style={({ pressed }) => [
+                styles.newPlanBtn,
+                { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+                pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+              ]}
+            >
+              <Text style={[styles.newPlanBtnText, { color: colors.primary }]}>← Back to Trip Form</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => { setTripPlan(null); setShowForm(true); clearAllFields(); }}
               style={({ pressed }) => [
                 styles.newPlanBtn,
                 { backgroundColor: colors.primary },
@@ -735,6 +899,12 @@ const styles = StyleSheet.create({
   excludeChip: { flexDirection: "row" as const, alignItems: "center" as const, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1, maxWidth: "90%" as any },
   excludeChipText: { fontSize: 13, fontWeight: "500" },
   clearAllText: { fontSize: 13, fontWeight: "500", textDecorationLine: "underline" as const, paddingVertical: 4 },
+  clearAllBtnText: { fontSize: 13, fontWeight: "600", textAlign: "right" as const },
+  nearbySection: { marginTop: 8, gap: 6 },
+  nearbySectionTitle: { fontSize: 13, fontWeight: "700" },
+  nearbyCard: { flexDirection: "row" as const, alignItems: "center" as const, gap: 8, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 10, borderWidth: 1 },
+  nearbyName: { fontSize: 13, fontWeight: "600", flex: 1 },
+  nearbyDist: { fontSize: 12 },
   brandRow: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8, marginTop: 6 },
   brandChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
   brandChipText: { fontSize: 12, fontWeight: "500" },

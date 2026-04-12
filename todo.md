@@ -632,3 +632,10 @@
 
 ## RV Insurance Home Screen Button
 - [x] Add flashing blue RV Insurance button to Home screen main menu, same line as "Go to Explore" prompt
+
+## AI Trip Planner Improvements
+- [x] Persist AI Trip Planner form inputs when navigating away (AsyncStorage)
+- [x] Add "Clear All" button to reset the AI Trip Planner form
+- [x] Ensure back button returns to AI Trip Planner from search results or campground details
+- [x] Add truck stop suggestions at each overnight stop in AI trip results
+- [x] Add nearby campsite suggestions at each overnight stop in AI trip results

@@ -51,7 +51,7 @@ export default function SiteDetailScreen() {
   const colors = useColors();
   const router = useRouter();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ siteId: string }>();
+  const params = useLocalSearchParams<{ siteId: string; fromPlanner?: string }>();
   const [isSaved, setIsSaved] = useState(false);
   const [site, setSite] = useState<CampSite | undefined>(undefined);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -189,8 +189,9 @@ export default function SiteDetailScreen() {
     <ScreenContainer edges={["top", "left", "right"]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => params.fromPlanner === "1" ? router.push("/ai-trip-planner") : router.back()} style={styles.backBtn}>
           <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+          {params.fromPlanner === "1" && <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Trip</Text>}
         </TouchableOpacity>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={toggleSave} style={styles.actionBtnH}>
