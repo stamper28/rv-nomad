@@ -629,3 +629,6 @@
 - [x] Add Outdoorsy, RVshare, Cruise America, El Monte RV to affiliate config
 - [x] Add RV Rentals section to Explore tab
 - [x] Add RV Rentals section to website landing page
+
+## RV Insurance Home Screen Button
+- [x] Add flashing blue RV Insurance button to Home screen main menu, same line as "Go to Explore" prompt

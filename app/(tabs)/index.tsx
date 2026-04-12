@@ -3,7 +3,8 @@
  * All Rights Reserved. Unauthorized copying or distribution is prohibited.
  * See LICENSE file for details.
  */
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { Animated as RNAnimated } from "react-native";
 import {
   View,
   Text,
@@ -23,6 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/use-colors";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { AFFILIATE_CONFIG } from "@/lib/affiliate";
 import {
   CATEGORY_LABELS,
   CATEGORY_COLORS,
@@ -124,6 +126,48 @@ function openInMaps(name: string, latitude: number, longitude: number) {
       );
     }
   });
+}
+
+/** Flashing blue RV Insurance button */
+function FlashingInsuranceButton() {
+  const opacity = useRef(new RNAnimated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+        RNAnimated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Linking.openURL(AFFILIATE_CONFIG.insurance.progressive.url);
+      }}
+      activeOpacity={0.7}
+    >
+      <RNAnimated.View
+        style={{
+          opacity,
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: "#1E90FF",
+          paddingHorizontal: 10,
+          paddingVertical: 6,
+          borderRadius: 16,
+          gap: 4,
+        }}
+      >
+        <MaterialIcons name="security" size={14} color="#fff" />
+        <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>RV Insurance</Text>
+      </RNAnimated.View>
+    </TouchableOpacity>
+  );
 }
 
 export default function HomeScreen() {
@@ -605,11 +649,14 @@ export default function HomeScreen() {
         <Text style={[styles.headerSubtitle, { color: colors.muted }]}>
           Find campgrounds, RV parks & more
         </Text>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/explore" as any)} activeOpacity={0.7}>
-          <Text style={[styles.headerSubtitle, { color: colors.primary, fontSize: 13, marginTop: 2, textDecorationLine: "underline" }]}>
-            Go to Explore to see what this app has to offer
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/explore" as any)} activeOpacity={0.7} style={{ flex: 1 }}>
+            <Text style={[styles.headerSubtitle, { color: colors.primary, fontSize: 13, textDecorationLine: "underline" }]}>
+              Go to Explore to see what this app has to offer
+            </Text>
+          </TouchableOpacity>
+          <FlashingInsuranceButton />
+        </View>
 
         {/* Search Bar */}
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
