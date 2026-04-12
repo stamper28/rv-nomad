@@ -606,3 +606,4 @@
 - [x] Fix propane showing "$X/night" — should show per gallon cost
 - [x] Verify all service categories have realistic prices in data generation (already correct)
 - [x] Add nearby hotel suggestions with prices to RV repair detail pages
+- [x] Add "Find Nearby Hotels" button inside each RV repair shop card (instead of separate section)

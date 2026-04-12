@@ -66,6 +66,7 @@ export default function SiteDetailScreen() {
   const [googlePhotos, setGooglePhotos] = useState<string[]>([]);
   const [googlePhotoIndex, setGooglePhotoIndex] = useState(0);
   const [googlePhotoAttributions, setGooglePhotoAttributions] = useState<string[]>([]);
+  const [showHotels, setShowHotels] = useState(false);
 
   // Fetch backend reviews
   const backendReviews = trpc.reviews.forSite.useQuery(
@@ -1022,78 +1023,106 @@ export default function SiteDetailScreen() {
             );
           })()}
 
-          {/* Nearby Hotels (for RV Repair shops) */}
+          {/* Nearby Hotels Button (for RV Repair shops) */}
           {site.category === "rv_repair" && (() => {
             const hotels = findNearbyHotels(site.latitude, site.longitude, 30, 3, site.state);
             if (hotels.length === 0) return null;
             return (
               <View style={[styles.section, { borderColor: colors.border }]}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                  <MaterialIcons name="hotel" size={20} color="#6A1B9A" />
-                  <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "800" }}>Nearby Hotels</Text>
-                </View>
-                <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 10 }}>If your RV needs overnight repairs, here are nearby places to stay</Text>
-                {hotels.map((h) => (
-                  <TouchableOpacity
-                    key={h.id}
-                    style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                    onPress={() => openUrl(h.bookingUrl)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{h.name}</Text>
-                        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{h.brand} — {h.city}, {h.state}</Text>
-                      </View>
-                      <View style={{ alignItems: "flex-end" }}>
-                        <Text style={{ color: "#6A1B9A", fontSize: 16, fontWeight: "800" }}>${h.pricePerNight}</Text>
-                        <Text style={{ color: colors.muted, fontSize: 10 }}>per night</Text>
-                      </View>
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
-                      <MaterialIcons name="star" size={14} color="#F59E0B" />
-                      <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600" }}>{h.rating.toFixed(1)}</Text>
-                      <Text style={{ color: colors.muted, fontSize: 12 }}>· {h.distanceMiles} mi away</Text>
-                    </View>
-                    <View style={{ flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                      {h.petFriendly && (
-                        <View style={{ backgroundColor: "#2E7D3215", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                          <Text style={{ color: "#2E7D32", fontSize: 10, fontWeight: "700" }}>Pet Friendly</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setShowHotels(!showHotels);
+                  }}
+                  activeOpacity={0.7}
+                  style={{
+                    backgroundColor: "#6A1B9A",
+                    borderRadius: 12,
+                    paddingVertical: 14,
+                    paddingHorizontal: 20,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                  }}
+                >
+                  <MaterialIcons name="hotel" size={22} color="#FFFFFF" />
+                  <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "800" }}>
+                    {showHotels ? "Hide Nearby Hotels" : "Find Nearby Hotels"}
+                  </Text>
+                  <MaterialIcons name={showHotels ? "expand-less" : "expand-more"} size={22} color="#FFFFFF" />
+                </TouchableOpacity>
+                {!showHotels && (
+                  <Text style={{ color: colors.muted, fontSize: 12, textAlign: "center", marginTop: 8 }}>
+                    RV in the shop overnight? Tap to find places to stay nearby
+                  </Text>
+                )}
+                {showHotels && (
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={{ color: colors.muted, fontSize: 12, marginBottom: 10 }}>If your RV needs overnight repairs, here are nearby places to stay</Text>
+                    {hotels.map((h) => (
+                      <TouchableOpacity
+                        key={h.id}
+                        style={[styles.serviceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                        onPress={() => openUrl(h.bookingUrl)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: "700" }}>{h.name}</Text>
+                            <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{h.brand} — {h.city}, {h.state}</Text>
+                          </View>
+                          <View style={{ alignItems: "flex-end" }}>
+                            <Text style={{ color: "#6A1B9A", fontSize: 16, fontWeight: "800" }}>${h.pricePerNight}</Text>
+                            <Text style={{ color: colors.muted, fontSize: 10 }}>per night</Text>
+                          </View>
                         </View>
-                      )}
-                      {h.hasBreakfast && (
-                        <View style={{ backgroundColor: "#E6510015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                          <Text style={{ color: "#E65100", fontSize: 10, fontWeight: "700" }}>Free Breakfast</Text>
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 6 }}>
+                          <MaterialIcons name="star" size={14} color="#F59E0B" />
+                          <Text style={{ color: colors.foreground, fontSize: 12, fontWeight: "600" }}>{h.rating.toFixed(1)}</Text>
+                          <Text style={{ color: colors.muted, fontSize: 12 }}>· {h.distanceMiles} mi away</Text>
                         </View>
-                      )}
-                      {h.hasPool && (
-                        <View style={{ backgroundColor: "#1565C015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                          <Text style={{ color: "#1565C0", fontSize: 10, fontWeight: "700" }}>Pool</Text>
+                        <View style={{ flexDirection: "row", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                          {h.petFriendly && (
+                            <View style={{ backgroundColor: "#2E7D3215", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                              <Text style={{ color: "#2E7D32", fontSize: 10, fontWeight: "700" }}>Pet Friendly</Text>
+                            </View>
+                          )}
+                          {h.hasBreakfast && (
+                            <View style={{ backgroundColor: "#E6510015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                              <Text style={{ color: "#E65100", fontSize: 10, fontWeight: "700" }}>Free Breakfast</Text>
+                            </View>
+                          )}
+                          {h.hasPool && (
+                            <View style={{ backgroundColor: "#1565C015", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                              <Text style={{ color: "#1565C0", fontSize: 10, fontWeight: "700" }}>Pool</Text>
+                            </View>
+                          )}
+                          {h.hasShuttle && (
+                            <View style={{ backgroundColor: "#6A1B9A15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                              <Text style={{ color: "#6A1B9A", fontSize: 10, fontWeight: "700" }}>Shuttle</Text>
+                            </View>
+                          )}
+                          {h.hasLaundry && (
+                            <View style={{ backgroundColor: colors.muted + "15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                              <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "700" }}>Laundry</Text>
+                            </View>
+                          )}
                         </View>
-                      )}
-                      {h.hasShuttle && (
-                        <View style={{ backgroundColor: "#6A1B9A15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                          <Text style={{ color: "#6A1B9A", fontSize: 10, fontWeight: "700" }}>Shuttle</Text>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                          <TouchableOpacity onPress={() => openUrl(`tel:${h.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                            <MaterialIcons name="phone" size={14} color={colors.primary} />
+                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{h.phone}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => openUrl(h.directionsUrl)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                            <MaterialIcons name="directions" size={14} color={colors.primary} />
+                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
+                          </TouchableOpacity>
                         </View>
-                      )}
-                      {h.hasLaundry && (
-                        <View style={{ backgroundColor: colors.muted + "15", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                          <Text style={{ color: colors.muted, fontSize: 10, fontWeight: "700" }}>Laundry</Text>
-                        </View>
-                      )}
-                    </View>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
-                      <TouchableOpacity onPress={() => openUrl(`tel:${h.phone}`)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                        <MaterialIcons name="phone" size={14} color={colors.primary} />
-                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>{h.phone}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => openUrl(h.directionsUrl)} style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                        <MaterialIcons name="directions" size={14} color={colors.primary} />
-                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: "600" }}>Directions</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                    ))}
+                  </View>
+                )}
               </View>
             );
           })()}
