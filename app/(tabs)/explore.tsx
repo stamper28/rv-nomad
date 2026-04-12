@@ -972,38 +972,6 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* ─── Space-Saving RV Gear ─── */}
-          <View style={styles.partnerSectionHeader}>
-            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Space-Saving RV Gear</Text>
-            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Collapsible gear designed for life on the road</Text>
-          </View>
-
-          {/* Hydaway */}
-          <TouchableOpacity
-            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            onPress={() => openUrl(AFFILIATE_CONFIG.hydaway.url)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.partnerLogoBox, { backgroundColor: "#0EA5E915" }]}>
-              <MaterialIcons name="water-drop" size={32} color="#0EA5E9" />
-            </View>
-            <View style={styles.partnerContent}>
-              <View style={styles.partnerNameRow}>
-                <Text style={[styles.partnerName, { color: colors.foreground }]}>Hydaway</Text>
-                <View style={[styles.partnerBadge, { backgroundColor: "#0EA5E920" }]}>
-                  <Text style={[styles.partnerBadgeText, { color: "#0EA5E9" }]}>PARTNER</Text>
-                </View>
-              </View>
-              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
-                Collapsible water bottles, tumblers, camping bowls, pet products & travel accessories — BPA-free
-              </Text>
-              <View style={[styles.partnerCta, { backgroundColor: "#0EA5E9" }]}>
-                <Text style={styles.partnerCtaText}>Shop Hydaway</Text>
-                <MaterialIcons name="open-in-new" size={14} color="#fff" />
-              </View>
-            </View>
-          </TouchableOpacity>
-
           {/* ─── Cruise Ship Ports for RVers ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Cruise Ship Ports</Text>

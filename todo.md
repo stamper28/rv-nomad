@@ -619,7 +619,8 @@
 - [x] Add Photobook America "Preserve Your Memories" section to Explore tab
 - [x] Add Photobook America section to website landing page
 
-## Hydaway Partner
+## Hydaway Partner (REMOVED — company shut down)
 - [x] Add Hydaway to affiliate config (affiliate.ts)
 - [x] Add Hydaway section to Explore tab
 - [x] Add Hydaway section to website landing page
+- [x] Remove Hydaway from app and website — domain is for sale, company shut down
