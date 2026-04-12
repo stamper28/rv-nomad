@@ -591,3 +591,4 @@
 - [x] Fix cancellation watch booking redirect — shows "taking you to booking" message but doesn't actually redirect
 - [x] Fix booking links not carrying campsite name to booking sites (Campspot, Recreation.gov, etc.)
 - [x] Add KOA to the membership/club section alongside Harvest Hosts, Hipcamp, etc.
+- [x] Add "Go to Explore to see what this app has to offer" text on home screen below subtitle
