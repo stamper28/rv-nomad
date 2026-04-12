@@ -77,6 +77,13 @@ export const AFFILIATE_CONFIG = {
     cost: "Free to browse, pay per booking",
     description: "Book top-rated private RV parks and campgrounds. Real-time availability, instant confirmation, and exclusive deals.",
   },
+  // Hydaway — collapsible water bottles, tumblers, bowls & travel accessories
+  hydaway: {
+    url: "https://www.hydaway.com/?ref=rvnomad", // Replace with affiliate link once approved
+    name: "Hydaway",
+    cost: "Varies by product",
+    description: "Collapsible water bottles, drink tumblers, camping bowls, pet products & travel accessories. BPA-free, durable, and designed to save space in your RV.",
+  },
   // Photobook America — personalized photo products for RV trip memories
   photobookAmerica: {
     url: "https://www.photobookamerica.com/?ref=rvnomad", // Replace with Awin/affiliate link once approved

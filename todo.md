@@ -618,3 +618,8 @@
 - [x] Add Photobook America to affiliate config (affiliate.ts)
 - [x] Add Photobook America "Preserve Your Memories" section to Explore tab
 - [x] Add Photobook America section to website landing page
+
+## Hydaway Partner
+- [x] Add Hydaway to affiliate config (affiliate.ts)
+- [x] Add Hydaway section to Explore tab
+- [x] Add Hydaway section to website landing page
