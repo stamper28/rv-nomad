@@ -72,7 +72,7 @@ export const AFFILIATE_CONFIG = {
   },
   // Campspot — apply via Awin affiliate network
   campspot: {
-    url: "https://www.campspot.com/?ref=rvnomad", // Replace with your Awin/Campspot affiliate link
+    url: "https://www.awin1.com/cread.php?awinmid=CAMPSPOT_AWIN_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.campspot.com", // Replace CAMPSPOT_AWIN_MID with real Awin merchant ID once approved
     name: "Campspot",
     cost: "Free to browse, pay per booking",
     description: "Book top-rated private RV parks and campgrounds. Real-time availability, instant confirmation, and exclusive deals.",

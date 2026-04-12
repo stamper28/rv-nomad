@@ -121,10 +121,11 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
     name: "Campspot",
     baseUrl: "https://www.campspot.com",
     buildUrl: (name, state, city) => {
-      // Campspot's SPA ignores the ?q= parameter, so use Google to find the park page
+      // Campspot — use Awin affiliate tracking link to preserve commission cookie
+      // The Awin redirect sets the affiliate cookie first, then sends user to Campspot search
       const searchName = simplifyName(name);
-      const query = encodeURIComponent(`site:campspot.com ${searchName} ${city} ${state}`);
-      return `https://www.google.com/search?q=${query}`;
+      const campspotUrl = `https://www.campspot.com/search?q=${encodeURIComponent(`${searchName} ${city}, ${state}`)}`;
+      return `https://www.awin1.com/cread.php?awinmid=CAMPSPOT_AWIN_MID&awinaffid=2844436&ued=${encodeURIComponent(campspotUrl)}`;
     },
     icon: "terrain",
     color: "#FF6B35",

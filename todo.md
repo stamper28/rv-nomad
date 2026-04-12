@@ -612,3 +612,4 @@
 - [x] Fix pricing labels on state listing page cards — laundromats, RV washes, etc. still show "per night" instead of correct unit labels
 - [x] Add missing categories to Explore tab: Attractions, Laundromats, RV Wash, Restaurants, Scenic Views, RV Repair, Propane, Water Fill, Fuel Stations, RV Tires, Historic Sites, Roadside Oddities
 - [x] Fix Campspot booking link not passing campground name — now uses Google site:campspot.com search to find the exact park page
+- [x] Switch Campspot link from Google redirect to Awin affiliate tracking redirect to preserve commission
