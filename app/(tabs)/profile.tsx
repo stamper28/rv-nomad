@@ -103,9 +103,19 @@ export default function ProfileScreen() {
     setSettings(next);
   }
 
-  function handleRate() {
-    if (Platform.OS !== "web") {
-      Alert.alert("Rate RV Nomad", "Thank you for using RV Nomad! Rating will open the app store.");
+  async function handleRate() {
+    if (Platform.OS === "web") return;
+    try {
+      const StoreReview = await import("expo-store-review");
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        // Fallback: open App Store directly
+        Linking.openURL("https://apps.apple.com/app/rv-nomad/id6744194498?action=write-review");
+      }
+    } catch {
+      Linking.openURL("https://apps.apple.com/app/rv-nomad/id6744194498?action=write-review");
     }
   }
 

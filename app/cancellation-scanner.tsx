@@ -263,7 +263,10 @@ export default function CancellationScannerScreen() {
                   <TouchableOpacity
                     style={[styles.bookNowBtn, { backgroundColor: colors.success }]}
                     activeOpacity={0.7}
-                    onPress={() => Alert.alert("Opening Found!", "Redirecting to booking page...")}
+                    onPress={() => {
+                      const query = encodeURIComponent(`${watch.name} ${watch.state}`);
+                      openUrl(`https://www.recreation.gov/search?q=${query}`);
+                    }}
                   >
                     <MaterialIcons name="flash-on" size={18} color="#fff" />
                     <Text style={styles.bookNowText}>Book Now — Before It's Gone!</Text>

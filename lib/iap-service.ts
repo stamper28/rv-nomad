@@ -7,8 +7,8 @@
 /**
  * In-App Purchase Service for RV Nomad
  *
- * Handles Apple StoreKit / Google Play Billing subscriptions via expo-iap.
- * Product IDs must match what you create in App Store Connect / Google Play Console.
+ * Handles Apple StoreKit subscriptions via expo-iap.
+ * Product IDs must match what you create in App Store Connect.
  *
  * SETUP:
  * 1. In App Store Connect → My Apps → RV Nomad → Subscriptions
@@ -16,13 +16,13 @@
  * 3. Add two auto-renewable subscriptions:
  *    - "rvnomad_premium_monthly" at $5.99/month
  *    - "rvnomad_premium_yearly" at $49.99/year
- * 4. For Google Play Console, create matching subscription products
+ * 4. For Android, create matching subscription products in the Play Console
  */
 
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// ── Product IDs (must match App Store Connect / Google Play Console) ──
+// ── Product IDs (must match App Store Connect) ──
 export const IAP_PRODUCT_IDS = {
   MONTHLY: "rvnomad_premium_monthly",
   YEARLY: "rvnomad_premium_yearly",
@@ -173,7 +173,10 @@ export async function purchaseSubscription(productId: string): Promise<{
 }> {
   const mod = await getIAPModule();
   if (!mod || !isConnected) {
-    return { success: false, error: "Store not available. Please try again later." };
+    return {
+      success: false,
+      error: "Unable to connect to the App Store. Please check your internet connection and try again.",
+    };
   }
 
   try {
@@ -188,12 +191,53 @@ export async function purchaseSubscription(productId: string): Promise<{
     // The actual purchase result comes through the purchase listener.
     return { success: true };
   } catch (e: any) {
-    // User cancelled
-    if (e?.code === "E_USER_CANCELLED" || e?.message?.includes("cancel")) {
+    const code = e?.code || "";
+    const msg = e?.message || "";
+
+    // User cancelled — not an error
+    if (
+      code === "E_USER_CANCELLED" ||
+      code === "E_CANCELLED" ||
+      msg.includes("cancel") ||
+      msg.includes("SKErrorDomain") && msg.includes("2")
+    ) {
       return { success: false, error: "Purchase cancelled." };
     }
+
+    // Product not found in store — IAP not configured yet
+    if (
+      code === "E_ITEM_UNAVAILABLE" ||
+      code === "E_UNKNOWN" ||
+      msg.includes("Invalid product") ||
+      msg.includes("SKErrorDomain") && msg.includes("0")
+    ) {
+      return {
+        success: false,
+        error: "This subscription is temporarily unavailable. Please try again later or contact support.",
+      };
+    }
+
+    // Payment not allowed (parental controls, etc.)
+    if (code === "E_NETWORK_ERROR" || msg.includes("not allowed")) {
+      return {
+        success: false,
+        error: "Purchases are not allowed on this device. Please check your device settings.",
+      };
+    }
+
+    // Deferred purchase (Ask to Buy)
+    if (code === "E_DEFERRED" || msg.includes("deferred")) {
+      return {
+        success: false,
+        error: "Your purchase requires approval. You will be notified when it is approved.",
+      };
+    }
+
     console.error("[IAP] Purchase error:", e);
-    return { success: false, error: e?.message || "Purchase failed. Please try again." };
+    return {
+      success: false,
+      error: "Something went wrong with the purchase. Please try again or restart the app.",
+    };
   }
 }
 

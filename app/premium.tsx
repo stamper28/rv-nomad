@@ -102,11 +102,21 @@ export default function PremiumScreen() {
     const productId = selectedPlan === "yearly" ? IAP_PRODUCT_IDS.YEARLY : IAP_PRODUCT_IDS.MONTHLY;
     const priceLabel = selectedPlan === "yearly" ? `${yearlyPriceStr}/year` : `${monthlyPriceStr}/month`;
 
-    // On web or if IAP not ready, show info alert
-    if (Platform.OS === "web" || !iapReady) {
+    // On web, show info alert
+    if (Platform.OS === "web") {
       Alert.alert(
         "Subscribe on Your Device",
         `To subscribe to RV Nomad Premium (${priceLabel}), please use the app on your iPhone or iPad. Subscriptions are processed through the App Store.`,
+        [{ text: "OK" }],
+      );
+      return;
+    }
+
+    // If IAP not ready on native, try to reconnect
+    if (!iapReady) {
+      Alert.alert(
+        "Connection Issue",
+        "Unable to connect to the App Store. Please check your internet connection and try again.",
         [{ text: "OK" }],
       );
       return;
@@ -129,11 +139,19 @@ export default function PremiumScreen() {
           [{ text: "Let's Go!", onPress: () => router.back() }],
         );
       } else if (result.error && !result.error.includes("cancel")) {
-        Alert.alert("Purchase Failed", result.error);
+        Alert.alert(
+          "Purchase Issue",
+          result.error,
+          [{ text: "OK" }],
+        );
       }
       // If cancelled, do nothing silently
     } catch (e: any) {
-      Alert.alert("Error", e?.message || "Something went wrong. Please try again.");
+      Alert.alert(
+        "Purchase Error",
+        "We were unable to process your subscription. Please ensure you are signed into your Apple ID and try again.",
+        [{ text: "OK" }],
+      );
     } finally {
       setPurchasing(false);
     }
@@ -335,7 +353,7 @@ export default function PremiumScreen() {
 
         {/* Legal */}
         <Text style={[styles.legal, { color: colors.muted }]}>
-          Payment will be charged to your {Platform.OS === "ios" ? "iTunes" : Platform.OS === "android" ? "Google Play" : "app store"} account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your {Platform.OS === "ios" ? "Settings → Apple ID → Subscriptions" : "Google Play Store → Subscriptions"}.
+          Payment will be charged to your App Store account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your device Settings → Subscriptions.
         </Text>
       </ScrollView>
     </ScreenContainer>

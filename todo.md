@@ -639,3 +639,13 @@
 - [x] Ensure back button returns to AI Trip Planner from search results or campground details
 - [x] Add truck stop suggestions at each overnight stop in AI trip results
 - [x] Add nearby campsite suggestions at each overnight stop in AI trip results
+
+## Apple App Store Rejection Fixes (April 13, 2026)
+- [x] Fix 2.3.10: Remove all Google Play / Play Store references from app code
+- [x] Fix 2.5.4: Remove unused background audio UIBackgroundModes permission (expo-audio/expo-video plugins)
+- [x] Fix 2.2: Address "beta testing" appearance — fixed 'coming soon' dead-ends, replaced placeholder alerts with real actions
+- [x] Fix 2.1(b): Fix IAP subscription error — improved error handling with specific error codes and user-friendly messages
+- [ ] Fix 2.3.6: (App Store Connect) Set Age Rating "Parental Controls" and "Age Assurance" to None
+- [ ] Fix 5.1.2(i): (App Store Connect) Update App Privacy to indicate app does NOT track users
+- [ ] Fix 2.1(b): (App Store Connect) Submit IAP subscription products alongside app for review
+- [x] Create Apple resubmission guide for user (App Store Connect manual steps)

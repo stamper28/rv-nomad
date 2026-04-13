@@ -99,19 +99,7 @@ const config: ExpoConfig = {
         locationWhenInUsePermission: "Allow $(PRODUCT_NAME) to access your location for weather and nearby campgrounds.",
       },
     ],
-    [
-      "expo-audio",
-      {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
-      },
-    ],
-    [
-      "expo-video",
-      {
-        supportsBackgroundPlayback: false,
-        supportsPictureInPicture: false,
-      },
-    ],
+
     [
       "expo-splash-screen",
       {

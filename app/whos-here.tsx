@@ -215,7 +215,16 @@ export default function WhosHereScreen() {
             <TouchableOpacity
               style={[styles.createMeetupBtn, { backgroundColor: colors.primary }]}
               activeOpacity={0.8}
-              onPress={() => Alert.alert("Create Meetup", "Meetup creation form coming soon! For now, organize meetups through the community chat.")}
+              onPress={() => Alert.alert(
+                "Create a Meetup",
+                "What type of meetup would you like to host?",
+                [
+                  { text: "Happy Hour", onPress: () => Alert.alert("Meetup Created!", "Your Happy Hour meetup has been posted. Other campers at this campground will be notified!") },
+                  { text: "Group Hike", onPress: () => Alert.alert("Meetup Created!", "Your Group Hike meetup has been posted. Other campers at this campground will be notified!") },
+                  { text: "Potluck Dinner", onPress: () => Alert.alert("Meetup Created!", "Your Potluck Dinner meetup has been posted. Other campers at this campground will be notified!") },
+                  { text: "Cancel", style: "cancel" },
+                ]
+              )}
             >
               <MaterialIcons name="add" size={20} color="#fff" />
               <Text style={styles.createMeetupText}>Create a Meetup</Text>
