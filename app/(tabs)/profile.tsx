@@ -451,21 +451,21 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             {/* About */}
-            <TouchableOpacity className="flex-row items-center px-4 py-3.5 border-b border-border">
+            <TouchableOpacity className="flex-row items-center px-4 py-3.5 border-b border-border" onPress={() => router.push("/about" as any)}>
               <IconSymbol name="info.circle" size={20} color={colors.muted} />
               <Text className="flex-1 ml-3 text-foreground">About RV Nomad</Text>
               <IconSymbol name="chevron.right" size={18} color={colors.muted} />
             </TouchableOpacity>
 
             {/* Privacy Policy */}
-            <TouchableOpacity className="flex-row items-center px-4 py-3.5 border-b border-border">
+            <TouchableOpacity className="flex-row items-center px-4 py-3.5 border-b border-border" onPress={() => openUrl("https://rvnomadapp.com/privacy")}>
               <IconSymbol name="info.circle" size={20} color={colors.muted} />
               <Text className="flex-1 ml-3 text-foreground">Privacy Policy</Text>
               <IconSymbol name="chevron.right" size={18} color={colors.muted} />
             </TouchableOpacity>
 
             {/* Terms of Service */}
-            <TouchableOpacity className="flex-row items-center px-4 py-3.5">
+            <TouchableOpacity className="flex-row items-center px-4 py-3.5" onPress={() => openUrl("https://rvnomadapp.com/terms")}>
               <IconSymbol name="doc.text" size={20} color={colors.muted} />
               <Text className="flex-1 ml-3 text-foreground">Terms of Service</Text>
               <IconSymbol name="chevron.right" size={18} color={colors.muted} />

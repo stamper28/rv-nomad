@@ -175,7 +175,7 @@ export async function purchaseSubscription(productId: string): Promise<{
   if (!mod || !isConnected) {
     return {
       success: false,
-      error: "Unable to connect to the App Store. Please check your internet connection and try again.",
+      error: "Premium subscriptions are being finalized and will be available very soon. Please check back shortly!",
     };
   }
 
@@ -236,7 +236,7 @@ export async function purchaseSubscription(productId: string): Promise<{
     console.error("[IAP] Purchase error:", e);
     return {
       success: false,
-      error: "Something went wrong with the purchase. Please try again or restart the app.",
+      error: "Subscriptions are being set up and will be available shortly. Please check back soon!",
     };
   }
 }

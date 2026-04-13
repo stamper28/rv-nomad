@@ -657,3 +657,9 @@
 - [x] Add Weight Calculator tool screen
 - [x] Add Tire Pressure tool screen
 - [x] Wire both tools into the tools hub
+
+## Bug Fixes — Profile Buttons
+- [x] Fix "About RV Nomad" button not working on Profile screen
+- [x] Fix "Privacy Policy" button not working on Profile screen
+- [x] Fix "Terms of Service" button not working on Profile screen
+- [x] Fix Premium "Start Premium" purchase button — improved error messages to be friendly while IAP products are being set up

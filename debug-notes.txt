@@ -1,0 +1,14 @@
+Profile buttons issue:
+- About RV Nomad: had no onPress handler → FIXED: now routes to /about screen (created about.tsx)
+- Privacy Policy: had no onPress handler → FIXED: now opens https://rvnomadapp.com/privacy
+- Terms of Service: had no onPress handler → FIXED: now opens https://rvnomadapp.com/terms
+
+Premium purchase issue:
+- The "Purchase Issue" error is showing because the IAP connection fails on real device
+- The error "Something went wrong with the purchase. Please try again or restart the app." 
+  comes from the catch block in purchaseSubscription() in iap-service.ts
+- Root cause: expo-iap's initConnection or requestSubscription is throwing
+- This is expected if IAP products haven't been set up in App Store Connect / Google Play Console
+- BUT the error message is confusing to Apple reviewers
+- Need to improve the error handling so it's clearer that this is a store configuration issue
+- Also need to make sure the "Start Premium" button doesn't show a scary error when products aren't configured

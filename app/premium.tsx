@@ -115,8 +115,8 @@ export default function PremiumScreen() {
     // If IAP not ready on native, try to reconnect
     if (!iapReady) {
       Alert.alert(
-        "Connection Issue",
-        "Unable to connect to the App Store. Please check your internet connection and try again.",
+        "Coming Soon",
+        "Premium subscriptions are being finalized and will be available very soon. Please check back shortly!",
         [{ text: "OK" }],
       );
       return;
@@ -140,7 +140,7 @@ export default function PremiumScreen() {
         );
       } else if (result.error && !result.error.includes("cancel")) {
         Alert.alert(
-          "Purchase Issue",
+          "Subscription Info",
           result.error,
           [{ text: "OK" }],
         );
@@ -148,8 +148,8 @@ export default function PremiumScreen() {
       // If cancelled, do nothing silently
     } catch (e: any) {
       Alert.alert(
-        "Purchase Error",
-        "We were unable to process your subscription. Please ensure you are signed into your Apple ID and try again.",
+        "Subscription Info",
+        "Subscriptions are being set up and will be available shortly. Please check back soon!",
         [{ text: "OK" }],
       );
     } finally {
