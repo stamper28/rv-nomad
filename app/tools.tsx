@@ -72,7 +72,7 @@ interface Checklist {
   items: ChecklistItem[];
 }
 
-type ToolTab = "fuel" | "maintenance" | "packing" | "checklists";
+type ToolTab = "fuel" | "maintenance" | "packing" | "checklists" | "weight" | "tires";
 
 // ── Default Checklists ──
 const DEFAULT_CHECKLISTS: Checklist[] = [
@@ -315,6 +315,8 @@ export default function ToolsScreen() {
     { key: "maintenance", icon: "build", label: "Maint." },
     { key: "packing", icon: "inventory-2", label: "Packing" },
     { key: "checklists", icon: "checklist", label: "Lists" },
+    { key: "weight", icon: "scale", label: "Weight" },
+    { key: "tires", icon: "tire-repair", label: "Tires" },
   ];
 
   return (
@@ -553,6 +555,38 @@ export default function ToolsScreen() {
             );
           })}
         </ScrollView>
+      )}
+
+      {/* ═══ WEIGHT TAB ═══ */}
+      {tab === "weight" && (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 16 }}>
+          <MaterialIcons name="scale" size={48} color={colors.primary} />
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground, textAlign: "center" }}>Weight Calculator</Text>
+          <Text style={{ fontSize: 14, color: colors.muted, textAlign: "center" }}>Track your GVWR, cargo, water tanks & passenger weight to stay safe on the road.</Text>
+          <TouchableOpacity
+            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 }}
+            onPress={() => router.push("/weight-calculator" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}>Open Weight Calculator</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ═══ TIRES TAB ═══ */}
+      {tab === "tires" && (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32, gap: 16 }}>
+          <MaterialIcons name="tire-repair" size={48} color={colors.primary} />
+          <Text style={{ fontSize: 18, fontWeight: "700", color: colors.foreground, textAlign: "center" }}>Tire Pressure Monitor</Text>
+          <Text style={{ fontSize: 14, color: colors.muted, textAlign: "center" }}>Track PSI readings, tread depth & get safety tips for every tire on your rig.</Text>
+          <TouchableOpacity
+            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 }}
+            onPress={() => router.push("/tire-pressure" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 15 }}>Open Tire Pressure</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* ═══ FUEL MODAL ═══ */}

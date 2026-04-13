@@ -649,3 +649,11 @@
 - [ ] Fix 5.1.2(i): (App Store Connect) Update App Privacy to indicate app does NOT track users
 - [ ] Fix 2.1(b): (App Store Connect) Submit IAP subscription products alongside app for review
 - [x] Create Apple resubmission guide for user (App Store Connect manual steps)
+
+## App Store Screenshots
+- [x] Create comprehensive App Store screenshot set showcasing all major features (10 screenshots)
+
+## New RV Tools
+- [x] Add Weight Calculator tool screen
+- [x] Add Tire Pressure tool screen
+- [x] Wire both tools into the tools hub

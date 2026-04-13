@@ -281,7 +281,7 @@ export default function ExploreScreen() {
             </View>
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Tools</Text>
-              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Fuel log, maintenance, packing & checklists</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Fuel log, maintenance, packing, weight & more</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
@@ -690,6 +690,37 @@ export default function ExploreScreen() {
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>🇨🇦 Border Crossings 🇺🇸</Text>
               <Text style={[styles.promoSubtitle, { color: colors.muted }]}>US/Canada crossings, agent phone numbers & laws</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+
+          {/* Weight Calculator */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/weight-calculator" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#8B5CF620" }]}>
+              <MaterialIcons name="scale" size={24} color="#8B5CF6" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Weight Calculator</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Track GVWR, cargo, water & passenger weight</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </TouchableOpacity>
+          {/* Tire Pressure */}
+          <TouchableOpacity
+            style={[styles.promoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push("/tire-pressure" as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.promoIcon, { backgroundColor: "#EF444420" }]}>
+              <MaterialIcons name="tire-repair" size={24} color="#EF4444" />
+            </View>
+            <View style={styles.promoText}>
+              <Text style={[styles.promoTitle, { color: colors.foreground }]}>Tire Pressure</Text>
+              <Text style={[styles.promoSubtitle, { color: colors.muted }]}>Monitor PSI, tread depth & tire safety</Text>
             </View>
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
