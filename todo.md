@@ -663,3 +663,14 @@
 - [x] Fix "Privacy Policy" button not working on Profile screen
 - [x] Fix "Terms of Service" button not working on Profile screen
 - [x] Fix Premium "Start Premium" purchase button — improved error messages to be friendly while IAP products are being set up
+
+## Remove Premium/Subscription for v1.0 Apple Approval
+- [x] Remove Premium screen navigation and all upgrade/subscription buttons
+- [x] Remove premium upsell prompts throughout the app
+- [x] Remove subscription pricing from Profile screen footer
+- [x] Keep iap-service.ts and premium.tsx files intact (for easy v1.1 re-add)
+- [x] Change Insider Spots banner from "Premium Feature" to "Community Insider Spots"
+- [x] Change Insider Spots icon from premium badge to explore icon on Explore tab
+- [x] Change RV Buying Guide icon from crown to auto-stories (neutral)
+- [x] Change "Premium RV rentals" text to "Luxury RV rentals" in El Monte RV description
+- [x] Verified 0 TypeScript errors after all Premium UI removal changes

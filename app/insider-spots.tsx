@@ -145,12 +145,12 @@ export default function InsiderSpotsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Premium Banner */}
-        <View style={[styles.premiumBanner, { backgroundColor: "#F9A825" }]}>
-          <MaterialIcons name="workspace-premium" size={28} color="#fff" />
+        {/* Community Spots Banner */}
+        <View style={[styles.premiumBanner, { backgroundColor: "#2E7D32" }]}>
+          <MaterialIcons name="explore" size={28} color="#fff" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.premiumTitle}>Premium Feature</Text>
-            <Text style={styles.premiumSubtitle}>Secret spots submitted by the RV Nomad community. Only available to premium members.</Text>
+            <Text style={styles.premiumTitle}>Community Insider Spots</Text>
+            <Text style={styles.premiumSubtitle}>Secret camping spots submitted by the RV Nomad community. Share your favorite hidden gems!</Text>
           </View>
         </View>
 

@@ -293,7 +293,7 @@ export default function ExploreScreen() {
             activeOpacity={0.7}
           >
             <View style={[styles.promoIcon, { backgroundColor: colors.primary + "20" }]}>
-              <IconSymbol name="crown.fill" size={24} color={colors.primary} />
+              <MaterialIcons name="auto-stories" size={24} color={colors.primary} />
             </View>
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>RV Buying Guide</Text>
@@ -468,8 +468,8 @@ export default function ExploreScreen() {
             onPress={() => router.push("/insider-spots" as any)}
             activeOpacity={0.7}
           >
-            <View style={[styles.promoIcon, { backgroundColor: "#F9A82520" }]}>
-              <MaterialIcons name="workspace-premium" size={24} color="#F9A825" />
+            <View style={[styles.promoIcon, { backgroundColor: "#2E7D3220" }]}>
+              <MaterialIcons name="explore" size={24} color="#2E7D32" />
             </View>
             <View style={styles.promoText}>
               <Text style={[styles.promoTitle, { color: colors.foreground }]}>Insider Spots</Text>
@@ -826,7 +826,7 @@ export default function ExploreScreen() {
                 </View>
               </View>
               <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
-                Premium RV rentals — Class A, Class C & travel trailers with full amenities
+                Luxury RV rentals — Class A, Class C & travel trailers with full amenities
               </Text>
               <View style={[styles.partnerCta, { backgroundColor: "#7B1FA2" }]}>
                 <Text style={styles.partnerCtaText}>Browse El Monte RV</Text>

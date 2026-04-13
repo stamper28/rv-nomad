@@ -32,7 +32,7 @@ import {
   DEFAULT_MEMBERSHIPS,
 } from "@/lib/store";
 import { openUrl } from "@/lib/open-url";
-import { loadPremiumStatus } from "@/lib/iap-service";
+// import { loadPremiumStatus } from "@/lib/iap-service"; // Disabled for v1.0 free release
 
 const RV_TYPES = [
   "Class A Motorhome",
@@ -360,22 +360,7 @@ export default function ProfileScreen() {
             ))}
           </View>
 
-          {/* Premium & Offline */}
-          <TouchableOpacity
-            className="bg-surface rounded-2xl p-4 border border-border flex-row items-center gap-3"
-            onPress={() => router.push("/premium")}
-            activeOpacity={0.7}
-          >
-            <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: colors.primary + '15', justifyContent: 'center', alignItems: 'center' }}>
-              <IconSymbol name="crown.fill" size={22} color={colors.primary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text className="text-base font-bold text-foreground">{settings.isPremium ? 'Premium Active' : 'Upgrade to Premium'}</Text>
-              <Text className="text-xs text-muted">{settings.isPremium ? 'Manage your subscription' : 'All 50 states, offline maps, trip planner & more'}</Text>
-            </View>
-            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
-          </TouchableOpacity>
-
+          {/* Offline Maps */}
           <TouchableOpacity
             className="bg-surface rounded-2xl p-4 border border-border flex-row items-center gap-3"
             onPress={() => router.push("/offline")}
@@ -472,18 +457,15 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* App Info / Pricing */}
-          <TouchableOpacity
+          {/* App Info */}
+          <View
             className="bg-surface rounded-2xl p-4 border border-border items-center gap-1"
-            onPress={() => router.push("/premium" as any)}
-            activeOpacity={0.7}
           >
             <Text className="text-lg font-bold text-foreground">RV Nomad</Text>
             <Text className="text-sm text-primary font-semibold">
-              Version 1.0.0 — $49.99/yr or $5.99/mo
+              Version 1.0.0
             </Text>
-            <Text className="text-xs text-primary">Tap to view plans</Text>
-          </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </ScreenContainer>
