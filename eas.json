@@ -14,7 +14,7 @@
     "production": {
       "autoIncrement": true,
       "distribution": "store",
-      "credentialsSource": "remote",
+      "credentialsSource": "remote"
     }
   },
   "submit": {
@@ -23,6 +23,10 @@
         "appleId": "hawaiiataglance@gmail.com",
         "appleTeamId": "NJ2KDB7M7Y",
         "ascAppId": "6761806967"
+      },
+      "android": {
+        "track": "production",
+        "releaseStatus": "draft"
       }
     }
   }

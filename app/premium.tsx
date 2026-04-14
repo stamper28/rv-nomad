@@ -4,7 +4,7 @@
  * See LICENSE file for details.
  */
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -106,7 +106,7 @@ export default function PremiumScreen() {
     if (Platform.OS === "web") {
       Alert.alert(
         "Subscribe on Your Device",
-        `To subscribe to RV Nomad Premium (${priceLabel}), please use the app on your iPhone or iPad. Subscriptions are processed through the App Store.`,
+        `To subscribe to RV Nomad Premium (${priceLabel}), please use the app on your mobile device. Subscriptions are processed through the App Store or Google Play.`,
         [{ text: "OK" }],
       );
       return;
@@ -119,7 +119,9 @@ export default function PremiumScreen() {
         if (!reconnected) {
           Alert.alert(
             "Store Unavailable",
-            "Unable to connect to the App Store. Please check your internet connection and try again.",
+            Platform.OS === "android"
+          ? "Unable to connect to Google Play. Please check your internet connection and try again."
+          : "Unable to connect to the App Store. Please check your internet connection and try again.",
             [{ text: "OK" }],
           );
           return;
@@ -127,7 +129,9 @@ export default function PremiumScreen() {
       } catch {
         Alert.alert(
           "Store Unavailable",
-          "Unable to connect to the App Store. Please check your internet connection and try again.",
+          Platform.OS === "android"
+          ? "Unable to connect to Google Play. Please check your internet connection and try again."
+          : "Unable to connect to the App Store. Please check your internet connection and try again.",
           [{ text: "OK" }],
         );
         return;
@@ -166,7 +170,9 @@ export default function PremiumScreen() {
       } else {
         Alert.alert(
           "Subscription Info",
-          "Subscriptions are processed through the App Store. Please make sure you are signed in to your Apple ID and have a valid payment method, then try again.",
+          Platform.OS === "android"
+            ? "Subscriptions are processed through Google Play. Please make sure you are signed in to your Google account and have a valid payment method, then try again."
+            : "Subscriptions are processed through the App Store. Please make sure you are signed in to your Apple ID and have a valid payment method, then try again.",
           [{ text: "OK" }],
         );
       }
@@ -181,7 +187,7 @@ export default function PremiumScreen() {
     if (Platform.OS === "web" || !iapReady) {
       Alert.alert(
         "Restore on Your Device",
-        "Please use the app on your iPhone or iPad to restore purchases.",
+        "Please use the app on your mobile device to restore purchases.",
         [{ text: "OK" }],
       );
       return;
@@ -371,8 +377,21 @@ export default function PremiumScreen() {
 
         {/* Legal */}
         <Text style={[styles.legal, { color: colors.muted }]}>
-          Payment will be charged to your App Store account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your device Settings → Subscriptions.
+          {Platform.OS === "android"
+            ? "Payment will be charged to your Google Play account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. You can manage and cancel your subscriptions in the Google Play Store → Subscriptions."
+            : "Payment will be charged to your App Store account at confirmation of purchase. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your device Settings → Subscriptions."}
         </Text>
+
+        {/* Terms of Use & Privacy Policy — Required by Apple & Google */}
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 8, marginBottom: 32, paddingHorizontal: 16 }}>
+          <TouchableOpacity onPress={() => Linking.openURL("https://rvnomadapp.com/terms")}>
+            <Text style={{ color: colors.primary, fontSize: 13, textDecorationLine: "underline" }}>Terms of Use</Text>
+          </TouchableOpacity>
+          <Text style={{ color: colors.muted, fontSize: 13 }}>|</Text>
+          <TouchableOpacity onPress={() => Linking.openURL("https://rvnomadapp.com/privacy")}>
+            <Text style={{ color: colors.primary, fontSize: 13, textDecorationLine: "underline" }}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
