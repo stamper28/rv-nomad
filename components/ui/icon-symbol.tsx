@@ -98,6 +98,7 @@ const MAPPING = {
   "tag.fill": "local-offer",
   "person.3.fill": "groups",
   "bag.fill": "shopping-bag",
+  "checkmark": "check",
 } as IconMapping;
 
 /**

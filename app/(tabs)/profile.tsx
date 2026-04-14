@@ -32,7 +32,8 @@ import {
   DEFAULT_MEMBERSHIPS,
 } from "@/lib/store";
 import { openUrl } from "@/lib/open-url";
-// import { loadPremiumStatus } from "@/lib/iap-service"; // Disabled for v1.0 free release
+import { loadPremiumStatus } from "@/lib/iap-service";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const RV_TYPES = [
   "Class A Motorhome",
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
   const [editingRV, setEditingRV] = useState(false);
   const [editProfile, setEditProfile] = useState<RVProfile>(DEFAULT_RV_PROFILE);
   const [activeStatTab, setActiveStatTab] = useState<"visited" | "reviews" | "miles">("visited");
+  const [isPremium, setIsPremium] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -80,6 +82,9 @@ export default function ProfileScreen() {
     setSettings(s);
     setStats(st);
     setMemberships(m);
+    // Check premium status
+    const premiumStatus = await loadPremiumStatus();
+    setIsPremium(premiumStatus.isPremium);
   }
 
   async function toggleMembership(key: keyof DiscountMemberships) {
@@ -163,6 +168,70 @@ export default function ProfileScreen() {
         </View>
 
         <View className="p-4 gap-5">
+          {/* Go Premium Card — prominent CTA for subscription */}
+          {!isPremium && (
+            <TouchableOpacity
+              onPress={() => router.push("/premium" as any)}
+              activeOpacity={0.8}
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+                backgroundColor: colors.primary,
+                padding: 20,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 14,
+              }}
+            >
+              <View
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 26,
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialIcons name="workspace-premium" size={28} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontSize: 18, fontWeight: "800" }}>Go Premium</Text>
+                <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 2 }}>
+                  Unlock all 50 states, trip planner, offline maps & more
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 4 }}>
+                  Starting at $5.99/month
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color="rgba(255,255,255,0.7)" />
+            </TouchableOpacity>
+          )}
+          {isPremium && (
+            <TouchableOpacity
+              onPress={() => router.push("/premium" as any)}
+              activeOpacity={0.8}
+              style={{
+                borderRadius: 16,
+                overflow: "hidden",
+                backgroundColor: colors.success + "15",
+                borderWidth: 1,
+                borderColor: colors.success + "30",
+                padding: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <MaterialIcons name="check-circle" size={24} color={colors.success} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: colors.foreground, fontSize: 16, fontWeight: "700" }}>Premium Active</Text>
+                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>All features unlocked</Text>
+              </View>
+              <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+            </TouchableOpacity>
+          )}
+
           {/* My RV Section */}
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-bold text-foreground">My RV</Text>
@@ -376,9 +445,20 @@ export default function ProfileScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </TouchableOpacity>
 
-          {/* Settings Section */}
+          {/* Subscription — also in Settings for easy discoverability */}
           <Text className="text-xl font-bold text-foreground">Settings</Text>
           <View className="bg-surface rounded-2xl border border-border overflow-hidden">
+            {/* Subscription / Premium */}
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-3.5 border-b border-border"
+              onPress={() => router.push("/premium" as any)}
+            >
+              <MaterialIcons name="workspace-premium" size={20} color={colors.primary} />
+              <Text className="flex-1 ml-3 text-foreground" style={{ fontWeight: "600" }}>
+                {isPremium ? "Manage Subscription" : "Upgrade to Premium"}
+              </Text>
+              <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+            </TouchableOpacity>
             {/* Appearance / Dark Mode */}
             <View className="px-4 py-3.5 border-b border-border">
               <View className="flex-row items-center mb-2">

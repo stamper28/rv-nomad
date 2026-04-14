@@ -248,6 +248,31 @@ export default function ExploreScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Go Premium Banner */}
+      <TouchableOpacity
+        onPress={() => router.push("/premium" as any)}
+        activeOpacity={0.8}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginHorizontal: 16,
+          marginBottom: 8,
+          paddingVertical: 10,
+          paddingHorizontal: 14,
+          borderRadius: 12,
+          backgroundColor: colors.primary + "12",
+          borderWidth: 1,
+          borderColor: colors.primary + "30",
+        }}
+      >
+        <MaterialIcons name="workspace-premium" size={20} color={colors.primary} />
+        <Text style={{ flex: 1, color: colors.primary, fontSize: 13, fontWeight: "700" }}>
+          Go Premium — All 50 states, trip planner & more
+        </Text>
+        <MaterialIcons name="chevron-right" size={18} color={colors.primary} />
+      </TouchableOpacity>
+
       {viewMode === "categories" ? (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           {EXPLORE_SECTIONS.map((section) => {

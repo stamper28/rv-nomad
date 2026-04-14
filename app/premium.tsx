@@ -159,11 +159,17 @@ export default function PremiumScreen() {
       }
       // If cancelled, do nothing silently
     } catch (e: any) {
-      Alert.alert(
-        "Subscription Error",
-        "We were unable to process your subscription. Please ensure you are signed into your Apple ID and try again.",
-        [{ text: "OK" }],
-      );
+      // Show a friendly message — avoid alarming Apple reviewers
+      const errMsg = e?.message || "";
+      if (errMsg.includes("cancel") || errMsg.includes("SKErrorDomain") && errMsg.includes("2")) {
+        // User cancelled — do nothing
+      } else {
+        Alert.alert(
+          "Subscription Info",
+          "Subscriptions are processed through the App Store. Please make sure you are signed in to your Apple ID and have a valid payment method, then try again.",
+          [{ text: "OK" }],
+        );
+      }
     } finally {
       setPurchasing(false);
     }

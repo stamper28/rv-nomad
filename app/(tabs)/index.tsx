@@ -658,6 +658,30 @@ export default function HomeScreen() {
           <FlashingInsuranceButton />
         </View>
 
+        {/* Go Premium Banner */}
+        <TouchableOpacity
+          onPress={() => router.push("/premium" as any)}
+          activeOpacity={0.8}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            marginTop: 8,
+            paddingVertical: 10,
+            paddingHorizontal: 14,
+            borderRadius: 12,
+            backgroundColor: colors.primary + "12",
+            borderWidth: 1,
+            borderColor: colors.primary + "30",
+          }}
+        >
+          <MaterialIcons name="workspace-premium" size={20} color={colors.primary} />
+          <Text style={{ flex: 1, color: colors.primary, fontSize: 13, fontWeight: "700" }}>
+            Upgrade to Premium — Unlock all features
+          </Text>
+          <MaterialIcons name="chevron-right" size={18} color={colors.primary} />
+        </TouchableOpacity>
+
         {/* Search Bar */}
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <MaterialIcons name="search" size={22} color={colors.muted} style={styles.searchIcon} />
