@@ -16,7 +16,7 @@
  * 3. Add two auto-renewable subscriptions:
  *    - "rvnomad_premium_monthly" at $5.99/month
  *    - "rvnomad_premium_yearly" at $49.99/year
- * 4. For Android, create matching subscription products in the Play Console
+ * 4. Ensure product IDs match what you create in App Store Connect
  */
 
 import { Platform } from "react-native";
@@ -175,7 +175,7 @@ export async function purchaseSubscription(productId: string): Promise<{
   if (!mod || !isConnected) {
     return {
       success: false,
-      error: "Premium subscriptions are being finalized and will be available very soon. Please check back shortly!",
+      error: "Unable to connect to the App Store. Please check your internet connection and try again.",
     };
   }
 
@@ -236,7 +236,7 @@ export async function purchaseSubscription(productId: string): Promise<{
     console.error("[IAP] Purchase error:", e);
     return {
       success: false,
-      error: "Subscriptions are being set up and will be available shortly. Please check back soon!",
+      error: "We were unable to process your subscription. Please ensure you are signed into your Apple ID and try again.",
     };
   }
 }
