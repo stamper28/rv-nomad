@@ -1218,6 +1218,31 @@ export default function ExploreScreen() {
               </View>
             </View>
           </TouchableOpacity>
+          {/* Traverseon Outdoor Gear */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.traverseon.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#0D7C6615" }]}>
+              <MaterialIcons name="landscape" size={32} color="#0D7C66" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Traverseon</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#0D7C6620" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#0D7C66" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Premium outdoor gear — compact & ultra-portable systems for adventurers
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#0D7C66" }]}>
+                <Text style={styles.partnerCtaText}>Shop Traverseon</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
 
           {/* ─── Cruise Ship Ports for RVers ─── */}
           <View style={styles.partnerSectionHeader}>

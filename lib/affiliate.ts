@@ -175,6 +175,14 @@ export const AFFILIATE_CONFIG = {
     description: "Quality e-bikes for every lifestyle. From city commutes to rugged trails, Kingbull offers performance, versatility, and compact storage — perfect for RV travel.",
   },
 
+  // Traverseon — APPROVED (Awin merchant ID: 124816)
+  traverseon: {
+    url: "https://www.awin1.com/cread.php?awinmid=124816&awinaffid=2844436&ued=https%3A%2F%2Fwww.traverseon.com",
+    name: "Traverseon",
+    cost: "Varies by product",
+    description: "Premium outdoor gear trusted by 300,000+ adventurers. Compact and ultra-portable gear systems designed to simplify your outdoor life.",
+  },
+
   // OUTFITR — APPROVED (Awin merchant ID: 117613)
   outfitr: {
     url: "https://www.awin1.com/cread.php?awinmid=117613&awinaffid=2844436&ued=https%3A%2F%2Fwww.outfitr.com",
