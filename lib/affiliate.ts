@@ -167,6 +167,14 @@ export const AFFILIATE_CONFIG = {
     description: "Electric bikes built for adventure. Perfect for exploring campgrounds, trails, and nearby towns from your RV. Powerful motors, long-range batteries, and rugged designs.",
   },
 
+  // Kingbull Bike — APPROVED (Awin merchant ID: 124136)
+  kingbullBike: {
+    url: "https://www.awin1.com/cread.php?awinmid=124136&awinaffid=2844436&ued=https%3A%2F%2Fwww.kingbullbike.com",
+    name: "Kingbull Bike",
+    cost: "Varies by model",
+    description: "Quality e-bikes for every lifestyle. From city commutes to rugged trails, Kingbull offers performance, versatility, and compact storage — perfect for RV travel.",
+  },
+
   // OUTFITR — APPROVED (Awin merchant ID: 117613)
   outfitr: {
     url: "https://www.awin1.com/cread.php?awinmid=117613&awinaffid=2844436&ued=https%3A%2F%2Fwww.outfitr.com",

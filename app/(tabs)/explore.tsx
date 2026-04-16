@@ -1138,6 +1138,87 @@ export default function ExploreScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* ─── E-Bikes & Adventure Gear ─── */}
+          <View style={styles.partnerSectionHeader}>
+            <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>E-Bikes & Adventure Gear</Text>
+            <Text style={[styles.partnerSectionSubtitle, { color: colors.muted }]}>Explore campgrounds & trails on two wheels</Text>
+          </View>
+          {/* Young Electric Bikes */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.youngElectricBikes.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#2E7D3215" }]}>
+              <MaterialIcons name="electric-bike" size={32} color="#2E7D32" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Young Electric Bikes</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#2E7D3220" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#2E7D32" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Powerful e-bikes built for adventure — explore campgrounds, trails & nearby towns from your RV
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#2E7D32" }]}>
+                <Text style={styles.partnerCtaText}>Shop E-Bikes</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+          {/* Kingbull Bike */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.kingbullBike.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#C6282815" }]}>
+              <MaterialIcons name="electric-bike" size={32} color="#C62828" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>Kingbull Bike</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#C6282820" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#C62828" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Quality e-bikes from city commutes to rugged trails — compact storage, perfect for RV travel
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#C62828" }]}>
+                <Text style={styles.partnerCtaText}>Shop Kingbull</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+          {/* OUTFITR Adventure Gear */}
+          <TouchableOpacity
+            style={[styles.partnerCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => openUrl(AFFILIATE_CONFIG.outfitr.url)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.partnerLogoBox, { backgroundColor: "#E6511015" }]}>
+              <MaterialIcons name="hiking" size={32} color="#E65110" />
+            </View>
+            <View style={styles.partnerContent}>
+              <View style={styles.partnerNameRow}>
+                <Text style={[styles.partnerName, { color: colors.foreground }]}>OUTFITR</Text>
+                <View style={[styles.partnerBadge, { backgroundColor: "#E6511020" }]}>
+                  <Text style={[styles.partnerBadgeText, { color: "#E65110" }]}>PARTNER</Text>
+                </View>
+              </View>
+              <Text style={[styles.partnerDesc, { color: colors.muted }]} numberOfLines={2}>
+                Adventure-grade backpacks, outdoor accessories & travel essentials built to last
+              </Text>
+              <View style={[styles.partnerCta, { backgroundColor: "#E65110" }]}>
+                <Text style={styles.partnerCtaText}>Shop Gear</Text>
+                <MaterialIcons name="open-in-new" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+
           {/* ─── Cruise Ship Ports for RVers ─── */}
           <View style={styles.partnerSectionHeader}>
             <Text style={[styles.partnerSectionTitle, { color: colors.foreground }]}>Cruise Ship Ports</Text>
