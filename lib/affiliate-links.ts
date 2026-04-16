@@ -158,11 +158,11 @@ const BOOKING_PLATFORMS: Record<string, BookingPlatform> = {
   },
   passport_america: {
     name: "Passport America",
-    baseUrl: "https://www.passportamerica.com",
+    baseUrl: "https://passportamerica.com?rfsn=3868034",
     buildUrl: (name, state, city) => {
       const searchName = simplifyName(name);
       const query = encodeURIComponent(`${searchName} ${city}, ${state}`);
-      return `https://www.passportamerica.com/campground-search/?q=${query}`;
+      return `https://passportamerica.com/campground-search/?rfsn=3868034&q=${query}`;
     },
     icon: "loyalty",
     color: "#D84315",

@@ -44,7 +44,7 @@ const ALL_DISCOUNTS: Discount[] = [
     membershipCost: 44,
     membershipPeriod: "year",
     requirements: "Passport America membership required. Restrictions may apply (weekdays only, limited dates).",
-    affiliateUrl: "https://www.passportamerica.com",
+    affiliateUrl: "https://passportamerica.com?rfsn=3868034",
   },
   {
     program: "Escapees RV Club",

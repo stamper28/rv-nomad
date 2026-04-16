@@ -30,7 +30,7 @@ export const AFFILIATE_CONFIG = {
   },
   // Passport America
   passportAmerica: {
-    url: "https://www.passportamerica.com/?ref=rvnomad", // Replace with your referral link
+    url: "https://passportamerica.com?rfsn=3868034", // Passport America affiliate ID: 3868034
     name: "Passport America",
     cost: "$44/year",
     description: "50% off camping at 1,400+ campgrounds across the US, Canada, and Mexico.",
@@ -72,14 +72,14 @@ export const AFFILIATE_CONFIG = {
   },
   // Campspot — apply via Awin affiliate network
   campspot: {
-    url: "https://www.awin1.com/cread.php?awinmid=CAMPSPOT_AWIN_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.campspot.com", // Replace CAMPSPOT_AWIN_MID with real Awin merchant ID once approved
+    url: "https://www.awin1.com/cread.php?awinmid=CAMPSPOT_AWIN_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.campspot.com", // PENDING AWIN APPROVAL — replace CAMPSPOT_AWIN_MID with real merchant ID once approved
     name: "Campspot",
     cost: "Free to browse, pay per booking",
     description: "Book top-rated private RV parks and campgrounds. Real-time availability, instant confirmation, and exclusive deals.",
   },
   // Photobook America — personalized photo products for RV trip memories
   photobookAmerica: {
-    url: "https://www.photobookamerica.com/?ref=rvnomad", // Replace with Awin/affiliate link once approved
+    url: "https://www.photobookamerica.com/?ref=rvnomad", // PENDING AWIN APPROVAL — Photobook US (Awin pending)
     name: "Photobook America",
     cost: "Varies by product",
     description: "Turn your RV trip photos into beautiful photobooks, canvas prints, metal prints, calendars, mugs, and more. Ships to 100+ countries with a 100% quality guarantee.",
@@ -154,6 +154,70 @@ export const AFFILIATE_CONFIG = {
       cost: "Varies by trip",
       description: "Comprehensive travel protection including emergency medical, trip cancellation, baggage loss, and 24-hour hotline assistance. Trusted by millions of travelers.",
     },
+  },
+  // ═══════════════════════════════════════════════════════════════
+  // AWIN AFFILIATE PARTNERS — Approved
+  // ═══════════════════════════════════════════════════════════════
+
+  // Young Electric Bikes — APPROVED (Awin merchant ID: 120209)
+  youngElectricBikes: {
+    url: "https://www.awin1.com/cread.php?awinmid=120209&awinaffid=2844436&ued=https%3A%2F%2Fwww.youngelectricbikes.com",
+    name: "Young Electric Bikes",
+    cost: "Varies by model",
+    description: "Electric bikes built for adventure. Perfect for exploring campgrounds, trails, and nearby towns from your RV. Powerful motors, long-range batteries, and rugged designs.",
+  },
+
+  // OUTFITR — APPROVED (Awin merchant ID: 117613)
+  outfitr: {
+    url: "https://www.awin1.com/cread.php?awinmid=117613&awinaffid=2844436&ued=https%3A%2F%2Fwww.outfitr.com",
+    name: "OUTFITR",
+    cost: "Varies by product",
+    description: "Adventure-grade gear for explorers. Rugged backpacks, outdoor accessories, and travel essentials built to last. Earn 10% commission.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // AWIN AFFILIATE PARTNERS — Pending Approval
+  // Uncomment the url once approved and replace MERCHANT_ID
+  // ═══════════════════════════════════════════════════════════════
+
+  // FireHiking — PENDING AWIN APPROVAL
+  fireHiking: {
+    url: "https://www.awin1.com/cread.php?awinmid=FIREHIKING_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.firehiking.com", // PENDING — replace FIREHIKING_MID once approved
+    name: "FireHiking",
+    cost: "Varies by product",
+    description: "Ultralight camping stoves, titanium cookware, and hot tents for outdoor cooking. Perfect for campsite meals and boondocking.",
+  },
+
+  // Roaring Fire Gear — PENDING AWIN APPROVAL
+  roaringFireGear: {
+    url: "https://www.awin1.com/cread.php?awinmid=ROARINGFIRE_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.roaringfiregear.com", // PENDING — replace ROARINGFIRE_MID once approved
+    name: "Roaring Fire Gear",
+    cost: "Varies by product",
+    description: "Premium fire pits, campfire cooking gear, and outdoor fire accessories. Elevate your campsite experience.",
+  },
+
+  // GeerTop US — PENDING AWIN APPROVAL
+  geerTop: {
+    url: "https://www.awin1.com/cread.php?awinmid=GEERTOP_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.geertop.com", // PENDING — replace GEERTOP_MID once approved
+    name: "GeerTop",
+    cost: "Varies by product",
+    description: "Lightweight tents, tarps, and outdoor shelters. Great for RVers who also enjoy tent camping, awning extensions, and shade solutions.",
+  },
+
+  // XTAR Technology — PENDING AWIN APPROVAL
+  xtarTechnology: {
+    url: "https://www.awin1.com/cread.php?awinmid=XTAR_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.xtar.cc", // PENDING — replace XTAR_MID once approved
+    name: "XTAR Technology",
+    cost: "Varies by product",
+    description: "Battery chargers, portable power banks, and flashlights. Essential power solutions for off-grid RV camping and boondocking.",
+  },
+
+  // abxylute — PENDING AWIN APPROVAL
+  abxylute: {
+    url: "https://www.awin1.com/cread.php?awinmid=ABXYLUTE_MID&awinaffid=2844436&ued=https%3A%2F%2Fwww.abxylute.com", // PENDING — replace ABXYLUTE_MID once approved
+    name: "abxylute",
+    cost: "Varies by product",
+    description: "Portable monitors and tech accessories for digital nomads and RVers. Work remotely from your RV with a second screen.",
   },
 } as const;
 
